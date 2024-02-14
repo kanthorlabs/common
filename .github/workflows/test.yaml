@@ -21,4 +21,4 @@ jobs:
           bash scripts/ci_coverage.sh
 
       - name: coveralls
-        use: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@v2
