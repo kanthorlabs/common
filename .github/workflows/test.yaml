@@ -22,3 +22,7 @@ jobs:
 
       - name: coveralls
         uses: coverallsapp/github-action@v2
+        with:
+          format: golang
+          file: cover.out
+          debug: true
