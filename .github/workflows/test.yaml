@@ -18,7 +18,7 @@ jobs:
       - name: test
         run: |
           bash scripts/ci_test.sh
-
-      - name: coverage
-        run: |
           bash scripts/ci_coverage.sh
+
+      - name: coveralls
+        use: coverallsapp/github-action@v2
