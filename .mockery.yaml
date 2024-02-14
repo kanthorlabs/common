@@ -4,8 +4,8 @@ packages:
     # place your package-specific config here
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"
-      dir: "mockery/{{.PackageName}}"
-      mockname: "{{.InterfaceName}}"
+      dir: "faker/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
     interfaces:
       # select the interfaces you want mocked
       Timer:
