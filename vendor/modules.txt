@@ -85,6 +85,7 @@ github.com/sourcegraph/conc
 github.com/sourcegraph/conc/internal/multierror
 github.com/sourcegraph/conc/iter
 github.com/sourcegraph/conc/panics
+github.com/sourcegraph/conc/pool
 # github.com/spf13/afero v1.11.0
 ## explicit; go 1.19
 github.com/spf13/afero

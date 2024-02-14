@@ -13,6 +13,7 @@ then
     ./healthcheck/background/... \
     ./idx/... \
     ./project/... \
+    ./passport/... \
     ./persistence/... \
     ./safe/... \
     ./timer/... \
