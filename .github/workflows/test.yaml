@@ -25,4 +25,3 @@ jobs:
         with:
           format: golang
           file: cover.out
-          debug: true
