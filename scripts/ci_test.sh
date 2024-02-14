@@ -18,5 +18,9 @@ then
     ./timer/... \
     ./utils/... \
     ./validator/...
+fi
+
+if [ "$CI" = "" ];
+then
   find . -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1 > ./checksum
 fi
