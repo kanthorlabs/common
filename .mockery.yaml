@@ -4,7 +4,7 @@ packages:
     # place your package-specific config here
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"
-      dir: "faker/{{ .PackageName }}"
+      dir: "mocks/{{ .PackageName }}"
       mockname: "{{ .InterfaceName }}"
     interfaces:
       # select the interfaces you want mocked

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kanthorlabs/common/faker/timer"
+	"github.com/kanthorlabs/common/mocks/timer"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
