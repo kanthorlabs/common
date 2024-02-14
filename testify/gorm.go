@@ -40,7 +40,7 @@ func GormEnd(t *testing.T, db *gorm.DB) {
 
 func GormInsert(t *testing.T, db *gorm.DB, count int) (map[string]*testdata.User, []string) {
 	now := time.Now()
-	clock := timer.NewMockTimer(t)
+	clock := timer.NewTimer(t)
 
 	var ids []string
 	rows := make(map[string]*testdata.User)

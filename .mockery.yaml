@@ -5,6 +5,7 @@ packages:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"
       dir: "mockery/{{.PackageName}}"
+      mockname: "{{.InterfaceName}}"
     interfaces:
       # select the interfaces you want mocked
       Timer:
