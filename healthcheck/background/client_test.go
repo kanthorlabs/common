@@ -12,32 +12,32 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	t.Run("ko in init", func(st *testing.T) {
+	t.Run("NewClient - KO", func(st *testing.T) {
 
 		_, err := NewClient(&config.Config{})
 		require.NotNil(st, err)
 	})
 
-	t.Run("readiness", func(st *testing.T) {
+	t.Run(".Readiness", func(st *testing.T) {
 		name := testdata.Fake.UUID().V4()
 		conf := config.Default(name, 100)
 		client, _ := NewClient(conf)
 
-		st.Run("ko because of read status", func(sst *testing.T) {
+		st.Run("KO - read status", func(sst *testing.T) {
 			require.ErrorIs(sst, client.Readiness(), os.ErrNotExist)
 		})
 	})
 
-	t.Run("liveness", func(st *testing.T) {
+	t.Run(".Liveness", func(st *testing.T) {
 		name := testdata.Fake.UUID().V4()
 		conf := config.Default(name, 100)
 		client, _ := NewClient(conf)
 
-		st.Run("ko because of read status", func(sst *testing.T) {
+		st.Run("KO - read status", func(sst *testing.T) {
 			require.ErrorIs(sst, client.Liveness(), os.ErrNotExist)
 		})
 
-		st.Run("ko because of incorrect data", func(sst *testing.T) {
+		st.Run("KO - incorrect data", func(sst *testing.T) {
 			filepath := fmt.Sprintf("%s.liveness", conf.Dest)
 			data := time.Now().Format(time.RFC3339)
 
@@ -46,7 +46,7 @@ func TestClient(t *testing.T) {
 
 			require.ErrorContains(sst, client.Liveness(), "strconv.ParseInt")
 		})
-		st.Run("ko because of delay", func(sst *testing.T) {
+		st.Run("KO - no signal", func(sst *testing.T) {
 			filepath := fmt.Sprintf("%s.liveness", conf.Dest)
 			data := fmt.Sprintf("%d", time.Now().Add(-time.Hour).UnixMilli())
 

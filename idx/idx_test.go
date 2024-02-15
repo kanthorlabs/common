@@ -29,7 +29,7 @@ func TestFromTime(t *testing.T) {
 }
 
 func TestToTime(t *testing.T) {
-	t.Run("ok", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
 		now := time.Now()
 		id := FromTime(testdata.Fake.Color().SafeColorName(), now)
 
@@ -40,12 +40,12 @@ func TestToTime(t *testing.T) {
 		require.Equal(st, now.Unix(), ts.Unix())
 	})
 
-	t.Run("ko because of malformed format", func(st *testing.T) {
+	t.Run("KO - malformed format", func(st *testing.T) {
 		_, err := ToTime(uuid.NewString())
 		require.ErrorContains(st, err, "IDX.MALFORMED_FORMAT.ERROR")
 	})
 
-	t.Run("ko because of parsing error", func(st *testing.T) {
+	t.Run("KO - parsing error", func(st *testing.T) {
 		_, err := ToTime(fmt.Sprintf("u_%s", uuid.NewString()))
 		require.ErrorContains(st, err, "IDX.PARSE.ERROR")
 	})

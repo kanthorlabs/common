@@ -10,7 +10,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Run("ok", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
 		provider, err := configuration.New(testdata.Fake.Color().SafeColorName())
 		require.Nil(st, err)
 
@@ -22,14 +22,14 @@ func TestNew(t *testing.T) {
 		require.Nil(st, err)
 	})
 
-	t.Run("ko because of configuration", func(st *testing.T) {
+	t.Run("KO - configuration error", func(st *testing.T) {
 		provider, err := configuration.New(testdata.Fake.Color().SafeColorName())
 		require.Nil(st, err)
 		_, err = New(provider)
 		require.ErrorContains(t, err, "DATABASE.CONFIG")
 	})
 
-	t.Run("ko because of logger", func(st *testing.T) {
+	t.Run("KO - logger error", func(st *testing.T) {
 		provider, err := configuration.New(testdata.Fake.Color().SafeColorName())
 		require.Nil(st, err)
 

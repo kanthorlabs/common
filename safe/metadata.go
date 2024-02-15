@@ -42,7 +42,7 @@ func (meta *Metadata) Merge(src *Metadata) {
 		meta.kv = make(map[string]any)
 	}
 
-	if len(src.kv) == 0 {
+	if src == nil || len(src.kv) == 0 {
 		return
 	}
 

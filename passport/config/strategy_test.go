@@ -8,13 +8,15 @@ import (
 )
 
 func TestStrategy(t *testing.T) {
-	t.Run(".Validate/KO", func(st *testing.T) {
-		conf := &Strategy{}
-		require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.CONFIG.ENGINE")
-	})
+	t.Run(".Validate", func(st *testing.T) {
+		st.Run("KO - enginee error", func(sst *testing.T) {
+			conf := &Strategy{}
+			require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.CONFIG.ENGINE")
+		})
 
-	t.Run(".Validate/KO - Ask", func(st *testing.T) {
-		conf := &Strategy{Engine: EngineAsk, Name: uuid.NewString()}
-		require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.ASK.CONFIG")
+		st.Run("KO - Ask error", func(sst *testing.T) {
+			conf := &Strategy{Engine: EngineAsk, Name: uuid.NewString()}
+			require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.ASK.CONFIG")
+		})
 	})
 }

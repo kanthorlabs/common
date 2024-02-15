@@ -3,13 +3,13 @@ package sqlx
 import (
 	"testing"
 
-	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/persistence/sqlx/config"
+	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewGorm(t *testing.T) {
-	t.Run("unable to connect", func(st *testing.T) {
+	t.Run("KO because of connection error", func(st *testing.T) {
 		conf := &config.Config{
 			Uri: "postgres://postgres:postgres@localhost:2345/postgres",
 			Connection: config.Connection{
@@ -19,9 +19,7 @@ func TestNewGorm(t *testing.T) {
 				MaxOpenCount: 1,
 			},
 		}
-		logger, err := logging.NewNoop()
-		require.Nil(t, err)
-		_, err = NewGorm(conf, logger)
+		_, err := NewGorm(conf, testify.Logger())
 		require.ErrorContains(t, err, "dial error")
 	})
 }

@@ -4,20 +4,18 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
+	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
 func TestSqlite(t *testing.T) {
-	t.Run("error of config", func(st *testing.T) {
-		logger, err := logging.NewNoop()
-		require.Nil(t, err)
-		_, err = New(&config.Config{}, logger)
+	t.Run("Ko because of configuration validation", func(st *testing.T) {
+		_, err := New(&config.Config{}, testify.Logger())
 		assert.NotNil(t, err)
 	})
 
@@ -87,9 +85,7 @@ func start(t *testing.T) persistence.Persistence {
 			MaxOpenCount: config.DefaultConnMaxOpenCount,
 		},
 	}
-	logger, err := logging.NewNoop()
-	require.Nil(t, err)
-	instance, err := New(conf, logger)
+	instance, err := New(conf, testify.Logger())
 	require.Nil(t, err)
 
 	return instance

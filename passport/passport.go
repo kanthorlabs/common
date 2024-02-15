@@ -44,7 +44,7 @@ type Passport interface {
 	Login(ctx context.Context, name string, credentials *entities.Credentials) (*entities.Account, error)
 	Logout(ctx context.Context, name string, credentials *entities.Credentials) error
 	Verify(ctx context.Context, name string, credentials *entities.Credentials) (*entities.Account, error)
-	Register(ctx context.Context, name string, acc *entities.Account) (*entities.Account, error)
+	Register(ctx context.Context, name string, acc *entities.Account) error
 }
 
 type passport struct {
@@ -122,10 +122,10 @@ func (instance *passport) Verify(ctx context.Context, name string, credentials *
 	return strategy.Verify(ctx, credentials)
 }
 
-func (instance *passport) Register(ctx context.Context, name string, acc *entities.Account) (*entities.Account, error) {
+func (instance *passport) Register(ctx context.Context, name string, acc *entities.Account) error {
 	strategy, has := instance.strategies[name]
 	if !has {
-		return nil, ErrStrategyNotFound
+		return ErrStrategyNotFound
 	}
 
 	return strategy.Register(ctx, acc)

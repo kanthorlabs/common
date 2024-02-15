@@ -49,6 +49,11 @@ func TestMetadata(t *testing.T) {
 	})
 
 	t.Run(".Merge", func(st *testing.T) {
+		dest := &Metadata{}
+
+		dest.Merge(nil)
+		require.Equal(st, 0, len(dest.kv))
+
 		src := &Metadata{}
 
 		var wg conc.WaitGroup
@@ -60,10 +65,6 @@ func TestMetadata(t *testing.T) {
 			})
 		}
 		wg.Wait()
-
-		require.Equal(st, counter, len(src.kv))
-
-		dest := &Metadata{}
 
 		dest.Merge(src)
 		require.Equal(st, counter, len(dest.kv))

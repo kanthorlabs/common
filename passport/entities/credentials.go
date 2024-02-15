@@ -10,6 +10,9 @@ type Credentials struct {
 }
 
 func ValidateCredentialsOnLogin(c *Credentials) error {
+	if err := validator.PointerNotNil("PASSPORT.CREDENTIALS", c)(); err != nil {
+		return err
+	}
 	return validator.Validate(
 		validator.StringRequired("PASSPORT.CREDENTIALS.USERNAME", c.Username),
 		validator.StringRequired("PASSPORT.CREDENTIALS.PASSWORD", c.Password),

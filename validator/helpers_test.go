@@ -26,12 +26,12 @@ func TestSlice(t *testing.T) {
 	for i := low; i < high; i += step {
 		items = append(items, i)
 	}
-	t.Run("ok", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
 		err := Validate(Slice(items, svalidate(high+1)))
 		require.Nil(st, err)
 	})
 
-	t.Run("ko because of any error", func(st *testing.T) {
+	t.Run("KO - item error", func(st *testing.T) {
 		err := Validate(Slice(items, svalidate(high-step)))
 		require.ErrorIs(st, err, testdata.ErrorGeneric)
 	})
@@ -51,12 +51,12 @@ func TestMap(t *testing.T) {
 	for i := low; i < high; i += step {
 		items[testdata.Fake.UUID().V4()] = i
 	}
-	t.Run("ok", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
 		err := Validate(Map(items, mvalidate(high+1)))
 		require.Nil(st, err)
 	})
 
-	t.Run("ko because of any error", func(st *testing.T) {
+	t.Run("KO - item error", func(st *testing.T) {
 		err := Validate(Map(items, mvalidate(high-step)))
 		require.ErrorIs(st, err, testdata.ErrorGeneric)
 	})
