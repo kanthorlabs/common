@@ -11,7 +11,7 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-func New(conf config.Config, logger logging.Logger) (Passport, error) {
+func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func New(conf config.Config, logger logging.Logger) (Passport, error) {
 		if conf.Strategies[i].Engine == config.EngineAsk {
 			strategy, err := strategies.NewAsk(
 				&conf.Strategies[i].Ask,
-				logger.With("strategy", "ask"),
+				logger.With("strategy", config.EngineAsk, "strategy_name", conf.Strategies[i].Name),
 			)
 			if err != nil {
 				return nil, err

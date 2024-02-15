@@ -16,7 +16,6 @@ func setup(t *testing.T) ([]entities.Account, []string) {
 
 	accounts := make([]entities.Account, count)
 	passwords := make([]string, count)
-	tenant := uuid.NewString()
 
 	for i := 0; i < count; i++ {
 		passwords[i] = uuid.NewString()
@@ -25,7 +24,7 @@ func setup(t *testing.T) ([]entities.Account, []string) {
 		accounts[i] = entities.Account{
 			Username:     uuid.NewString(),
 			PasswordHash: hash,
-			Tenant:       tenant,
+			Tenant:       entities.TenantSuper,
 			Name:         testdata.Fake.Internet().User(),
 			CreatedAt:    time.Now().UnixMilli(),
 			UpdatedAt:    time.Now().UnixMilli(),

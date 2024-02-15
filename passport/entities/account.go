@@ -5,6 +5,10 @@ import (
 	"github.com/kanthorlabs/common/validator"
 )
 
+var (
+	TenantSuper = "*"
+)
+
 type Account struct {
 	Username     string         `json:"username" yaml:"username"`
 	PasswordHash string         `json:"password_hash,omitempty" yaml:"password_hash,omitempty"`
