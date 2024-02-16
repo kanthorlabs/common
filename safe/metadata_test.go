@@ -12,7 +12,7 @@ import (
 
 func TestMetadata(t *testing.T) {
 	t.Run(".Set", func(st *testing.T) {
-		metadata := &Metadata{}
+		var metadata Metadata
 
 		var wg conc.WaitGroup
 		counter := testdata.Fake.IntBetween(100000, 999999)
@@ -28,7 +28,7 @@ func TestMetadata(t *testing.T) {
 	})
 
 	t.Run(".Set", func(st *testing.T) {
-		metadata := &Metadata{}
+		var metadata Metadata
 
 		var wg conc.WaitGroup
 		counter := testdata.Fake.IntBetween(100000, 999999)
@@ -74,32 +74,54 @@ func TestMetadata(t *testing.T) {
 	})
 
 	t.Run(".String", func(st *testing.T) {
-		metadata := &Metadata{}
-		id := uuid.NewString()
-		metadata.Set(id, true)
+		st.Run("OK", func(sst *testing.T) {
+			var metadata Metadata
+			id := uuid.NewString()
+			metadata.Set(id, true)
 
-		str := metadata.String()
-		require.Contains(st, str, id)
+			str := metadata.String()
+			require.Contains(sst, str, id)
+		})
+
+		st.Run("nullable", func(sst *testing.T) {
+			var metadata Metadata
+			require.Empty(sst, metadata.String())
+		})
 	})
 
 	t.Run(".Value", func(st *testing.T) {
-		metadata := &Metadata{}
-		id := uuid.NewString()
-		metadata.Set(id, true)
+		st.Run("OK", func(sst *testing.T) {
+			var metadata Metadata
+			id := uuid.NewString()
+			metadata.Set(id, true)
 
-		value, err := metadata.Value()
-		require.Nil(st, err)
+			value, err := metadata.Value()
+			require.Nil(sst, err)
+			require.Contains(sst, value, id)
+		})
 
-		require.Contains(st, value, id)
+		st.Run("nullable", func(sst *testing.T) {
+			var metadata Metadata
+			value, err := metadata.Value()
+			require.Nil(sst, err)
+			require.Empty(sst, value)
+		})
 	})
 
 	t.Run(".Scan", func(st *testing.T) {
-		src := &Metadata{}
-		src.Set(uuid.NewString(), true)
+		st.Run("OK", func(sst *testing.T) {
+			var src Metadata
+			src.Set(uuid.NewString(), true)
 
-		metadata := &Metadata{}
-		metadata.Scan(src.String())
+			var metadata Metadata
+			require.Nil(sst, metadata.Scan(src.String()))
 
-		require.Equal(st, src.kv, metadata.kv)
+			require.Equal(sst, src.kv, metadata.kv)
+		})
+
+		st.Run("nullable", func(sst *testing.T) {
+			var metadata Metadata
+			require.Nil(sst, metadata.Scan(""))
+		})
 	})
 }

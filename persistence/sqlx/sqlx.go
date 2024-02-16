@@ -35,16 +35,35 @@ type sql struct {
 	status int
 }
 
-func (isntance *sql) Readiness() error {
-	if isntance.status == patterns.StatusDisconnected {
+func (instance *sql) Connect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
+	if instance.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
+	client, err := NewGorm(instance.conf, instance.logger)
+	if err != nil {
+		return err
+	}
+	instance.client = client
+
+	instance.status = patterns.StatusConnected
+	instance.logger.Info("connected")
+	return nil
+}
+
+func (instance *sql) Readiness() error {
+	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
-	if isntance.status != patterns.StatusConnected {
+	if instance.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
 	var ok int
-	tx := isntance.client.Raw(ReadinessQuery).Scan(&ok)
+	tx := instance.client.Raw(ReadinessQuery).Scan(&ok)
 	if tx.Error != nil || ok != 1 {
 		return ErrNotReady
 	}
@@ -52,16 +71,16 @@ func (isntance *sql) Readiness() error {
 	return nil
 }
 
-func (isntance *sql) Liveness() error {
-	if isntance.status == patterns.StatusDisconnected {
+func (instance *sql) Liveness() error {
+	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
-	if isntance.status != patterns.StatusConnected {
+	if instance.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
 	var ok int
-	tx := isntance.client.Raw(LivenessQuery).Scan(&ok)
+	tx := instance.client.Raw(LivenessQuery).Scan(&ok)
 	if tx.Error != nil || ok != 1 {
 		return ErrNotLive
 	}
@@ -69,48 +88,29 @@ func (isntance *sql) Liveness() error {
 	return nil
 }
 
-func (isntance *sql) Connect(ctx context.Context) error {
-	isntance.mu.Lock()
-	defer isntance.mu.Unlock()
+func (instance *sql) Disconnect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
 
-	if isntance.status == patterns.StatusConnected {
-		return ErrAlreadyConnected
-	}
-
-	client, err := NewGorm(isntance.conf, isntance.logger)
-	if err != nil {
-		return err
-	}
-	isntance.client = client
-
-	isntance.status = patterns.StatusConnected
-	isntance.logger.Info("connected")
-	return nil
-}
-
-func (isntance *sql) Disconnect(ctx context.Context) error {
-	isntance.mu.Lock()
-	defer isntance.mu.Unlock()
-
-	if isntance.status != patterns.StatusConnected {
+	if instance.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
-	isntance.status = patterns.StatusDisconnected
-	isntance.logger.Info("disconnected")
+	instance.status = patterns.StatusDisconnected
+	instance.logger.Info("disconnected")
 
 	var returning error
-	if conn, err := isntance.client.DB(); err == nil {
+	if conn, err := instance.client.DB(); err == nil {
 		if err := conn.Close(); err != nil {
 			returning = errors.Join(returning, err)
 		}
 	} else {
 		returning = errors.Join(returning, err)
 	}
-	isntance.client = nil
+	instance.client = nil
 
 	return returning
 }
 
-func (isntance *sql) Client() any {
-	return isntance.client
+func (instance *sql) Client() any {
+	return instance.client
 }

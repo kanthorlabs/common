@@ -3,6 +3,7 @@ package strategies
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/passport/config"
@@ -19,6 +20,23 @@ func TestAsk(t *testing.T) {
 		st.Run("KO - configuration error", func(sst *testing.T) {
 			_, err := NewAsk(&config.Ask{}, testify.Logger())
 			require.ErrorContains(sst, err, "PASSPORT.STRATEGY.ASK.CONFIG")
+		})
+
+		st.Run("KO - duplicated account error", func(sst *testing.T) {
+			conf := &config.Ask{
+				Accounts: []entities.Account{
+					{
+						Username:     uuid.NewString(),
+						PasswordHash: testdata.Fake.Internet().Password(),
+						Name:         testdata.Fake.Internet().User(),
+						CreatedAt:    time.Now().UnixMilli(),
+						UpdatedAt:    time.Now().UnixMilli(),
+					},
+				},
+			}
+			conf.Accounts = append(conf.Accounts, conf.Accounts[0])
+			_, err := NewAsk(conf, testify.Logger())
+			require.ErrorContains(sst, err, "PASSPORT.STRATEGY.ASK.DUPLICATED_ACCOUNT")
 		})
 	})
 
@@ -46,17 +64,17 @@ func TestAsk(t *testing.T) {
 				Password: passwords[i],
 			}
 			acc, err := strategy.Login(context.Background(), credentials)
-			require.Nil(st, err)
-			require.Equal(st, credentials.Username, acc.Username)
-			require.Empty(st, acc.PasswordHash)
+			require.Nil(sst, err)
+			require.Equal(sst, credentials.Username, acc.Username)
+			require.Empty(sst, acc.PasswordHash)
 		})
 
 		st.Run("KO - credentials error", func(sst *testing.T) {
 			_, err := strategy.Login(context.Background(), nil)
-			require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
+			require.ErrorContains(sst, err, "PASSPORT.CREDENTIALS")
 
 			_, err = strategy.Login(context.Background(), &entities.Credentials{})
-			require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
+			require.ErrorContains(sst, err, "PASSPORT.CREDENTIALS")
 		})
 
 		st.Run("KO - user not found", func(sst *testing.T) {
@@ -65,7 +83,7 @@ func TestAsk(t *testing.T) {
 				Password: testdata.Fake.Internet().Password(),
 			}
 			_, err := strategy.Login(context.Background(), credentials)
-			require.ErrorIs(st, err, ErrLogin)
+			require.ErrorIs(sst, err, ErrLogin)
 		})
 
 		st.Run("KO - password not match", func(sst *testing.T) {
@@ -75,7 +93,7 @@ func TestAsk(t *testing.T) {
 				Password: testdata.Fake.Internet().Password(),
 			}
 			_, err := strategy.Login(context.Background(), credentials)
-			require.ErrorIs(st, err, ErrLogin)
+			require.ErrorIs(sst, err, ErrLogin)
 		})
 	})
 
@@ -91,9 +109,9 @@ func TestAsk(t *testing.T) {
 				Password: passwords[i],
 			}
 			acc, err := strategy.Verify(context.Background(), credentials)
-			require.Nil(st, err)
-			require.Equal(st, credentials.Username, acc.Username)
-			require.Empty(st, acc.PasswordHash)
+			require.Nil(sst, err)
+			require.Equal(sst, credentials.Username, acc.Username)
+			require.Empty(sst, acc.PasswordHash)
 		})
 	})
 
@@ -105,7 +123,7 @@ func TestAsk(t *testing.T) {
 		st.Run("KO - unimplement error", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)
 			err := strategy.Register(context.Background(), &accounts[i])
-			require.ErrorContains(st, err, "PASSPORT.ASK.REGISTER.UNIMPLEMENT")
+			require.ErrorContains(sst, err, "PASSPORT.ASK.REGISTER.UNIMPLEMENT")
 		})
 	})
 }

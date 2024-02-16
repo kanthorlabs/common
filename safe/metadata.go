@@ -52,17 +52,29 @@ func (meta *Metadata) Merge(src *Metadata) {
 }
 
 func (meta *Metadata) String() string {
+	if meta == nil || meta.kv == nil {
+		return ""
+	}
+
 	data, _ := json.Marshal(meta.kv)
 	return string(data)
 }
 
 // Value implements the driver Valuer interface.
 func (meta *Metadata) Value() (driver.Value, error) {
+	// meta == nil when we convert it to database value
+	if meta == nil || meta.kv == nil {
+		return "", nil
+	}
 	data, err := json.Marshal(meta.kv)
 	return string(data), err
 }
 
 // Scan implements the Scanner interface.
 func (meta *Metadata) Scan(value any) error {
-	return json.Unmarshal([]byte(value.(string)), &meta.kv)
+	v := value.(string)
+	if v == "" {
+		return nil
+	}
+	return json.Unmarshal([]byte(v), &meta.kv)
 }

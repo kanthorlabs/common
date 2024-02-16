@@ -18,5 +18,10 @@ func TestStrategy(t *testing.T) {
 			conf := &Strategy{Engine: EngineAsk, Name: uuid.NewString()}
 			require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.ASK.CONFIG")
 		})
+
+		st.Run("KO - Durability error", func(sst *testing.T) {
+			conf := &Strategy{Engine: EngineDurability, Name: uuid.NewString()}
+			require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.URI")
+		})
 	})
 }

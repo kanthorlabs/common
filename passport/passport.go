@@ -19,14 +19,29 @@ func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 	instances := make(map[string]strategies.Strategy)
 
 	for i := range conf.Strategies {
-		if _, exist := instances[conf.Strategies[i].Name]; exist {
+		engine := conf.Strategies[i].Engine
+		name := conf.Strategies[i].Name
+
+		if _, exist := instances[name]; exist {
 			return nil, ErrStrategyDuplicated
 		}
 
-		if conf.Strategies[i].Engine == config.EngineAsk {
+		if engine == config.EngineAsk {
 			strategy, err := strategies.NewAsk(
 				&conf.Strategies[i].Ask,
-				logger.With("strategy", config.EngineAsk, "strategy_name", conf.Strategies[i].Name),
+				logger.With("strategy", engine, "strategy_name", name),
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			instances[name] = strategy
+		}
+
+		if engine == config.EngineDurability {
+			strategy, err := strategies.NewDurability(
+				&conf.Strategies[i].Durability,
+				logger.With("strategy", engine, "strategy_name", name),
 			)
 			if err != nil {
 				return nil, err

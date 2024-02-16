@@ -14,9 +14,14 @@ func NewAsk(conf *config.Ask, logger logging.Logger) (Strategy, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
+
 	accounts := make(map[string]*entities.Account)
 	for i := range conf.Accounts {
 		accounts[conf.Accounts[i].Username] = &conf.Accounts[i]
+	}
+
+	if len(accounts) != len(conf.Accounts) {
+		return nil, errors.New("PASSPORT.STRATEGY.ASK.DUPLICATED_ACCOUNT.ERROR")
 	}
 
 	return &ask{conf: conf, logger: logger, accounts: accounts}, nil
@@ -29,15 +34,15 @@ type ask struct {
 	accounts map[string]*entities.Account
 }
 
+func (instance *ask) Connect(ctx context.Context) error {
+	return nil
+}
+
 func (instance *ask) Readiness() error {
 	return nil
 }
 
 func (instance *ask) Liveness() error {
-	return nil
-}
-
-func (instance *ask) Connect(ctx context.Context) error {
 	return nil
 }
 

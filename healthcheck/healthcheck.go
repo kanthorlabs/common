@@ -6,9 +6,9 @@ import (
 
 type Server interface {
 	Connect(ctx context.Context) error
-	Disconnect(ctx context.Context) error
 	Readiness(check func() error) error
 	Liveness(check func() error) error
+	Disconnect(ctx context.Context) error
 }
 
 type Client interface {

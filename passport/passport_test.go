@@ -10,6 +10,7 @@ import (
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	sqlx "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -40,6 +41,24 @@ func TestPassport(t *testing.T) {
 
 			_, err := New(conf, testify.Logger())
 			require.ErrorContains(sst, err, "PASSPORT.STRATEGY.ASK.CONFIG")
+		})
+
+		st.Run("KO - Ask init error", func(sst *testing.T) {
+			conf := &config.Config{Strategies: make([]config.Strategy, 1)}
+			conf.Strategies[0] = ask()
+			conf.Strategies[0].Ask.Accounts = append(conf.Strategies[0].Ask.Accounts, conf.Strategies[0].Ask.Accounts[0])
+
+			_, err := New(conf, testify.Logger())
+			require.ErrorContains(sst, err, "PASSPORT.STRATEGY.ASK.DUPLICATED_ACCOUNT")
+		})
+
+		st.Run("KO - Durability configuration error", func(sst *testing.T) {
+			conf := &config.Config{Strategies: make([]config.Strategy, 1)}
+			conf.Strategies[0] = durability()
+			conf.Strategies[0].Durability = config.Durability{}
+
+			_, err := New(conf, testify.Logger())
+			require.ErrorContains(sst, err, "SQLX.CONFIG.URI")
 		})
 	})
 
@@ -176,7 +195,6 @@ func ask() config.Strategy {
 	account := entities.Account{
 		Username:     uuid.NewString(),
 		PasswordHash: hash,
-		Tenant:       entities.TenantSuper,
 		Name:         testdata.Fake.Internet().User(),
 		CreatedAt:    time.Now().UnixMilli(),
 		UpdatedAt:    time.Now().UnixMilli(),
@@ -189,6 +207,24 @@ func ask() config.Strategy {
 		Name:   testdata.Fake.Beer().Name(),
 		Ask: config.Ask{
 			Accounts: []entities.Account{account},
+		},
+	}
+}
+
+func durability() config.Strategy {
+	return config.Strategy{
+		Engine: config.EngineDurability,
+		Name:   testdata.Fake.Beer().Name(),
+		Durability: config.Durability{
+			Sqlx: sqlx.Config{
+				Uri: testdata.SqliteUri,
+				Connection: sqlx.Connection{
+					MaxLifetime:  sqlx.DefaultConnMaxLifetime,
+					MaxIdletime:  sqlx.DefaultConnMaxIdletime,
+					MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
+					MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+				},
+			},
 		},
 	}
 }

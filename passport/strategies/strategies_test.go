@@ -24,7 +24,6 @@ func setup(t *testing.T) ([]entities.Account, []string) {
 		accounts[i] = entities.Account{
 			Username:     uuid.NewString(),
 			PasswordHash: hash,
-			Tenant:       entities.TenantSuper,
 			Name:         testdata.Fake.Internet().User(),
 			CreatedAt:    time.Now().UnixMilli(),
 			UpdatedAt:    time.Now().UnixMilli(),

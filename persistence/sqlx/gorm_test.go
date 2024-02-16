@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kanthorlabs/common/persistence/sqlx/config"
+	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
@@ -11,7 +12,7 @@ import (
 func TestNewGorm(t *testing.T) {
 	t.Run("KO because of connection error", func(st *testing.T) {
 		conf := &config.Config{
-			Uri: "postgres://postgres:postgres@localhost:2345/postgres",
+			Uri: testdata.PostgresUrl,
 			Connection: config.Connection{
 				MaxLifetime:  300000,
 				MaxIdletime:  60000,
