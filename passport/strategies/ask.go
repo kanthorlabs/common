@@ -77,3 +77,7 @@ func (instance *ask) Verify(ctx context.Context, credentials *entities.Credentia
 func (instance *ask) Register(ctx context.Context, acc *entities.Account) error {
 	return errors.New("PASSPORT.ASK.REGISTER.UNIMPLEMENT.ERROR")
 }
+
+func (instance *ask) Deactivate(ctx context.Context, username string, ts int64) error {
+	return errors.New("PASSPORT.ASK.DEACTIVATE.UNIMPLEMENT.ERROR")
+}

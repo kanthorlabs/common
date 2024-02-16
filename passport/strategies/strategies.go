@@ -13,4 +13,5 @@ type Strategy interface {
 	Logout(ctx context.Context, credentials *entities.Credentials) error
 	Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error)
 	Register(ctx context.Context, acc *entities.Account) error
+	Deactivate(ctx context.Context, username string, ts int64) error
 }

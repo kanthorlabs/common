@@ -186,4 +186,42 @@ func TestDurability(t *testing.T) {
 			require.ErrorIs(sst, err, ErrRegister)
 		})
 	})
+
+	t.Run(".Deactivate", func(st *testing.T) {
+		conf := &config.Durability{Sqlx: sqlx.Config{
+			Uri: testdata.SqliteUri,
+			Connection: sqlx.Connection{
+				MaxLifetime:  sqlx.DefaultConnMaxLifetime,
+				MaxIdletime:  sqlx.DefaultConnMaxIdletime,
+				MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
+				MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+			},
+		}}
+		strategy, err := NewDurability(conf, testify.Logger())
+		require.Nil(st, err)
+
+		strategy.Connect(context.Background())
+		defer strategy.Disconnect(context.Background())
+
+		orm := strategy.(*durability).orm
+		tx := orm.Create(accounts)
+		require.Nil(st, tx.Error)
+
+		st.Run("OK", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(accounts)-1)
+			username := accounts[i].Username
+			ts := time.Now().UnixMilli()
+
+			err := strategy.Deactivate(context.Background(), username, ts)
+			require.Nil(sst, err)
+		})
+
+		st.Run("KO - user not found", func(sst *testing.T) {
+			username := uuid.NewString()
+			ts := time.Now().UnixMilli()
+
+			err := strategy.Deactivate(context.Background(), username, ts)
+			require.ErrorIs(sst, err, ErrAccountNotFound)
+		})
+	})
 }

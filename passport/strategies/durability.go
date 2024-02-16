@@ -65,7 +65,6 @@ func (instance *durability) Login(ctx context.Context, credentials *entities.Cre
 
 	var acc entities.Account
 	tx := instance.orm.WithContext(ctx).
-		Model(&entities.Account{}).
 		Where("username = ?", credentials.Username).
 		First(&acc)
 	if tx.Error != nil {
@@ -93,4 +92,24 @@ func (instance *durability) Register(ctx context.Context, acc *entities.Account)
 		return ErrRegister
 	}
 	return nil
+}
+
+func (instance *durability) Deactivate(ctx context.Context, username string, ts int64) error {
+	return instance.orm.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		acc := entities.Account{Username: username}
+
+		if txn := tx.First(&acc); txn.Error != nil {
+			return ErrAccountNotFound
+		}
+
+		acc.DeactivatedAt = ts
+
+		txn := tx.Model(&entities.Account{Username: username}).Update("deactivated_at", ts)
+		if txn.Error != nil {
+			return ErrDeactivate
+		}
+
+		return nil
+	})
+
 }

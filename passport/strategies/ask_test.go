@@ -126,4 +126,16 @@ func TestAsk(t *testing.T) {
 			require.ErrorContains(sst, err, "PASSPORT.ASK.REGISTER.UNIMPLEMENT")
 		})
 	})
+
+	t.Run(".Deactivate", func(st *testing.T) {
+		conf := &config.Ask{Accounts: accounts}
+		strategy, err := NewAsk(conf, testify.Logger())
+		require.Nil(st, err)
+
+		st.Run("KO - unimplement error", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(passwords)-1)
+			err := strategy.Deactivate(context.Background(), accounts[i].Username, time.Now().UnixMilli())
+			require.ErrorContains(sst, err, "PASSPORT.ASK.DEACTIVATE.UNIMPLEMENT")
+		})
+	})
 }
