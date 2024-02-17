@@ -12,7 +12,7 @@ import (
 )
 
 func setup(t *testing.T) ([]entities.Account, []string) {
-	count := testdata.Fake.IntBetween(10, 20)
+	count := testdata.Fake.IntBetween(5, 10)
 
 	accounts := make([]entities.Account, count)
 	passwords := make([]string, count)

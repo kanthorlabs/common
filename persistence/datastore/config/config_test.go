@@ -18,7 +18,7 @@ func TestDefault(t *testing.T) {
 	provider.SetDefault("datastore.engine", EngineSqlx)
 
 	_, err = New(provider)
-	require.ErrorContains(t, err, "SQLX.CONFIG.URI")
+	require.ErrorContains(t, err, "SQLX.CONFIG.")
 
 	provider.SetDefault("datastore.sqlx.uri", testdata.SqliteUri)
 

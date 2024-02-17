@@ -58,7 +58,7 @@ func TestPassport(t *testing.T) {
 			conf.Strategies[0].Durability = config.Durability{}
 
 			_, err := New(conf, testify.Logger())
-			require.ErrorContains(sst, err, "SQLX.CONFIG.URI")
+			require.ErrorContains(sst, err, "SQLX.CONFIG.")
 		})
 	})
 

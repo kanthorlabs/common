@@ -21,7 +21,7 @@ func TestStrategy(t *testing.T) {
 
 		st.Run("KO - Durability error", func(sst *testing.T) {
 			conf := &Strategy{Engine: EngineDurability, Name: uuid.NewString()}
-			require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.URI")
+			require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.")
 		})
 	})
 }

@@ -7,18 +7,18 @@ import (
 	"github.com/kanthorlabs/common/validator"
 )
 
+var EngineRBAC = "rbac"
+
 type Config struct {
-	Policy    Policy    `json:"policy" yaml:"policy" mapstructure:"policy"`
-	Privilege Privilege `json:"storage" yaml:"storage" mapstructure:"storage"`
+	Engine    string    `json:"engine" yaml:"engine" mapstructure:"engine"`
+	Privilege Privilege `json:"privilege" yaml:"privilege" mapstructure:"privilege"`
 }
 
 func (conf *Config) Validate() error {
-	err := validator.Validate()
+	err := validator.Validate(
+		validator.StringOneOf("GATEKEEPER.CONFIG.ENGINE", conf.Engine, []string{EngineRBAC}),
+	)
 	if err != nil {
-		return err
-	}
-
-	if err := conf.Policy.Validate(); err != nil {
 		return err
 	}
 
@@ -27,18 +27,6 @@ func (conf *Config) Validate() error {
 	}
 
 	return nil
-}
-
-type Policy struct {
-	JudgeUri      string `json:"judge_uri" yaml:"judge_uri" mapstructure:"judge_uri"`
-	PermissionUri string `json:"permission_url" yaml:"permission_url" mapstructure:"permission_url"`
-}
-
-func (conf *Policy) Validate() error {
-	return validator.Validate(
-		validator.StringUri("GATEKEEPER.CONFIG.POLICY.JUDGE_URI", conf.JudgeUri),
-		validator.StringUri("GATEKEEPER.CONFIG.POLICY.PERMISSION_URI", conf.PermissionUri),
-	)
 }
 
 type Privilege struct {

@@ -11,6 +11,7 @@ import (
 type Gatekeeper interface {
 	patterns.Connectable
 	Grant(ctx context.Context, evaluation *entities.Evaluation) error
+	Revoke(ctx context.Context, evaluation *entities.Evaluation) error
 	Enforce(ctx context.Context, evaluation *entities.Evaluation, permission *entities.Permission) error
 	Users(ctx context.Context, tenant string) ([]entities.User, error)
 	Tenants(ctx context.Context, username string) ([]entities.Tenant, error)
