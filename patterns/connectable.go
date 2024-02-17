@@ -6,9 +6,10 @@ import "context"
 // one of important implementation is healthcheck
 // we don't want to start an application that cannot connect to other services like database, cache, ...
 type Connectable interface {
+	Connect(ctx context.Context) error
+
 	Readiness() error
 	Liveness() error
 
-	Connect(ctx context.Context) error
 	Disconnect(ctx context.Context) error
 }

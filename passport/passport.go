@@ -66,6 +66,17 @@ type passport struct {
 	strategies map[string]strategies.Strategy
 }
 
+func (instance *passport) Connect(ctx context.Context) error {
+	p := pool.New().WithErrors()
+	for i := range instance.strategies {
+		strategy := instance.strategies[i]
+		p.Go(func() error {
+			return strategy.Connect(ctx)
+		})
+	}
+	return p.Wait()
+}
+
 func (instance *passport) Readiness() error {
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {
@@ -83,17 +94,6 @@ func (instance *passport) Liveness() error {
 		strategy := instance.strategies[i]
 		p.Go(func() error {
 			return strategy.Liveness()
-		})
-	}
-	return p.Wait()
-}
-
-func (instance *passport) Connect(ctx context.Context) error {
-	p := pool.New().WithErrors()
-	for i := range instance.strategies {
-		strategy := instance.strategies[i]
-		p.Go(func() error {
-			return strategy.Connect(ctx)
 		})
 	}
 	return p.Wait()

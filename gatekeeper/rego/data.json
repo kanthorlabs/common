@@ -1,0 +1,41 @@
+{
+  "administrator": {
+    "privileges": [
+      {
+        "id": "f1265844-9e90-4baa-8f8e-8e9cc9ebe677",
+        "tenant": "*",
+        "username": "administrator",
+        "role": "administrator",
+        "metadata": {},
+        "created_at": 0,
+        "updated_at": 0
+      }
+    ]
+  },
+  "readonly": {
+    "privileges": [
+      {
+        "id": "c34a80ae-7f64-4011-824e-595195539585",
+        "tenant": "*",
+        "username": "readonly",
+        "role": "readonly",
+        "metadata": {},
+        "created_at": 0,
+        "updated_at": 0
+      }
+    ]
+  },
+  "own": {
+    "privileges": [
+      {
+        "id": "5f8a5fc8-b254-4897-8f45-67e030ad2cbe",
+        "tenant": "*",
+        "username": "own",
+        "role": "own",
+        "metadata": {},
+        "created_at": 0,
+        "updated_at": 0
+      }
+    ]
+  }
+}
