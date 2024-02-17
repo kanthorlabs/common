@@ -1,63 +1,111 @@
 {
-  "administrator": {
-    "privileges": [
-      {
-        "id": "f1265844-9e90-4baa-8f8e-8e9cc9ebe677",
-        "tenant": "*",
-        "username": "administrator",
-        "role": "administrator",
-        "metadata": {},
-        "created_at": 0,
-        "updated_at": 0
-      }
-    ]
+  "data": {
+    "permissions": {
+      "administrator": [
+        {
+          "action": "*",
+          "object": "*"
+        }
+      ],
+      "readonly": [
+        {
+          "action": "GET",
+          "object": "*"
+        },
+        {
+          "action": "HEAD",
+          "object": "*"
+        }
+      ],
+      "own": [
+        {
+          "action": "*",
+          "object": "/api/account/me"
+        },
+        {
+          "action": "*",
+          "object": "/api/account/password"
+        }
+      ],
+      "application_read": [
+        {
+          "action": "GET",
+          "object": "/api/application"
+        },
+        {
+          "action": "GET",
+          "object": "/api/application/:id"
+        }
+      ],
+      "application_delete": [
+        {
+          "action": "DELETE",
+          "object": "/api/application/:id"
+        }
+      ]
+    }
   },
-  "readonly": {
-    "privileges": [
-      {
-        "id": "c34a80ae-7f64-4011-824e-595195539585",
-        "tenant": "*",
-        "username": "readonly",
-        "role": "readonly",
-        "metadata": {},
-        "created_at": 0,
-        "updated_at": 0
-      }
-    ]
-  },
-  "own": {
-    "privileges": [
-      {
-        "id": "5f8a5fc8-b254-4897-8f45-67e030ad2cbe",
-        "tenant": "*",
-        "username": "own",
-        "role": "own",
-        "metadata": {},
-        "created_at": 0,
-        "updated_at": 0
-      }
-    ]
-  },
-  "multiple": {
-    "privileges": [
-      {
-        "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
-        "tenant": "*",
-        "username": "multiple",
-        "role": "application_read",
-        "metadata": {},
-        "created_at": 0,
-        "updated_at": 0
-      },
-      {
-        "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
-        "tenant": "*",
-        "username": "multiple",
-        "role": "application_delete",
-        "metadata": {},
-        "created_at": 0,
-        "updated_at": 0
-      }
-    ]
+  "input": {
+    "administrator": {
+      "privileges": [
+        {
+          "id": "f1265844-9e90-4baa-8f8e-8e9cc9ebe677",
+          "tenant": "*",
+          "username": "administrator",
+          "role": "administrator",
+          "metadata": {},
+          "created_at": 0,
+          "updated_at": 0
+        }
+      ]
+    },
+    "readonly": {
+      "privileges": [
+        {
+          "id": "c34a80ae-7f64-4011-824e-595195539585",
+          "tenant": "*",
+          "username": "readonly",
+          "role": "readonly",
+          "metadata": {},
+          "created_at": 0,
+          "updated_at": 0
+        }
+      ]
+    },
+    "own": {
+      "privileges": [
+        {
+          "id": "5f8a5fc8-b254-4897-8f45-67e030ad2cbe",
+          "tenant": "*",
+          "username": "own",
+          "role": "own",
+          "metadata": {},
+          "created_at": 0,
+          "updated_at": 0
+        }
+      ]
+    },
+    "multiple": {
+      "privileges": [
+        {
+          "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
+          "tenant": "*",
+          "username": "multiple",
+          "role": "application_read",
+          "metadata": {},
+          "created_at": 0,
+          "updated_at": 0
+        },
+        {
+          "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
+          "tenant": "*",
+          "username": "multiple",
+          "role": "application_delete",
+          "metadata": {},
+          "created_at": 0,
+          "updated_at": 0
+        }
+      ]
+    }
   }
 }

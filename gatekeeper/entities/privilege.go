@@ -25,9 +25,9 @@ func (privilege *Privilege) TableName() string {
 
 func (privilege *Privilege) Validate() error {
 	return validator.Validate(
-		validator.StringRequired("OPM.PREVILEGE.ID", privilege.Id),
-		validator.StringRequired("OPM.PREVILEGE.TENANT", privilege.Tenant),
-		validator.StringRequired("OPM.PREVILEGE.USERNAME", privilege.Username),
-		validator.StringRequired("OPM.PREVILEGE.ROLE", privilege.Role),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.ID", privilege.Id),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.TENANT", privilege.Tenant),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.USERNAME", privilege.Username),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.ROLE", privilege.Role),
 	)
 }

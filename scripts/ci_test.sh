@@ -14,6 +14,7 @@ then
   echo "--> coverage"
   go test --count=1 -cover -coverprofile cover.out  \
     ./configuration/... \
+    ./gatekeeper/... \
     ./healthcheck/background/... \
     ./idx/... \
     ./project/... \

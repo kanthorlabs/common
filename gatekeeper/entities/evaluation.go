@@ -10,8 +10,8 @@ type Evaluation struct {
 
 func (evaluation *Evaluation) Validate() error {
 	return validator.Validate(
-		validator.StringRequired("OPM.PREVILEGE.TENANT", evaluation.Tenant),
-		validator.StringRequired("OPM.PREVILEGE.USERNAME", evaluation.Username),
-		validator.StringRequired("OPM.PREVILEGE.ROLE", evaluation.Role),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.TENANT", evaluation.Tenant),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.USERNAME", evaluation.Username),
+		validator.StringRequired("GATEKEEPER.PREVILEGE.ROLE", evaluation.Role),
 	)
 }

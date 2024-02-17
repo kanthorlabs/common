@@ -36,8 +36,8 @@ type Policy struct {
 
 func (conf *Policy) Validate() error {
 	return validator.Validate(
-		validator.StringUri("OPM.CONFIG.POLICY.JUDGE_URI", conf.JudgeUri),
-		validator.StringUri("OPM.CONFIG.POLICY.PERMISSION_URI", conf.PermissionUri),
+		validator.StringUri("GATEKEEPER.CONFIG.POLICY.JUDGE_URI", conf.JudgeUri),
+		validator.StringUri("GATEKEEPER.CONFIG.POLICY.PERMISSION_URI", conf.PermissionUri),
 	)
 }
 

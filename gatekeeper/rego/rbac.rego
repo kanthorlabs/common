@@ -9,6 +9,7 @@ default allow := false
 allow if {
 	some privilege in input.privileges
 
+	# make sure the role is exist
 	data.permissions[privilege.role]
 
 	some permission in data.permissions[privilege.role]
