@@ -60,15 +60,15 @@ func (instance *opa) Disconnect(ctx context.Context) error {
 func (instance *opa) Grant(ctx context.Context, evaluation *entities.Evaluation) error {
 	return nil
 }
+
 func (instance *opa) Enforce(ctx context.Context, evaluation *entities.Evaluation, permission *entities.Permission) error {
 	return nil
 }
 
-func (instance *opa) Users(ctx context.Context, tenant string) ([]string, error) {
+func (instance *opa) Users(ctx context.Context, tenant string) ([]entities.User, error) {
 	return nil, nil
 }
 
-func (instance *opa) Tenants(ctx context.Context, username string) ([]string, error) {
+func (instance *opa) Tenants(ctx context.Context, username string) ([]entities.Tenant, error) {
 	return nil, nil
-
 }

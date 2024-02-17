@@ -37,5 +37,27 @@
         "updated_at": 0
       }
     ]
+  },
+  "multiple": {
+    "privileges": [
+      {
+        "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
+        "tenant": "*",
+        "username": "multiple",
+        "role": "application_read",
+        "metadata": {},
+        "created_at": 0,
+        "updated_at": 0
+      },
+      {
+        "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
+        "tenant": "*",
+        "username": "multiple",
+        "role": "application_delete",
+        "metadata": {},
+        "created_at": 0,
+        "updated_at": 0
+      }
+    ]
   }
 }
