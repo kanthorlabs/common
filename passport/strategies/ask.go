@@ -3,11 +3,13 @@ package strategies
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/patterns"
 )
 
 func NewAsk(conf *config.Ask, logger logging.Logger) (Strategy, error) {
@@ -31,22 +33,48 @@ type ask struct {
 	conf   *config.Ask
 	logger logging.Logger
 
+	mu       sync.Mutex
+	status   int
 	accounts map[string]*entities.Account
 }
 
 func (instance *ask) Connect(ctx context.Context) error {
+	if instance.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
+	instance.status = patterns.StatusConnected
 	return nil
 }
 
 func (instance *ask) Readiness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return nil
 }
 
 func (instance *ask) Liveness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return nil
 }
 
 func (instance *ask) Disconnect(ctx context.Context) error {
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
+	instance.status = patterns.StatusDisconnected
 	return nil
 }
 

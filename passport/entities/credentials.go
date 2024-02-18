@@ -3,10 +3,8 @@ package entities
 import "github.com/kanthorlabs/common/validator"
 
 type Credentials struct {
-	Username     string `json:"username" yaml:"username"`
-	Password     string `json:"password" yaml:"password"`
-	AccessToken  string `json:"acccess_token" yaml:"acccess_token"`
-	RefreshToken string `json:"refresh_token" yaml:"refresh_token"`
+	Username string `json:"username" yaml:"username"`
+	Password string `json:"password" yaml:"password"`
 }
 
 func ValidateCredentialsOnLogin(c *Credentials) error {

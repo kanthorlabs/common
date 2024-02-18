@@ -2,11 +2,13 @@ package strategies
 
 import (
 	"context"
+	"sync"
 
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/patterns"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx"
 	"gorm.io/gorm"
@@ -30,10 +32,19 @@ type durability struct {
 	logger logging.Logger
 	sequel persistence.Persistence
 
-	orm *gorm.DB
+	mu     sync.Mutex
+	status int
+	orm    *gorm.DB
 }
 
 func (instance *durability) Connect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
+	if instance.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
 	if err := instance.sequel.Connect(ctx); err != nil {
 		return err
 	}
@@ -43,18 +54,38 @@ func (instance *durability) Connect(ctx context.Context) error {
 		return err
 	}
 
+	instance.status = patterns.StatusConnected
 	return nil
 }
 
 func (instance *durability) Readiness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return instance.sequel.Readiness()
 }
 
 func (instance *durability) Liveness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return instance.sequel.Liveness()
 }
 
 func (instance *durability) Disconnect(ctx context.Context) error {
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
+	instance.status = patterns.StatusDisconnected
 	return instance.sequel.Disconnect(ctx)
 }
 

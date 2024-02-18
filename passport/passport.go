@@ -66,12 +66,17 @@ type Passport interface {
 type passport struct {
 	strategies map[string]strategies.Strategy
 
-	mu sync.Mutex
+	mu     sync.Mutex
+	status int
 }
 
 func (instance *passport) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
+
+	if instance.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
 
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {
@@ -80,10 +85,22 @@ func (instance *passport) Connect(ctx context.Context) error {
 			return strategy.Connect(ctx)
 		})
 	}
-	return p.Wait()
+	if err := p.Wait(); err != nil {
+		return err
+	}
+
+	instance.status = patterns.StatusConnected
+	return nil
 }
 
 func (instance *passport) Readiness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {
 		strategy := instance.strategies[i]
@@ -95,6 +112,13 @@ func (instance *passport) Readiness() error {
 }
 
 func (instance *passport) Liveness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {
 		strategy := instance.strategies[i]
@@ -108,6 +132,11 @@ func (instance *passport) Liveness() error {
 func (instance *passport) Disconnect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
+
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	instance.status = patterns.StatusDisconnected
 
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {

@@ -21,6 +21,7 @@ then
     ./passport/... \
     ./persistence/... \
     ./safe/... \
+    ./signature/... \
     ./timer/... \
     ./utils/... \
     ./validator/...
