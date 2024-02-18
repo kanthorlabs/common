@@ -8,7 +8,7 @@ import (
 
 type Privilege struct {
 	Tenant   string         `json:"tenant" yaml:"tenant" gorm:"primaryKey"`
-	Username string         `json:"username" yaml:"username" gorm:"primaryKey,index"`
+	Username string         `json:"username" yaml:"username" gorm:"primaryKey;index:idx_username"`
 	Role     string         `json:"role" yaml:"role" gorm:"primaryKey"`
 	Metadata *safe.Metadata `json:"metadata" yaml:"metadata"`
 

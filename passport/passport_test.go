@@ -78,14 +78,16 @@ func TestPassport(t *testing.T) {
 				require.Nil(sst, pp.Disconnect(context.Background()))
 			}()
 
-			pass, _ := passwords.Load(conf.Strategies[0].Ask.Accounts[0].Username)
+			acc := askacc(conf)
+
+			pass, _ := passwords.Load(acc.Username)
 			credentials := &entities.Credentials{
-				Username: conf.Strategies[0].Ask.Accounts[0].Username,
+				Username: acc.Username,
 				Password: pass.(string),
 			}
-			acc, err := pp.Login(context.Background(), conf.Strategies[0].Name, credentials)
+			account, err := pp.Login(context.Background(), askname(conf), credentials)
 			require.Nil(sst, err)
-			require.Equal(sst, credentials.Username, acc.Username)
+			require.Equal(sst, credentials.Username, account.Username)
 		})
 
 		t.Run("KO - strategy not found", func(sst *testing.T) {
@@ -108,7 +110,7 @@ func TestPassport(t *testing.T) {
 				require.Nil(sst, pp.Disconnect(context.Background()))
 			}()
 
-			err := pp.Logout(context.Background(), conf.Strategies[0].Name, nil)
+			err := pp.Logout(context.Background(), askname(conf), nil)
 			require.Nil(sst, err)
 		})
 
@@ -132,14 +134,15 @@ func TestPassport(t *testing.T) {
 				require.Nil(sst, pp.Disconnect(context.Background()))
 			}()
 
-			pass, _ := passwords.Load(conf.Strategies[0].Ask.Accounts[0].Username)
+			acc := askacc(conf)
+			pass, _ := passwords.Load(acc.Username)
 			credentials := &entities.Credentials{
-				Username: conf.Strategies[0].Ask.Accounts[0].Username,
+				Username: acc.Username,
 				Password: pass.(string),
 			}
-			acc, err := pp.Verify(context.Background(), conf.Strategies[0].Name, credentials)
+			account, err := pp.Verify(context.Background(), askname(conf), credentials)
 			require.Nil(sst, err)
-			require.Equal(sst, credentials.Username, acc.Username)
+			require.Equal(sst, credentials.Username, account.Username)
 		})
 
 		t.Run("KO - strategy not found", func(sst *testing.T) {
@@ -162,7 +165,7 @@ func TestPassport(t *testing.T) {
 				require.Nil(sst, pp.Disconnect(context.Background()))
 			}()
 
-			err := pp.Register(context.Background(), conf.Strategies[0].Name, nil)
+			err := pp.Register(context.Background(), askname(conf), nil)
 			require.ErrorContains(sst, err, "PASSPORT.ASK.REGISTER.UNIMPLEMENT")
 		})
 
@@ -181,6 +184,7 @@ func TestPassport(t *testing.T) {
 
 func instance(t *testing.T) (Passport, *config.Config) {
 	conf := &config.Config{Strategies: make([]config.Strategy, 0)}
+	conf.Strategies = append(conf.Strategies, durability())
 	conf.Strategies = append(conf.Strategies, ask())
 
 	pp, err := New(conf, testify.Logger())
@@ -204,17 +208,36 @@ func ask() config.Strategy {
 
 	return config.Strategy{
 		Engine: config.EngineAsk,
-		Name:   testdata.Fake.Beer().Name(),
+		Name:   uuid.NewString(),
 		Ask: config.Ask{
 			Accounts: []entities.Account{account},
 		},
 	}
 }
 
+func askacc(conf *config.Config) entities.Account {
+	for i := range conf.Strategies {
+		if conf.Strategies[i].Engine == config.EngineAsk {
+			j := testdata.Fake.IntBetween(0, len(conf.Strategies[i].Ask.Accounts)-1)
+			return conf.Strategies[i].Ask.Accounts[j]
+		}
+	}
+	panic("no ask strategy was configured")
+}
+
+func askname(conf *config.Config) string {
+	for i := range conf.Strategies {
+		if conf.Strategies[i].Engine == config.EngineAsk {
+			return conf.Strategies[i].Name
+		}
+	}
+	panic("no ask strategy was configured")
+}
+
 func durability() config.Strategy {
 	return config.Strategy{
 		Engine: config.EngineDurability,
-		Name:   testdata.Fake.Beer().Name(),
+		Name:   uuid.NewString(),
 		Durability: config.Durability{
 			Sqlx: sqlx.Config{
 				Uri: testdata.SqliteUri,

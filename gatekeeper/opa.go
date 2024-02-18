@@ -7,6 +7,7 @@ import (
 
 	"github.com/kanthorlabs/common/gatekeeper/config"
 	"github.com/kanthorlabs/common/gatekeeper/entities"
+	"github.com/kanthorlabs/common/gatekeeper/rego"
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx"
@@ -32,7 +33,9 @@ type opa struct {
 	logger logging.Logger
 	sequel persistence.Persistence
 
-	orm *gorm.DB
+	orm         *gorm.DB
+	definitions map[string][]entities.Permission
+	evaluate    rego.Evaluate
 }
 
 func (instance *opa) Connect(ctx context.Context) error {
@@ -44,6 +47,18 @@ func (instance *opa) Connect(ctx context.Context) error {
 	if err := instance.orm.WithContext(ctx).AutoMigrate(&entities.Privilege{}); err != nil {
 		return err
 	}
+
+	definitions, err := config.ParseDefinitionsToPermissions(instance.conf.Definitions.Uri)
+	if err != nil {
+		return err
+	}
+	instance.definitions = definitions
+
+	evaluate, err := rego.RBAC(ctx, definitions)
+	if err != nil {
+		return err
+	}
+	instance.evaluate = evaluate
 
 	return nil
 }
@@ -61,6 +76,14 @@ func (instance *opa) Disconnect(ctx context.Context) error {
 }
 
 func (instance *opa) Grant(ctx context.Context, evaluation *entities.Evaluation) error {
+	if err := entities.EvaluationValidateOnGrant(evaluation); err != nil {
+		return err
+	}
+
+	if _, exist := instance.definitions[evaluation.Role]; !exist {
+		return errors.New("GATEKEEPER.GRANT.ROLE_NOT_EXIST.ERROR")
+	}
+
 	privilege := &entities.Privilege{
 		Tenant:    evaluation.Tenant,
 		Username:  evaluation.Username,
@@ -75,17 +98,16 @@ func (instance *opa) Grant(ctx context.Context, evaluation *entities.Evaluation)
 }
 
 func (instance *opa) Revoke(ctx context.Context, evaluation *entities.Evaluation) error {
-	privilege := &entities.Privilege{
-		Tenant:   evaluation.Tenant,
-		Username: evaluation.Username,
-		Role:     evaluation.Role,
+	if err := entities.EvaluationValidateOnRevoke(evaluation); err != nil {
+		return err
 	}
+
 	tx := instance.orm.WithContext(ctx).
 		Where(
-			"tenant = ? AND username = ? AND role = ?",
-			evaluation.Tenant, evaluation.Username, evaluation.Role,
+			"tenant = ? AND username = ?",
+			evaluation.Tenant, evaluation.Username,
 		).
-		Delete(privilege)
+		Delete(&entities.Privilege{})
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -97,8 +119,30 @@ func (instance *opa) Revoke(ctx context.Context, evaluation *entities.Evaluation
 	return nil
 }
 
+// Enforce will attempt to evaluate all roles, so there's no need to use evaluation.Role for validation or querying.
 func (instance *opa) Enforce(ctx context.Context, evaluation *entities.Evaluation, permission *entities.Permission) error {
-	return nil
+	if err := entities.EvaluationValidateOnEnforce(evaluation); err != nil {
+		return err
+	}
+	if err := permission.Validate(); err != nil {
+		return err
+	}
+
+	var privileges []entities.Privilege
+	tx := instance.orm.WithContext(ctx).
+		Model(&entities.Privilege{}).
+		Where("tenant = ? AND username = ?", evaluation.Tenant, evaluation.Username).
+		Find(&privileges)
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	if len(privileges) == 0 {
+		return errors.New("GATEKEEPER.ENFORCE.PRIVILEGE_EMPTY.ERROR")
+	}
+
+	return instance.evaluate(permission, privileges)
 }
 
 func (instance *opa) Users(ctx context.Context, tenant string) ([]entities.User, error) {

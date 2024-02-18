@@ -104,7 +104,7 @@ func (instance *passport) Disconnect(ctx context.Context) error {
 	for i := range instance.strategies {
 		strategy := instance.strategies[i]
 		p.Go(func() error {
-			return strategy.Connect(ctx)
+			return strategy.Disconnect(ctx)
 		})
 	}
 	return p.Wait()

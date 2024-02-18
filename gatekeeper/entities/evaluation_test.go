@@ -3,14 +3,28 @@ package entities
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
-func TestEvaluation(t *testing.T) {
-	t.Run(".Validate", func(st *testing.T) {
-		st.Run("KO", func(sst *testing.T) {
-			evaluation := &Evaluation{}
-			require.ErrorContains(sst, evaluation.Validate(), "GATEKEEPER.EVALUATION.")
-		})
-	})
+func TestEvaluationValidateOnGrant(t *testing.T) {
+	evaluation := &Evaluation{
+		Tenant:   uuid.NewString(),
+		Username: uuid.NewString(),
+	}
+	require.ErrorContains(t, EvaluationValidateOnGrant(evaluation), "GATEKEEPER.EVALUATION.")
+}
+
+func TestEvaluationValidateOnRevoke(t *testing.T) {
+	evaluation := &Evaluation{
+		Tenant: uuid.NewString(),
+	}
+	require.ErrorContains(t, EvaluationValidateOnRevoke(evaluation), "GATEKEEPER.EVALUATION.")
+}
+
+func TestEvaluationValidateOnEnforce(t *testing.T) {
+	evaluation := &Evaluation{
+		Tenant: uuid.NewString(),
+	}
+	require.ErrorContains(t, EvaluationValidateOnEnforce(evaluation), "GATEKEEPER.EVALUATION.")
 }

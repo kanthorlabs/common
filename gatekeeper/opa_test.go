@@ -15,6 +15,7 @@ import (
 
 func TestOpa(t *testing.T) {
 	privileges, count := setup(t)
+	defs := definitions(t)
 
 	t.Run("New", func(st *testing.T) {
 		st.Run("KO - configuration error", func(sst *testing.T) {
@@ -35,21 +36,7 @@ func TestOpa(t *testing.T) {
 	})
 
 	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
-		conf := &config.Config{
-			Engine: config.EngineRBAC,
-			Privilege: config.Privilege{
-				Sqlx: sqlx.Config{
-					Uri: testdata.SqliteUri,
-					Connection: sqlx.Connection{
-						MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-						MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-						MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-						MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
-					},
-				},
-			},
-		}
-		gk, err := New(conf, testify.Logger())
+		gk, err := New(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		require.Nil(st, gk.Connect(context.Background()))
@@ -59,21 +46,7 @@ func TestOpa(t *testing.T) {
 	})
 
 	t.Run(".Grant", func(st *testing.T) {
-		conf := &config.Config{
-			Engine: config.EngineRBAC,
-			Privilege: config.Privilege{
-				Sqlx: sqlx.Config{
-					Uri: testdata.SqliteUri,
-					Connection: sqlx.Connection{
-						MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-						MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-						MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-						MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
-					},
-				},
-			},
-		}
-		gk, err := New(conf, testify.Logger())
+		gk, err := New(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		gk.Connect(context.Background())
@@ -84,20 +57,43 @@ func TestOpa(t *testing.T) {
 		require.Nil(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(privileges)-1)
 			evaluation := &entities.Evaluation{
-				Username: testdata.Fake.Internet().Email(),
 				Tenant:   uuid.NewString(),
-				Role:     testdata.Fake.Color().SafeColorName(),
+				Username: uuid.NewString(),
+				Role:     privileges[i].Role,
 			}
 
 			require.Nil(sst, gk.Grant(context.Background(), evaluation))
 		})
 
-		st.Run("KO - duplicated", func(sst *testing.T) {
+		st.Run("KO - role not exist error", func(sst *testing.T) {
+			evaluation := &entities.Evaluation{
+				Tenant:   uuid.NewString(),
+				Username: uuid.NewString(),
+				Role:     uuid.NewString(),
+			}
+
+			err := gk.Grant(context.Background(), evaluation)
+			require.ErrorContains(sst, err, "GATEKEEPER.GRANT.ROLE_NOT_EXIST")
+		})
+
+		st.Run("KO - evaluation validate error", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(privileges)-1)
 			evaluation := &entities.Evaluation{
-				Username: privileges[i].Username,
 				Tenant:   privileges[i].Tenant,
+				Username: privileges[i].Username,
+			}
+
+			// duplicated
+			require.ErrorContains(sst, gk.Grant(context.Background(), evaluation), "GATEKEEPER.EVALUATION.")
+		})
+
+		st.Run("KO - duplicated error", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(privileges)-1)
+			evaluation := &entities.Evaluation{
+				Tenant:   privileges[i].Tenant,
+				Username: privileges[i].Username,
 				Role:     privileges[i].Role,
 			}
 
@@ -106,22 +102,76 @@ func TestOpa(t *testing.T) {
 		})
 	})
 
+	t.Run(".Enforce", func(st *testing.T) {
+		gk, err := New(testconf, testify.Logger())
+		require.Nil(st, err)
+
+		gk.Connect(context.Background())
+		defer gk.Disconnect(context.Background())
+
+		orm := gk.(*opa).orm
+		tx := orm.Create(privileges)
+		require.Nil(st, tx.Error)
+
+		st.Run("OK", func(sst *testing.T) {
+			evaluation := &entities.Evaluation{
+				Tenant:   uuid.NewString(),
+				Username: uuid.NewString(),
+				Role:     "own",
+			}
+			// grant the permissions first
+			require.Nil(sst, gk.Grant(context.Background(), evaluation))
+
+			permission := &entities.Permission{
+				Action: "DELETE",
+				Object: "/",
+			}
+
+			// then enforce it and expect error because the permission is non-sense
+			require.NotNil(sst, gk.Enforce(context.Background(), evaluation, permission))
+		})
+
+		st.Run("KO - evaluation validate error", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(privileges)-1)
+			evaluation := &entities.Evaluation{
+				Tenant: privileges[i].Tenant,
+			}
+
+			// duplicated
+			require.ErrorContains(sst, gk.Grant(context.Background(), evaluation), "GATEKEEPER.EVALUATION.")
+		})
+
+		st.Run("KO - permission validate error", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(privileges)-1)
+			evaluation := &entities.Evaluation{
+				Tenant:   privileges[i].Tenant,
+				Username: privileges[i].Username,
+			}
+			permission := &entities.Permission{
+				Action: "DELETE",
+			}
+
+			err := gk.Enforce(context.Background(), evaluation, permission)
+			require.ErrorContains(sst, err, "GATEKEEPER.PERMISSION.")
+		})
+
+		st.Run("KO - no privileges error", func(sst *testing.T) {
+			evaluation := &entities.Evaluation{
+				Username: uuid.NewString(),
+				Tenant:   uuid.NewString(),
+			}
+			permission := &entities.Permission{
+				Action: "DELETE",
+				Object: "/",
+			}
+
+			err := gk.Enforce(context.Background(), evaluation, permission)
+			require.ErrorContains(sst, err, "GATEKEEPER.ENFORCE.PRIVILEGE_EMPTY")
+		})
+	})
+
 	t.Run(".Revoke", func(st *testing.T) {
-		conf := &config.Config{
-			Engine: config.EngineRBAC,
-			Privilege: config.Privilege{
-				Sqlx: sqlx.Config{
-					Uri: testdata.SqliteUri,
-					Connection: sqlx.Connection{
-						MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-						MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-						MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-						MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
-					},
-				},
-			},
-		}
-		gk, err := New(conf, testify.Logger())
+		gk, err := New(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		gk.Connect(context.Background())
@@ -134,15 +184,24 @@ func TestOpa(t *testing.T) {
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(privileges)-1)
 			evaluation := &entities.Evaluation{
-				Username: privileges[i].Username,
 				Tenant:   privileges[i].Tenant,
-				Role:     privileges[i].Role,
+				Username: privileges[i].Username,
 			}
 
 			require.Nil(sst, gk.Revoke(context.Background(), evaluation))
 		})
 
-		st.Run("OK - revoke not exist privilege", func(sst *testing.T) {
+		st.Run("KO - evaluation error", func(sst *testing.T) {
+			i := testdata.Fake.IntBetween(0, len(privileges)-1)
+			evaluation := &entities.Evaluation{
+				Username: privileges[i].Username,
+			}
+
+			err := gk.Revoke(context.Background(), evaluation)
+			require.ErrorContains(sst, err, "GATEKEEPER.EVALUATION.")
+		})
+
+		st.Run("KO - revoke not exist privilege", func(sst *testing.T) {
 			evaluation := &entities.Evaluation{
 				Username: testdata.Fake.Internet().Email(),
 				Tenant:   uuid.NewString(),
@@ -155,21 +214,7 @@ func TestOpa(t *testing.T) {
 	})
 
 	t.Run(".Users", func(st *testing.T) {
-		conf := &config.Config{
-			Engine: config.EngineRBAC,
-			Privilege: config.Privilege{
-				Sqlx: sqlx.Config{
-					Uri: testdata.SqliteUri,
-					Connection: sqlx.Connection{
-						MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-						MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-						MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-						MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
-					},
-				},
-			},
-		}
-		gk, err := New(conf, testify.Logger())
+		gk, err := New(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		gk.Connect(context.Background())
@@ -189,27 +234,13 @@ func TestOpa(t *testing.T) {
 			require.Equal(sst, count, len(users))
 
 			for i := range users {
-				require.Equal(sst, count, len(users[i].Roles))
+				require.Equal(sst, len(defs), len(users[i].Roles))
 			}
 		})
 	})
 
 	t.Run(".Tenants", func(st *testing.T) {
-		conf := &config.Config{
-			Engine: config.EngineRBAC,
-			Privilege: config.Privilege{
-				Sqlx: sqlx.Config{
-					Uri: testdata.SqliteUri,
-					Connection: sqlx.Connection{
-						MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-						MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-						MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-						MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
-					},
-				},
-			},
-		}
-		gk, err := New(conf, testify.Logger())
+		gk, err := New(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		gk.Connect(context.Background())
@@ -229,9 +260,8 @@ func TestOpa(t *testing.T) {
 			require.Equal(sst, 1, len(users))
 
 			for i := range users {
-				require.Equal(sst, count, len(users[i].Roles))
+				require.Equal(sst, len(defs), len(users[i].Roles))
 			}
 		})
 	})
-
 }

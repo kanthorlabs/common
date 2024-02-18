@@ -15,7 +15,7 @@ var data []byte
 
 type regodata struct {
 	Data struct {
-		Permissions map[string][]entities.Permission
+		Definitions map[string][]entities.Permission
 	}
 	Input map[string]struct {
 		Privileges []entities.Privilege
@@ -29,12 +29,12 @@ func TestRBAC(t *testing.T) {
 
 	t.Run("New", func(st *testing.T) {
 		st.Run("OK", func(sst *testing.T) {
-			_, err := RBAC(context.Background(), nil)
-			require.ErrorContains(sst, err, "GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY")
+			_, err := RBAC(context.Background(), rdata.Data.Definitions)
+			require.Nil(sst, err)
 		})
 
 		st.Run("KO - empty definitions", func(sst *testing.T) {
-			_, err := RBAC(context.Background(), nil)
+			_, err := RBAC(context.Background(), make(map[string][]entities.Permission))
 			require.ErrorContains(sst, err, "GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY")
 		})
 
@@ -42,13 +42,14 @@ func TestRBAC(t *testing.T) {
 			definitions := map[string][]entities.Permission{
 				"administrator": {{Action: "*"}},
 			}
-			_, err := RBAC(context.Background(), definitions)
+
+			_, err = RBAC(context.Background(), definitions)
 			require.ErrorContains(sst, err, "GATEKEEPER.PERMISSION.")
 		})
 	})
 
 	t.Run("Evaluate", func(st *testing.T) {
-		evaluate, err := RBAC(context.Background(), rdata.Data.Permissions)
+		evaluate, err := RBAC(context.Background(), rdata.Data.Definitions)
 		require.Nil(st, err)
 
 		st.Run("OK", func(sst *testing.T) {

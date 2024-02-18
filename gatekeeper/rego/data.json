@@ -1,6 +1,6 @@
 {
   "data": {
-    "permissions": {
+    "definitions": {
       "administrator": [
         {
           "action": "*",

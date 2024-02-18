@@ -13,11 +13,7 @@ import (
 var rbac string
 
 func RBAC(ctx context.Context, definitions map[string][]entities.Permission) (Evaluate, error) {
-	if len(definitions) == 0 {
-		return nil, errors.New("GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY.ERROR")
-	}
-
-	store, err := memory(definitions)
+	store, err := Memory(definitions)
 	if err != nil {
 		return nil, err
 	}

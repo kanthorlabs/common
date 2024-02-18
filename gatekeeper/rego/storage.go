@@ -1,12 +1,18 @@
 package rego
 
 import (
+	"errors"
+
 	"github.com/kanthorlabs/common/gatekeeper/entities"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
 )
 
-func memory(definitions map[string][]entities.Permission) (storage.Store, error) {
+func Memory(definitions map[string][]entities.Permission) (storage.Store, error) {
+	if len(definitions) == 0 {
+		return nil, errors.New("GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY.ERROR")
+	}
+
 	for role := range definitions {
 		for i := range definitions[role] {
 			if err := definitions[role][i].Validate(); err != nil {
