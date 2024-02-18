@@ -36,7 +36,7 @@ func TestVerify(t *testing.T) {
 	})
 
 	t.Run("KO - malformed signature", func(st *testing.T) {
-		sign := "v1="
+		sign := "v1"
 		require.ErrorContains(st, Verify(key, data, sign), "SIGNATURE.VERIFY.NOT_MATCH.")
 	})
 
