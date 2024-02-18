@@ -3,6 +3,7 @@ package gatekeeper
 import (
 	"context"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/kanthorlabs/common/gatekeeper/config"
@@ -33,12 +34,16 @@ type opa struct {
 	logger logging.Logger
 	sequel persistence.Persistence
 
+	mu          sync.Mutex
 	orm         *gorm.DB
 	definitions map[string][]entities.Permission
 	evaluate    rego.Evaluate
 }
 
 func (instance *opa) Connect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
 	if err := instance.sequel.Connect(ctx); err != nil {
 		return err
 	}
@@ -72,6 +77,9 @@ func (instance *opa) Liveness() error {
 }
 
 func (instance *opa) Disconnect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
 	return instance.sequel.Disconnect(ctx)
 }
 

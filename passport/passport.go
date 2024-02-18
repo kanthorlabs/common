@@ -2,6 +2,7 @@ package passport
 
 import (
 	"context"
+	"sync"
 
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/passport/config"
@@ -64,9 +65,14 @@ type Passport interface {
 
 type passport struct {
 	strategies map[string]strategies.Strategy
+
+	mu sync.Mutex
 }
 
 func (instance *passport) Connect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {
 		strategy := instance.strategies[i]
@@ -100,6 +106,9 @@ func (instance *passport) Liveness() error {
 }
 
 func (instance *passport) Disconnect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
 	p := pool.New().WithErrors()
 	for i := range instance.strategies {
 		strategy := instance.strategies[i]
