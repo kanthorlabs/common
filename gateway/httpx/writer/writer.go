@@ -9,9 +9,9 @@ import (
 // M is shortcu of generic data type
 type M map[string]any
 
-func Write(w http.ResponseWriter, status, data any) {
+func Write(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnauthorized)
+	w.WriteHeader(status)
 	w.Write([]byte(utils.Stringify(data)))
 }
 

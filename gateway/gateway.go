@@ -7,13 +7,14 @@ import (
 	"sync"
 
 	"github.com/kanthorlabs/common/gateway/config"
+	"github.com/kanthorlabs/common/gateway/httpx"
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 )
 
 type Gateway interface {
 	patterns.Runnable
-	UseHttpx(handler http.Handler) error
+	UseHttpx(handler httpx.Httpx) error
 }
 
 func New(conf *config.Config, logger logging.Logger) (Gateway, error) {
@@ -30,7 +31,7 @@ type gw struct {
 
 	mu     sync.Mutex
 	status int
-	http   *http.Server
+	httpx  *http.Server
 }
 
 func (gateway *gw) Start(ctx context.Context) error {
@@ -55,8 +56,8 @@ func (gateway *gw) Stop(ctx context.Context) error {
 	gateway.status = patterns.StatusStopped
 
 	var returning error
-	if gateway.http != nil {
-		if err := gateway.http.Shutdown(ctx); err != nil {
+	if gateway.httpx != nil {
+		if err := gateway.httpx.Shutdown(ctx); err != nil {
 			returning = errors.Join(returning, err)
 		}
 	}
@@ -65,7 +66,7 @@ func (gateway *gw) Stop(ctx context.Context) error {
 }
 
 func (gateway *gw) Run(ctx context.Context) error {
-	if gateway.http != nil {
+	if gateway.httpx != nil {
 		go gateway.serve()
 		return nil
 	}
@@ -74,21 +75,21 @@ func (gateway *gw) Run(ctx context.Context) error {
 }
 
 func (gateway *gw) serve() {
-	err := gateway.http.ListenAndServe()
+	err := gateway.httpx.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		gateway.logger.Error(err)
 	}
 }
 
-func (gateway *gw) UseHttpx(handler http.Handler) error {
+func (gateway *gw) UseHttpx(handler httpx.Httpx) error {
 	gateway.mu.Lock()
 	defer gateway.mu.Unlock()
 
-	if gateway.http != nil {
+	if gateway.httpx != nil {
 		return errors.New("GATEWAY.HANDLER.ALREADY_SET.ERROR")
 	}
 
-	gateway.http = &http.Server{
+	gateway.httpx = &http.Server{
 		Addr:    gateway.conf.Addr,
 		Handler: handler,
 	}

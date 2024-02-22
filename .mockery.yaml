@@ -1,11 +1,23 @@
 with-expecter: true
 packages:
   github.com/kanthorlabs/common/timer:
-    # place your package-specific config here
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"
       dir: "mocks/{{ .PackageName }}"
       mockname: "{{ .InterfaceName }}"
     interfaces:
-      # select the interfaces you want mocked
       Timer:
+  github.com/kanthorlabs/common/passport:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Passport:
+  github.com/kanthorlabs/common/gatekeeper:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Gatekeeper:

@@ -12,8 +12,8 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	err := validator.Validate(
-		validator.StringUri("GATEWAY.ADDR", conf.Addr),
-		validator.NumberGreaterThanOrEqual("GATEWAY.TIMEOUT", conf.Timeout, 1000),
+		validator.StringRequired("GATEWAY.CONFIG.ADDR", conf.Addr),
+		validator.NumberGreaterThanOrEqual("GATEWAY.CONFIG.TIMEOUT", conf.Timeout, 1000),
 	)
 	if err != nil {
 		return err
@@ -32,11 +32,11 @@ type Cors struct {
 	AllowedHeaders   []string
 	ExposedHeaders   []string
 	AllowCredentials bool
-	MaxAge           int
+	MaxAge           int64
 }
 
 func (conf *Cors) Validate() error {
 	return validator.Validate(
-		validator.NumberInRange("GATEWAY.ADDR", conf.MaxAge, 1, 86400),
+		validator.NumberInRange("GATEWAY.CONFIG.CORS.MAX_AGE", conf.MaxAge, 1000, 86400000),
 	)
 }
