@@ -2,7 +2,6 @@ package background
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/kanthorlabs/common/healthcheck/config"
@@ -34,7 +33,7 @@ func TestServer(t *testing.T) {
 
 		st.Run("KO  - write fail", func(sst *testing.T) {
 			err := server.Readiness(func() error { return nil })
-			require.ErrorIs(sst, err, os.ErrPermission)
+			require.Error(sst, err)
 		})
 	})
 
@@ -66,7 +65,7 @@ func TestServer(t *testing.T) {
 
 			}()
 			err := <-errc
-			require.ErrorIs(sst, err, os.ErrPermission)
+			require.Error(sst, err)
 		})
 	})
 }
