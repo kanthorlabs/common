@@ -13,6 +13,7 @@ then
   
   echo "--> coverage"
   go test --count=1 -cover -coverprofile cover.out  \
+    ./cipher/... \
     ./configuration/... \
     ./gatekeeper/... \
     ./healthcheck/background/... \
@@ -21,7 +22,6 @@ then
     ./passport/... \
     ./persistence/... \
     ./safe/... \
-    ./signature/... \
     ./timer/... \
     ./utils/... \
     ./validator/...
