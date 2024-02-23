@@ -35,6 +35,6 @@ func ErrNotFound(w http.ResponseWriter, data any) {
 	Write(w, http.StatusNotFound, data)
 }
 
-func Err(w http.ResponseWriter, data any) {
+func ErrUnknown(w http.ResponseWriter, data any) {
 	Write(w, http.StatusInternalServerError, data)
 }

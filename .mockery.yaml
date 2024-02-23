@@ -1,5 +1,12 @@
 with-expecter: true
 packages:
+  github.com/kanthorlabs/common/logging:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Logger:
   github.com/kanthorlabs/common/timer:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"

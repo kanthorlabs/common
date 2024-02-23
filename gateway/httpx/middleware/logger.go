@@ -17,20 +17,23 @@ func Logger(logger logging.Logger) Middleware {
 			defer func() {
 				args := []any{
 					"response_status", ww.Status(),
+					"request_method", r.Method,
 					"request_uri", r.URL.String(),
 					"request_headers", utils.Stringify(r.Header),
 				}
 
 				if ww.Status() >= http.StatusInternalServerError {
+					var body []byte
+					if r.Body != nil {
+						body, _ = io.ReadAll(r.Body)
+					}
 					// body is large in some case, don't parse it until we got server error
-					body, _ := io.ReadAll(r.Body)
-					args = append(args, "request_body", body)
+					args = append(args, "request_body", string(body))
 					logger.Errorw("GATEWAY.REQUEST.ERROR", args...)
 					return
 				}
 
 				logger.Debugw("GATEWAY.REQUEST", args...)
-
 			}()
 
 			next.ServeHTTP(ww, r)
