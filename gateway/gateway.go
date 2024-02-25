@@ -71,7 +71,7 @@ func (gateway *gw) Run(ctx context.Context) error {
 		return nil
 	}
 
-	return errors.New("GATEWAY.HANDLER.NOT_SET.ERROR")
+	return ErrHandlerNotSet
 }
 
 func (gateway *gw) serve() {
@@ -86,7 +86,7 @@ func (gateway *gw) UseHttpx(handler httpx.Httpx) error {
 	defer gateway.mu.Unlock()
 
 	if gateway.httpx != nil {
-		return errors.New("GATEWAY.HANDLER.ALREADY_SET.ERROR")
+		return ErrHandlerAlreadySet
 	}
 
 	gateway.httpx = &http.Server{

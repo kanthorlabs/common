@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testconif = &config.Config{
+var testconf = &config.Config{
 	Addr:    ":8080",
 	Timeout: 60000,
 	Cors: config.Cors{
@@ -21,7 +22,7 @@ var testconif = &config.Config{
 
 func TestNew(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		s, err := New(testconif, testify.Logger())
+		s, err := New(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		path := "/ping"
@@ -38,6 +39,26 @@ func TestNew(t *testing.T) {
 
 		require.Equal(st, http.StatusOK, res.Code)
 	})
+
+	t.Run("OK - panic recover", func(st *testing.T) {
+		s, err := New(testconf, testify.Logger())
+		require.Nil(st, err)
+
+		path := "/exception"
+
+		s.MethodFunc(http.MethodGet, path, func(w http.ResponseWriter, r *http.Request) {
+			panic(errors.New("f*ckup"))
+		})
+
+		req, err := http.NewRequest(http.MethodGet, path, nil)
+		require.Nil(st, err)
+
+		res := httptest.NewRecorder()
+		s.ServeHTTP(res, req)
+
+		require.Equal(st, http.StatusInternalServerError, res.Code)
+	})
+
 	t.Run("KO - configuration error", func(st *testing.T) {
 		_, err := New(&config.Config{}, testify.Logger())
 		require.ErrorContains(st, err, "GATEWAY.CONFIG")

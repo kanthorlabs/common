@@ -14,7 +14,6 @@ import (
 var (
 	HeaderAuthnCredentials string = "Authorization"
 	HeaderAuthnEngine      string = "X-Authorization-Engine"
-	CtxAccount             ctxkey = "gateway.account"
 )
 
 func Authn(authn passport.Passport, fallback string) Middleware {
@@ -39,7 +38,7 @@ func Authn(authn passport.Passport, fallback string) Middleware {
 				return
 			}
 
-			ctx = context.WithValue(ctx, CtxAccount, acc)
+			ctx = context.WithValue(ctx, passport.CtxAccount, acc)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

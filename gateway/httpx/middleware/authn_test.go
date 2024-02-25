@@ -15,6 +15,7 @@ import (
 	"github.com/kanthorlabs/common/mocks/passport"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -25,6 +26,10 @@ var (
 	pass        = uuid.NewString()
 	hash, _     = password.HashString(pass)
 	credentials = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
+	account     = &entities.Account{
+		Username:     user,
+		PasswordHash: hash,
+		Metadata:     &safe.Metadata{}}
 )
 
 func TestAuthn(t *testing.T) {
@@ -32,20 +37,21 @@ func TestAuthn(t *testing.T) {
 	authn := passport.NewPassport(t)
 	s.Use(Authn(authn, config.EngineAsk))
 
-	path := "/"
+	path := "/protected"
 	s.Get(path, func(w http.ResponseWriter, r *http.Request) {
 		writer.Ok(w, writer.M{})
 	})
 
 	t.Run("OK - fallback", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
 		require.Nil(st, err)
+
+		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
 
 		// only care about the engine
 		authn.EXPECT().
 			Verify(mock.Anything, config.EngineAsk, mock.Anything).
-			Return(&entities.Account{Username: user, PasswordHash: hash}, nil).
+			Return(account, nil).
 			Once()
 
 		res := httptest.NewRecorder()
@@ -56,14 +62,15 @@ func TestAuthn(t *testing.T) {
 
 	t.Run("OK - set via header", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
+		require.Nil(st, err)
+
 		req.Header.Set(HeaderAuthnEngine, config.EngineDurability)
 		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
-		require.Nil(st, err)
 
 		// only care about the engine
 		authn.EXPECT().
 			Verify(mock.Anything, config.EngineDurability, &entities.Credentials{Username: user, Password: pass}).
-			Return(&entities.Account{Username: user, PasswordHash: hash}, nil).
+			Return(account, nil).
 			Once()
 
 		res := httptest.NewRecorder()
@@ -74,9 +81,10 @@ func TestAuthn(t *testing.T) {
 
 	t.Run("KO - unknown engine", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
+		require.Nil(st, err)
+
 		req.Header.Set(HeaderAuthnEngine, testdata.Fake.Blood().Name())
 		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
-		require.Nil(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -108,8 +116,9 @@ func TestAuthn(t *testing.T) {
 
 	t.Run("KO - verify error", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
 		require.Nil(st, err)
+
+		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
 
 		expected := errors.New("PASSPORT.ACCOUNT_NOT_FOUND.ERROR")
 		authn.EXPECT().

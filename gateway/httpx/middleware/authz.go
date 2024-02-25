@@ -8,20 +8,20 @@ import (
 	"github.com/kanthorlabs/common/gatekeeper"
 	gkEnt "github.com/kanthorlabs/common/gatekeeper/entities"
 	"github.com/kanthorlabs/common/gateway/httpx/writer"
+	"github.com/kanthorlabs/common/passport"
 	"github.com/kanthorlabs/common/passport/entities"
 	ppEnt "github.com/kanthorlabs/common/passport/entities"
 )
 
 var (
 	HeaderAuthzTenant string = "X-Authorization-Tenant"
-	CtxTenantId       ctxkey = "gateway.tenant.id"
 )
 
 func Authz(authz gatekeeper.Gatekeeper) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			acc, exist := ctx.Value(CtxAccount).(*ppEnt.Account)
+			acc, exist := ctx.Value(passport.CtxAccount).(*ppEnt.Account)
 			if !exist {
 				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.ACCOUNT_EMPTY.ERROR"))
 				return
@@ -36,6 +36,7 @@ func Authz(authz gatekeeper.Gatekeeper) Middleware {
 			patterns := chi.RouteContext(ctx).RoutePatterns
 			if len(patterns) == 0 {
 				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.OBJECT_EMPTY.ERROR"))
+				return
 			}
 
 			for i := range patterns {
@@ -54,7 +55,7 @@ func Authz(authz gatekeeper.Gatekeeper) Middleware {
 				}
 			}
 
-			ctx = context.WithValue(ctx, CtxTenantId, tenant)
+			ctx = context.WithValue(ctx, gatekeeper.CtxTenantId, tenant)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -63,7 +64,7 @@ func Authz(authz gatekeeper.Gatekeeper) Middleware {
 func parseTenant(acc *entities.Account, r *http.Request) string {
 	// prioritize the embedded tenant id inside account metadata
 	if acc.Metadata != nil {
-		id, has := acc.Metadata.Get(string(CtxTenantId))
+		id, has := acc.Metadata.Get(string(gatekeeper.CtxTenantId))
 		if has {
 			return id.(string)
 		}

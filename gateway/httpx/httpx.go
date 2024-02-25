@@ -24,7 +24,6 @@ func New(conf *config.Config, logger logging.Logger) (Httpx, error) {
 	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.RequestId())
 	r.Use(middleware.Logger(logger))
 	r.Use(middleware.Recover())
 	r.Use(chimw.Timeout(time.Millisecond * time.Duration(conf.Timeout)))
