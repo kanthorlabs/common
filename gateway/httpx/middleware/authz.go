@@ -17,25 +17,25 @@ var (
 	CtxTenantId       ctxkey = "gateway.tenant.id"
 )
 
-func Authz(engine gatekeeper.Gatekeeper) Middleware {
+func Authz(authz gatekeeper.Gatekeeper) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			acc, exist := ctx.Value(CtxAccount).(*ppEnt.Account)
 			if !exist {
-				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.ACCOUNT.EMPTY.ERROR"))
+				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.ACCOUNT_EMPTY.ERROR"))
 				return
 			}
 
-			tenant := tenantId(acc, r.Header)
+			tenant := parseTenant(acc, r)
 			if tenant == "" {
-				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.TENANT.EMPTY.ERROR"))
+				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.TENANT_EMPTY.ERROR"))
 				return
 			}
 
 			patterns := chi.RouteContext(ctx).RoutePatterns
 			if len(patterns) == 0 {
-				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.OBJECT.EMPTY.ERROR"))
+				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.OBJECT_EMPTY.ERROR"))
 			}
 
 			for i := range patterns {
@@ -47,7 +47,7 @@ func Authz(engine gatekeeper.Gatekeeper) Middleware {
 					Action: r.Method,
 					Object: patterns[i],
 				}
-				err := engine.Enforce(ctx, evaluation, permission)
+				err := authz.Enforce(ctx, evaluation, permission)
 				if err != nil {
 					writer.ErrUnauthorized(w, writer.Error(err))
 					return
@@ -60,7 +60,7 @@ func Authz(engine gatekeeper.Gatekeeper) Middleware {
 	}
 }
 
-func tenantId(acc *entities.Account, headers http.Header) string {
+func parseTenant(acc *entities.Account, r *http.Request) string {
 	// prioritize the embedded tenant id inside account metadata
 	if acc.Metadata != nil {
 		id, has := acc.Metadata.Get(string(CtxTenantId))
@@ -69,5 +69,5 @@ func tenantId(acc *entities.Account, headers http.Header) string {
 		}
 	}
 
-	return headers.Get(HeaderAuthzTenant)
+	return r.Header.Get(HeaderAuthzTenant)
 }

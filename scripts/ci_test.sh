@@ -16,6 +16,7 @@ then
     ./cipher/... \
     ./configuration/... \
     ./gatekeeper/... \
+    ./gateway/... \
     ./healthcheck/background/... \
     ./idx/... \
     ./project/... \

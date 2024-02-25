@@ -30,7 +30,7 @@ func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 		if engine == config.EngineAsk {
 			strategy, err := strategies.NewAsk(
 				&conf.Strategies[i].Ask,
-				logger.With("strategy", engine, "strategy_name", name),
+				logger.With("strategy_engine", engine, "strategy_name", name),
 			)
 			if err != nil {
 				return nil, err
