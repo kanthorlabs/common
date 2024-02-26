@@ -17,6 +17,9 @@ jobs:
           --health-interval 3s
           --health-timeout 3s
           --health-retries 30
+        ports:
+          - 6379:6379
+
     steps:
       - uses: actions/checkout@v3
 
@@ -25,8 +28,6 @@ jobs:
           go-version: ">=1.21"
 
       - name: test
-        env:
-          REDIS_URI: redis://redis:6379/0
         run: |
           curl -L -o opa https://openpolicyagent.org/downloads/v0.61.0/opa_linux_amd64_static
           sudo mv opa /usr/bin/opa
