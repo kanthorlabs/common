@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -14,7 +15,10 @@ import (
 
 func TestRedis(t *testing.T) {
 	testconf := &config.Config{
-		Uri: "redis://localhost:6379/0",
+		Uri: os.Getenv("REDIS_URI"),
+	}
+	if testconf.Uri == "" {
+		testconf.Uri = "redis://localhost:6379/0"
 	}
 
 	t.Run("New", func(st *testing.T) {
