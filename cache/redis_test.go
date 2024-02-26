@@ -21,7 +21,7 @@ func TestRedis(t *testing.T) {
 	if testconf.Uri == "" {
 		testconf.Uri = "redis://localhost:6379/0"
 	}
-	fmt.Sprintf("---------------------------> %s", testconf.Uri)
+	fmt.Printf("---------------------------> %s", testconf.Uri)
 
 	t.Run("New", func(st *testing.T) {
 		st.Run("KO - configuration error", func(sst *testing.T) {
