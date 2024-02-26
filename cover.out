@@ -587,6 +587,12 @@ github.com/kanthorlabs/common/persistence/datastore/query.go:51.24,61.3 1 1
 github.com/kanthorlabs/common/persistence/datastore/query.go:63.2,63.24 1 1
 github.com/kanthorlabs/common/persistence/datastore/query.go:63.24,65.3 1 1
 github.com/kanthorlabs/common/persistence/datastore/query.go:67.2,67.11 1 1
+github.com/kanthorlabs/common/persistence/sqlx/config/config.go:21.38,26.16 2 1
+github.com/kanthorlabs/common/persistence/sqlx/config/config.go:26.16,28.3 1 1
+github.com/kanthorlabs/common/persistence/sqlx/config/config.go:30.2,30.51 1 1
+github.com/kanthorlabs/common/persistence/sqlx/config/config.go:30.51,32.3 1 1
+github.com/kanthorlabs/common/persistence/sqlx/config/config.go:34.2,34.12 1 1
+github.com/kanthorlabs/common/persistence/sqlx/config/connection.go:12.42,19.2 1 1
 github.com/kanthorlabs/common/persistence/sqlx/gorm.go:14.76,26.45 4 1
 github.com/kanthorlabs/common/persistence/sqlx/gorm.go:26.45,28.3 1 1
 github.com/kanthorlabs/common/persistence/sqlx/gorm.go:28.8,30.3 1 1
@@ -635,12 +641,6 @@ github.com/kanthorlabs/common/persistence/sqlx/sqlx.go:102.38,104.4 1 0
 github.com/kanthorlabs/common/persistence/sqlx/sqlx.go:105.8,107.3 1 0
 github.com/kanthorlabs/common/persistence/sqlx/sqlx.go:108.2,110.18 2 1
 github.com/kanthorlabs/common/persistence/sqlx/sqlx.go:113.35,115.2 1 1
-github.com/kanthorlabs/common/persistence/sqlx/config/config.go:21.38,26.16 2 1
-github.com/kanthorlabs/common/persistence/sqlx/config/config.go:26.16,28.3 1 1
-github.com/kanthorlabs/common/persistence/sqlx/config/config.go:30.2,30.51 1 1
-github.com/kanthorlabs/common/persistence/sqlx/config/config.go:30.51,32.3 1 1
-github.com/kanthorlabs/common/persistence/sqlx/config/config.go:34.2,34.12 1 1
-github.com/kanthorlabs/common/persistence/sqlx/config/connection.go:12.42,19.2 1 1
 github.com/kanthorlabs/common/utils/number.go:3.88,4.11 1 1
 github.com/kanthorlabs/common/utils/number.go:4.11,6.3 1 1
 github.com/kanthorlabs/common/utils/number.go:7.2,7.10 1 1
