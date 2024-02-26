@@ -42,7 +42,7 @@ func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 		if engine == config.EngineDurability {
 			strategy, err := strategies.NewDurability(
 				&conf.Strategies[i].Durability,
-				logger.With("strategy", engine, "strategy_name", name),
+				logger.With("strategy_engine", engine, "strategy_name", name),
 			)
 			if err != nil {
 				return nil, err

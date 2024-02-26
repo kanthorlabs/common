@@ -21,6 +21,8 @@ func New(conf *config.Config, logger logging.Logger) (Gatekeeper, error) {
 		return nil, err
 	}
 
+	logger = logger.With("gatekeeper", "opa")
+
 	sequel, err := sqlx.New(&conf.Privilege.Sqlx, logger)
 	if err != nil {
 		return nil, err

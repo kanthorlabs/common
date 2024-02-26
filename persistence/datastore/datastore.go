@@ -18,7 +18,7 @@ func New(provider configuration.Provider) (Datastore, error) {
 		return nil, err
 	}
 
-	return sqlx.New(conf.Sqlx, logger)
+	return sqlx.New(conf.Sqlx, logger.With("datastore", "sqlx"))
 }
 
 type Datastore interface {

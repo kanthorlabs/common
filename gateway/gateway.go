@@ -22,6 +22,7 @@ func New(conf *config.Config, logger logging.Logger) (Gateway, error) {
 		return nil, err
 	}
 
+	logger = logger.With("gateway", "default")
 	return &gw{conf: conf, logger: logger}, nil
 }
 

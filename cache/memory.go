@@ -9,24 +9,22 @@ import (
 
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/kanthorlabs/common/cache/config"
-	"github.com/kanthorlabs/common/clock"
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 )
 
-func NewMemory(conf *config.Config, logger logging.Logger, watch clock.Clock) (Cache, error) {
+func NewMemory(conf *config.Config, logger logging.Logger) (Cache, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
-	cache := ttlcache.New[string, []byte]()
-	return &memory{cache: cache, conf: conf, logger: logger, watch: watch}, nil
+	logger = logger.With("cache", "memory")
+	return &memory{conf: conf, logger: logger}, nil
 }
 
 type memory struct {
 	conf   *config.Config
 	logger logging.Logger
-	watch  clock.Clock
 	cache  *ttlcache.Cache[string, []byte]
 
 	mu     sync.Mutex
@@ -41,6 +39,7 @@ func (instance *memory) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
+	instance.cache = ttlcache.New[string, []byte]()
 	go instance.cache.Start()
 
 	instance.status = patterns.StatusConnected
@@ -84,7 +83,7 @@ func (instance *memory) Disconnect(ctx context.Context) error {
 }
 
 func (instance *memory) Get(ctx context.Context, key string) ([]byte, error) {
-	item := instance.cache.Get(key)
+	item := instance.cache.Get(Key(key))
 	if item == nil {
 		return nil, ErrEntryNotFound
 	}
@@ -100,16 +99,16 @@ func (instance *memory) Set(ctx context.Context, key string, entry any, ttl time
 			return err
 		}
 	}
-	instance.cache.Set(key, value, ttl)
+	instance.cache.Set(Key(key), value, ttl)
 	return nil
 }
 
 func (instance *memory) Exist(ctx context.Context, key string) bool {
-	return instance.cache.Has(key)
+	return instance.cache.Has(Key(key))
 }
 
 func (instance *memory) Del(ctx context.Context, key string) error {
-	instance.cache.Delete(key)
+	instance.cache.Delete(Key(key))
 	return nil
 }
 
@@ -119,11 +118,11 @@ func (instance *memory) Expire(ctx context.Context, key string, at time.Time) er
 		return err
 	}
 
-	ttl := at.Sub(instance.watch.Now())
+	ttl := at.Sub(time.Now())
 	if ttl < 0 {
 		return errors.New("CACHE.EXPIRE.EXPIRED_AT_TIME_PASS.ERROR")
 	}
 
-	instance.cache.Set(key, value, ttl)
+	instance.cache.Set(Key(key), value, ttl)
 	return nil
 }

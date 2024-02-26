@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/cache/config"
-	"github.com/kanthorlabs/common/mocks/clock"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -17,13 +16,13 @@ func TestMemory(t *testing.T) {
 	t.Run("New", func(st *testing.T) {
 		st.Run("KO - configuration error", func(sst *testing.T) {
 			conf := &config.Config{}
-			_, err := NewMemory(conf, testify.Logger(), clock.NewClock(sst))
+			_, err := NewMemory(conf, testify.Logger())
 			require.ErrorContains(st, err, "CACHE.CONFIG.")
 		})
 	})
 
 	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger(), clock.NewClock(st))
+		c, err := NewMemory(testconf, testify.Logger())
 		require.Nil(st, err)
 
 		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
@@ -45,7 +44,7 @@ func TestMemory(t *testing.T) {
 	})
 
 	t.Run(".Get", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger(), clock.NewClock(st))
+		c, err := NewMemory(testconf, testify.Logger())
 		require.Nil(st, err)
 		c.Connect(context.Background())
 		defer c.Disconnect(context.Background())
@@ -67,7 +66,7 @@ func TestMemory(t *testing.T) {
 	})
 
 	t.Run(".Set", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger(), clock.NewClock(st))
+		c, err := NewMemory(testconf, testify.Logger())
 		require.Nil(st, err)
 		c.Connect(context.Background())
 		defer c.Disconnect(context.Background())
@@ -93,7 +92,7 @@ func TestMemory(t *testing.T) {
 	})
 
 	t.Run(".Exist", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger(), clock.NewClock(st))
+		c, err := NewMemory(testconf, testify.Logger())
 		require.Nil(st, err)
 		c.Connect(context.Background())
 		defer c.Disconnect(context.Background())
@@ -106,7 +105,7 @@ func TestMemory(t *testing.T) {
 	})
 
 	t.Run(".Del", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger(), clock.NewClock(st))
+		c, err := NewMemory(testconf, testify.Logger())
 		require.Nil(st, err)
 		c.Connect(context.Background())
 		defer c.Disconnect(context.Background())
@@ -119,8 +118,7 @@ func TestMemory(t *testing.T) {
 	})
 
 	t.Run(".Expire", func(st *testing.T) {
-		watch := clock.NewClock(st)
-		c, err := NewMemory(testconf, testify.Logger(), watch)
+		c, err := NewMemory(testconf, testify.Logger())
 		require.Nil(st, err)
 		c.Connect(context.Background())
 		defer c.Disconnect(context.Background())
@@ -130,9 +128,7 @@ func TestMemory(t *testing.T) {
 		require.Nil(st, err)
 
 		st.Run("OK", func(sst *testing.T) {
-			watch.EXPECT().Now().Return(time.Now().Add(-time.Hour)).Once()
-
-			err = c.Expire(context.Background(), key, time.Now())
+			err = c.Expire(context.Background(), key, time.Now().Add(time.Hour))
 			require.Nil(st, err)
 		})
 
@@ -142,11 +138,8 @@ func TestMemory(t *testing.T) {
 		})
 
 		st.Run("KO - pass time", func(sst *testing.T) {
-			watch.EXPECT().Now().Return(time.Now().Add(time.Hour)).Once()
-
-			err = c.Expire(context.Background(), key, time.Now())
+			err = c.Expire(context.Background(), key, time.Now().Add(-time.Hour))
 			require.ErrorContains(st, err, "CACHE.EXPIRE.EXPIRED_AT_TIME_PASS.ERROR")
 		})
 	})
-
 }

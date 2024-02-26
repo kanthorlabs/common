@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+func Key(k string) string {
+	return "cache/" + k
+}
+
 func GetOrSet[T any](cache Cache, ctx context.Context, key string, ttl time.Duration, fn func() (*T, error)) (*T, error) {
 	entry, err := cache.Get(ctx, key)
 	if err == nil {

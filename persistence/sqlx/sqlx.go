@@ -21,7 +21,6 @@ func New(conf *config.Config, logger logging.Logger) (persistence.Persistence, e
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
-	logger = logger.With("storage", "sqlx")
 	return &sql{conf: conf, logger: logger}, nil
 }
 

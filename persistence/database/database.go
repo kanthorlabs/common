@@ -18,7 +18,7 @@ func New(provider configuration.Provider) (Database, error) {
 		return nil, err
 	}
 
-	return sqlx.New(conf.Sqlx, logger)
+	return sqlx.New(conf.Sqlx, logger.With("database", "sqlx"))
 }
 
 type Database interface {
