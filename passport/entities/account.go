@@ -1,9 +1,9 @@
 package entities
 
 import (
+	"github.com/kanthorlabs/common/clock"
 	"github.com/kanthorlabs/common/project"
 	"github.com/kanthorlabs/common/safe"
-	"github.com/kanthorlabs/common/timer"
 	"github.com/kanthorlabs/common/validator"
 )
 
@@ -45,9 +45,9 @@ func (acc *Account) Censor() *Account {
 	return censored
 }
 
-func (acc *Account) Active(clock timer.Timer) bool {
+func (acc *Account) Active(watch clock.Clock) bool {
 	if acc.DeactivatedAt == 0 {
 		return true
 	}
-	return acc.DeactivatedAt > clock.Now().UnixMilli()
+	return acc.DeactivatedAt > watch.Now().UnixMilli()
 }

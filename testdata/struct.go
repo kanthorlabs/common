@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/kanthorlabs/common/timer"
+	"github.com/kanthorlabs/common/clock"
 	"github.com/segmentio/ksuid"
 )
 
@@ -19,8 +19,8 @@ type User struct {
 	Updated  int64
 }
 
-func NewUser(timer timer.Timer) *User {
-	now := timer.Now()
+func NewUser(watch clock.Clock) *User {
+	now := watch.Now()
 	// error could not be happen because we provide a valid payload
 	id, _ := ksuid.FromParts(now, []byte("0000000000000000"))
 

@@ -1,5 +1,19 @@
 with-expecter: true
 packages:
+  github.com/kanthorlabs/common/cache:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Cache:
+  github.com/kanthorlabs/common/clock:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Clock:
   github.com/kanthorlabs/common/logging:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"
@@ -7,13 +21,6 @@ packages:
       mockname: "{{ .InterfaceName }}"
     interfaces:
       Logger:
-  github.com/kanthorlabs/common/timer:
-    config:
-      filename: "{{ .InterfaceName | snakecase }}.go"
-      dir: "mocks/{{ .PackageName }}"
-      mockname: "{{ .InterfaceName }}"
-    interfaces:
-      Timer:
   github.com/kanthorlabs/common/passport:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"

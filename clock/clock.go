@@ -1,25 +1,25 @@
-package timer
+package clock
 
 import "time"
 
-func New() Timer {
-	return &timer{}
+func New() Clock {
+	return &clock{}
 }
 
-type Timer interface {
+type Clock interface {
 	Now() time.Time
 	UnixMilli(msec int64) time.Time
 }
 
-type timer struct {
+type clock struct {
 }
 
 // Now return current UTC time
-func (t *timer) Now() time.Time {
+func (t *clock) Now() time.Time {
 	return time.Now().UTC()
 }
 
 // Now return current UTC time from milliseconds
-func (t *timer) UnixMilli(msec int64) time.Time {
+func (t *clock) UnixMilli(msec int64) time.Time {
 	return time.UnixMilli(msec).UTC()
 }

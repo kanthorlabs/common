@@ -84,6 +84,9 @@ github.com/jackc/pgx/v5/stdlib
 # github.com/jaswdr/faker v1.19.1
 ## explicit; go 1.11
 github.com/jaswdr/faker
+# github.com/jellydator/ttlcache/v3 v3.2.0
+## explicit; go 1.18
+github.com/jellydator/ttlcache/v3
 # github.com/jinzhu/inflection v1.0.0
 ## explicit
 github.com/jinzhu/inflection
@@ -347,6 +350,9 @@ golang.org/x/exp/slog/internal
 golang.org/x/exp/slog/internal/buffer
 # golang.org/x/net v0.21.0
 ## explicit; go 1.18
+# golang.org/x/sync v0.5.0
+## explicit; go 1.18
+golang.org/x/sync/singleflight
 # golang.org/x/sys v0.17.0
 ## explicit; go 1.18
 golang.org/x/sys/unix

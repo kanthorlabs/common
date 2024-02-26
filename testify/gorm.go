@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kanthorlabs/common/mocks/timer"
+	"github.com/kanthorlabs/common/mocks/clock"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -40,14 +40,14 @@ func GormEnd(t *testing.T, db *gorm.DB) {
 
 func GormInsert(t *testing.T, db *gorm.DB, count int) (map[string]*testdata.User, []string) {
 	now := time.Now()
-	clock := timer.NewTimer(t)
+	watch := clock.NewClock(t)
 
 	var ids []string
 	rows := make(map[string]*testdata.User)
 	for i := 0; i < count; i++ {
-		clock.EXPECT().Now().Return(now.Add(-time.Minute * time.Duration(i))).Once()
+		watch.EXPECT().Now().Return(now.Add(-time.Minute * time.Duration(i))).Once()
 
-		row := testdata.NewUser(clock)
+		row := testdata.NewUser(watch)
 		tx := db.Create(row)
 		require.Nil(t, tx.Error)
 

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kanthorlabs/common/mocks/timer"
+	"github.com/kanthorlabs/common/mocks/clock"
 	"github.com/kanthorlabs/common/project"
 	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
@@ -54,7 +54,7 @@ func TestAccount(t *testing.T) {
 			UpdatedAt:    time.Now().UnixMilli(),
 		}
 
-		activated := timer.NewTimer(st)
+		activated := clock.NewClock(st)
 		// not set the deactivated time
 		require.True(st, acc.Active(activated))
 

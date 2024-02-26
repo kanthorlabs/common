@@ -1,4 +1,4 @@
-package timer
+package clock
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTimer(t *testing.T) {
+func TestClock(t *testing.T) {
 	clock := New()
 
 	now := clock.Now()
