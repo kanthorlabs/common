@@ -20,7 +20,7 @@ var testconf = &config.Config{
 	},
 }
 
-func TestNew(t *testing.T) {
+func TestHttpx(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		s, err := New(testconf, testify.Logger())
 		require.Nil(st, err)

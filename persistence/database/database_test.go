@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNew(t *testing.T) {
+func TestDatabase(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		provider, err := configuration.New(testdata.Fake.Color().SafeColorName())
 		require.Nil(st, err)

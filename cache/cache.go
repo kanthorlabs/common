@@ -2,10 +2,30 @@ package cache
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
+	"github.com/kanthorlabs/common/cache/config"
+	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 )
+
+func New(conf *config.Config, logger logging.Logger) (Cache, error) {
+	if err := conf.Validate(); err != nil {
+		return nil, err
+	}
+
+	if strings.HasPrefix(conf.Uri, "memory") {
+		return NewMemory(conf, logger)
+	}
+
+	if strings.HasPrefix(conf.Uri, "redis") {
+		return NewRedis(conf, logger)
+	}
+
+	return nil, errors.New("CACHE.SCHEME_UNKNOWN.ERROR")
+}
 
 type Cache interface {
 	patterns.Connectable
