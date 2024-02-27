@@ -1,31 +1,29 @@
-package cache
+package idempotency
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"sync"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/kanthorlabs/common/cache/config"
+	"github.com/kanthorlabs/common/idempotency/config"
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 )
 
-func NewMemory(conf *config.Config, logger logging.Logger) (Cache, error) {
+func NewMemory(conf *config.Config, logger logging.Logger) (Idempotency, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
-	logger = logger.With("cache", "memory")
+	logger = logger.With("idempotency", "memory")
 	return &memory{conf: conf, logger: logger}, nil
 }
 
 type memory struct {
 	conf   *config.Config
 	logger logging.Logger
-	client *ttlcache.Cache[string, []byte]
+	client *ttlcache.Cache[string, int]
 
 	mu     sync.Mutex
 	status int
@@ -39,7 +37,7 @@ func (instance *memory) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	instance.client = ttlcache.New[string, []byte]()
+	instance.client = ttlcache.New[string, int]()
 	go instance.client.Start()
 
 	instance.status = patterns.StatusConnected
@@ -82,47 +80,12 @@ func (instance *memory) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *memory) Get(ctx context.Context, key string) ([]byte, error) {
-	item := instance.client.Get(Key(key))
-	if item == nil {
-		return nil, ErrEntryNotFound
-	}
-	return item.Value(), nil
-}
-
-func (instance *memory) Set(ctx context.Context, key string, entry any, ttl time.Duration) error {
-	var value []byte
-	var err error
-	if entry != nil {
-		value, err = json.Marshal(entry)
-		if err != nil {
-			return err
-		}
-	}
-	instance.client.Set(Key(key), value, ttl)
-	return nil
-}
-
-func (instance *memory) Exist(ctx context.Context, key string) bool {
-	return instance.client.Has(Key(key))
-}
-
-func (instance *memory) Del(ctx context.Context, key string) error {
-	instance.client.Delete(Key(key))
-	return nil
-}
-
-func (instance *memory) Expire(ctx context.Context, key string, at time.Time) error {
-	value, err := instance.Get(ctx, key)
-	if err != nil {
-		return err
+func (instance *memory) Validate(ctx context.Context, key string) error {
+	if instance.client.Has(Key(key)) {
+		return ErrConflict
 	}
 
-	ttl := at.Sub(time.Now())
-	if ttl < 0 {
-		return errors.New("CACHE.EXPIRE.EXPIRED_AT_TIME_PASS.ERROR")
-	}
-
-	instance.client.Set(Key(key), value, ttl)
+	ttl := time.Millisecond * time.Duration(instance.conf.TimeToLive)
+	instance.client.Set(Key(key), int(1), ttl)
 	return nil
 }

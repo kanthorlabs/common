@@ -20,6 +20,7 @@ then
     ./gatekeeper/... \
     ./gateway/... \
     ./healthcheck/background/... \
+    ./idempotency/... \
     ./idx/... \
     ./project/... \
     ./passport/... \
