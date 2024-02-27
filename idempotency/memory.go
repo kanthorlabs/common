@@ -81,11 +81,13 @@ func (instance *memory) Disconnect(ctx context.Context) error {
 }
 
 func (instance *memory) Validate(ctx context.Context, key string) error {
-	if instance.client.Has(Key(key)) {
+	k := Key(key)
+
+	if instance.client.Has(k) {
 		return ErrConflict
 	}
 
 	ttl := time.Millisecond * time.Duration(instance.conf.TimeToLive)
-	instance.client.Set(Key(key), int(1), ttl)
+	instance.client.Set(k, int(1), ttl)
 	return nil
 }

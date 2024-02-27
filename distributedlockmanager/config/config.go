@@ -9,7 +9,15 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	return validator.Validate(
-		validator.StringUri("IDEMPOTENCY.CONFIG.URI", conf.Uri),
-		validator.NumberGreaterThan("IDEMPOTENCY.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
+		validator.StringUri("DISTRIBUTED_LOCK_MANAGER.CONFIG.URI", conf.Uri),
+		validator.NumberGreaterThan("DISTRIBUTED_LOCK_MANAGER.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
 	)
+}
+
+type Option func(*Config)
+
+func TimeToLive(ttl uint64) Option {
+	return func(conf *Config) {
+		conf.TimeToLive = ttl
+	}
 }

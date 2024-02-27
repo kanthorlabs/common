@@ -2,19 +2,20 @@ package idempotency
 
 import (
 	"context"
+	"os"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/idempotency/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 func TestRedis(t *testing.T) {
 	testconf := &config.Config{
 		Uri:        os.Getenv("REDIS_URI"),
-		TimeToLive: testdata.Fake.IntBetween(10000, 100000),
+		TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 	}
 	if testconf.Uri == "" {
 		testconf.Uri = "redis://localhost:6379/0"

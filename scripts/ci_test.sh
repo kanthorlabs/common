@@ -17,6 +17,7 @@ then
     ./cipher/... \
     ./clock/... \
     ./configuration/... \
+    ./distributedlockmanager/... \
     ./gatekeeper/... \
     ./gateway/... \
     ./healthcheck/background/... \

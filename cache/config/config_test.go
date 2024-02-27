@@ -8,7 +8,7 @@ import (
 
 func TestConfig(t *testing.T) {
 	t.Run("KO", func(st *testing.T) {
-		conf := Config{}
+		conf := &Config{}
 		require.ErrorContains(st, conf.Validate(), "CACHE.CONFIG.")
 	})
 }

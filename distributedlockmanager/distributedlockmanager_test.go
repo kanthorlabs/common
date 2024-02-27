@@ -1,11 +1,10 @@
-package idempotency
+package distributedlockmanager
 
 import (
 	"testing"
 
-	"github.com/kanthorlabs/common/idempotency/config"
+	"github.com/kanthorlabs/common/distributedlockmanager/config"
 	"github.com/kanthorlabs/common/testdata"
-	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,16 +19,16 @@ func TestIdempotency(t *testing.T) {
 			Uri:        "memory://",
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
-		_, err := New(conf, testify.Logger())
+		_, err := New(conf)
 		require.Nil(st, err)
 	})
 
-	t.Run("OK - redis", func(st *testing.T) {
+	t.Run("OK - redlock", func(st *testing.T) {
 		conf := &config.Config{
 			Uri:        "redis://localhost:6379/0",
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
-		_, err := New(conf, testify.Logger())
+		_, err := New(conf)
 		require.Nil(st, err)
 	})
 
@@ -38,13 +37,13 @@ func TestIdempotency(t *testing.T) {
 			Uri:        "tcp://127.0.0.1",
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
-		_, err := New(conf, testify.Logger())
-		require.ErrorContains(st, err, "IDEMPOTENCY.SCHEME_UNKNOWN.ERROR")
+		_, err := New(conf)
+		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.SCHEME_UNKNOWN.ERROR")
 	})
 
 	t.Run("KO - configuration error", func(st *testing.T) {
 		conf := &config.Config{}
-		_, err := New(conf, testify.Logger())
-		require.ErrorContains(st, err, "IDEMPOTENCY.CONFIG.")
+		_, err := New(conf)
+		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.CONFIG.")
 	})
 }
