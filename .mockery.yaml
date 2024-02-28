@@ -21,6 +21,13 @@ packages:
       mockname: "{{ .InterfaceName }}"
     interfaces:
       Logger:
+  github.com/kanthorlabs/common/idempotency:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Idempotency:
   github.com/kanthorlabs/common/passport:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"

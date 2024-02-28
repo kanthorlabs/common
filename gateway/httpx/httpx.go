@@ -1,7 +1,6 @@
 package httpx
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -13,9 +12,7 @@ import (
 )
 
 type Httpx interface {
-	http.Handler
-	Use(middlewares ...middleware.Middleware)
-	MethodFunc(method, pattern string, handler http.HandlerFunc)
+	chi.Router
 }
 
 func New(conf *config.Config, logger logging.Logger) (Httpx, error) {

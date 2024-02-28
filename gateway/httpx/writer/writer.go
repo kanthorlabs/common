@@ -27,6 +27,10 @@ func ErrBadRequest(w http.ResponseWriter, data any) {
 	Write(w, http.StatusBadRequest, data)
 }
 
+func ErrConflict(w http.ResponseWriter, data any) {
+	Write(w, http.StatusConflict, data)
+}
+
 func ErrUnauthorized(w http.ResponseWriter, data any) {
 	Write(w, http.StatusUnauthorized, data)
 }

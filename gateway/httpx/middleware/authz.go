@@ -10,7 +10,6 @@ import (
 	"github.com/kanthorlabs/common/gateway/httpx/writer"
 	"github.com/kanthorlabs/common/passport"
 	"github.com/kanthorlabs/common/passport/entities"
-	ppEnt "github.com/kanthorlabs/common/passport/entities"
 )
 
 var (
@@ -21,7 +20,7 @@ func Authz(authz gatekeeper.Gatekeeper) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			acc, exist := ctx.Value(passport.CtxAccount).(*ppEnt.Account)
+			acc, exist := ctx.Value(passport.CtxAccount).(*entities.Account)
 			if !exist {
 				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.ACCOUNT_EMPTY.ERROR"))
 				return

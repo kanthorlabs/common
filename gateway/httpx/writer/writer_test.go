@@ -36,6 +36,9 @@ func TestWriter(t *testing.T) {
 	s.Post("/404", func(w http.ResponseWriter, r *http.Request) {
 		ErrNotFound(w, reply)
 	})
+	s.Post("/409", func(w http.ResponseWriter, r *http.Request) {
+		ErrConflict(w, reply)
+	})
 	s.Post("/500", func(w http.ResponseWriter, r *http.Request) {
 		ErrUnknown(w, reply)
 	})
@@ -46,6 +49,7 @@ func TestWriter(t *testing.T) {
 		http.StatusBadRequest,
 		http.StatusUnauthorized,
 		http.StatusNotFound,
+		http.StatusConflict,
 		http.StatusInternalServerError,
 	}
 
