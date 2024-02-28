@@ -5,10 +5,10 @@ type Config interface {
 }
 
 type Provider interface {
-	Unmarshal(dest interface{}) error
+	Unmarshal(dest any) error
 	Sources() []Source
-	SetDefault(key string, value interface{})
-	Set(key string, value interface{})
+	SetDefault(key string, value any)
+	Set(key string, value any)
 }
 
 type Source struct {

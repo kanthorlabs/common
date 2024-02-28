@@ -15,6 +15,7 @@ then
   go test --count=1 -cover -coverprofile cover.out  \
     ./cache/... \
     ./cipher/... \
+    ./circuitbreaker/... \
     ./clock/... \
     ./configuration/... \
     ./distributedlockmanager/... \
@@ -28,6 +29,7 @@ then
     ./persistence/... \
     ./safe/... \
     ./utils/... \
+    ./sender/... \
     ./validator/...
 fi
 

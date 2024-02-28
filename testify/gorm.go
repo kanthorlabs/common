@@ -48,11 +48,11 @@ func GormInsert(t *testing.T, db *gorm.DB, count int) (map[string]*testdata.User
 		watch.EXPECT().Now().Return(now.Add(-time.Minute * time.Duration(i))).Once()
 
 		row := testdata.NewUser(watch)
-		tx := db.Create(row)
+		tx := db.Create(&row)
 		require.Nil(t, tx.Error)
 
 		ids = append(ids, row.Id)
-		rows[row.Id] = row
+		rows[row.Id] = &row
 	}
 
 	return rows, ids

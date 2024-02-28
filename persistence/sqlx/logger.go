@@ -20,14 +20,14 @@ func (logger *Logger) LogMode(logger.LogLevel) logger.Interface {
 	return logger
 }
 
-func (logger *Logger) Info(ctx context.Context, msg string, args ...interface{}) {
+func (logger *Logger) Info(ctx context.Context, msg string, args ...any) {
 	logger.logger.Infow(msg, args...)
 }
-func (logger *Logger) Warn(ctx context.Context, msg string, args ...interface{}) {
+func (logger *Logger) Warn(ctx context.Context, msg string, args ...any) {
 	logger.logger.Warnw(msg, args...)
 }
 
-func (logger *Logger) Error(ctx context.Context, msg string, args ...interface{}) {
+func (logger *Logger) Error(ctx context.Context, msg string, args ...any) {
 	logger.logger.Errorw(msg, args...)
 }
 
@@ -38,7 +38,7 @@ func (logger *Logger) Trace(ctx context.Context, begin time.Time, fc func() (sql
 	if sql == ReadinessQuery || sql == LivenessQuery {
 		return
 	}
-	args := []interface{}{
+	args := []any{
 		"rows", rows,
 		"time", float64(elapsed.Nanoseconds()) / 1e6,
 	}

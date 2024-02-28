@@ -50,7 +50,7 @@ type file struct {
 	sources []Source
 }
 
-func (provider *file) Unmarshal(dest interface{}) error {
+func (provider *file) Unmarshal(dest any) error {
 	return provider.viper.Unmarshal(dest)
 }
 
@@ -58,10 +58,10 @@ func (provider *file) Sources() []Source {
 	return provider.sources
 }
 
-func (provider *file) SetDefault(key string, value interface{}) {
+func (provider *file) SetDefault(key string, value any) {
 	provider.viper.SetDefault(key, value)
 }
 
-func (provider *file) Set(key string, value interface{}) {
+func (provider *file) Set(key string, value any) {
 	provider.viper.Set(key, value)
 }

@@ -6,13 +6,16 @@ require (
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/cors v1.2.1
 	github.com/go-redsync/redsync/v4 v4.12.1
+	github.com/go-resty/resty/v2 v2.11.0
 	github.com/google/uuid v1.6.0
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/jaswdr/faker v1.19.1
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/open-policy-agent/opa v0.61.0
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/samber/lo v1.39.0
 	github.com/segmentio/ksuid v1.0.4
+	github.com/sony/gobreaker v0.5.0
 	github.com/sourcegraph/conc v0.3.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4

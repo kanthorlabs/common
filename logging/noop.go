@@ -7,7 +7,7 @@ type noop struct {
 }
 
 // With returns a new no-op logger.
-func (logger *noop) With(args ...interface{}) Logger {
+func (logger *noop) With(args ...any) Logger {
 	return logger
 }
 

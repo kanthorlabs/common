@@ -13,7 +13,7 @@ type z struct {
 }
 
 // With returns a new no-op logger.
-func (logger *z) With(args ...interface{}) Logger {
+func (logger *z) With(args ...any) Logger {
 	return &z{logger.SugaredLogger.With(args...)}
 }
 
