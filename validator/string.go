@@ -3,6 +3,7 @@ package validator
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -101,6 +102,30 @@ func StringOneOf(prop, value string, oneOf []string) Fn {
 
 		if _, has := m[value]; !has {
 			return fmt.Errorf("%s (value:%s) must be one of %q", prop, value, oneOf)
+		}
+
+		return nil
+	}
+}
+
+func StringAlphaNumericUnderscore(prop, value string) Fn {
+	pattern := "^[0-9a-zA-z_]+$"
+	r := regexp.MustCompile(pattern)
+	return func() error {
+		if !r.MatchString(value) {
+			return fmt.Errorf("%s (value:%s) is not matched the pattern %q", prop, value, pattern)
+		}
+
+		return nil
+	}
+}
+
+func StringAlphaNumericUnderscoreDot(prop, value string) Fn {
+	pattern := "^[0-9a-zA-z_.]+$"
+	r := regexp.MustCompile(pattern)
+	return func() error {
+		if !r.MatchString(value) {
+			return fmt.Errorf("%s (value:%s) is not matched the pattern %q", prop, value, pattern)
 		}
 
 		return nil

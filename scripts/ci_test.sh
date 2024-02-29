@@ -30,6 +30,7 @@ then
     ./safe/... \
     ./utils/... \
     ./sender/... \
+    ./streaming/... \
     ./validator/...
 fi
 

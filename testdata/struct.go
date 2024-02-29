@@ -1,6 +1,7 @@
 package testdata
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -17,6 +18,12 @@ type User struct {
 	Username string
 	Created  int64
 	Updated  int64
+	Metadata map[string]string `gorm:"-"`
+}
+
+func (u *User) Bytes() []byte {
+	data, _ := json.Marshal(u)
+	return data
 }
 
 func NewUser(watch clock.Clock) User {

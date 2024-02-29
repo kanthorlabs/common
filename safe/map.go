@@ -43,7 +43,11 @@ func (sm *Map[T]) Count() int {
 }
 
 func (sm *Map[T]) Data() map[string]T {
-	return sm.data
+	data := map[string]T{}
+	for k, v := range sm.data {
+		data[k] = v
+	}
+	return data
 }
 
 func (sm *Map[T]) Keys() []string {
