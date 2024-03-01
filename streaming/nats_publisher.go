@@ -25,50 +25,47 @@ func (publisher *NatsPublisher) Name() string {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*entities.Event) map[string]error {
-	donec := make(chan bool, 1)
-	defer close(donec)
-
 	returning := safe.Map[error]{}
-	go func() {
-		p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
-		for refId, event := range events {
-			if err := event.Validate(); err != nil {
-				publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_VALIDATION.ERROR", "event", event.String())
-				returning.Set(refId, err)
-				continue
+	p := pool.New().
+		WithContext(ctx).
+		WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
+
+	for id := range events {
+		rid := id
+		event := events[id]
+
+		if err := event.Validate(); err != nil {
+			publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_VALIDATION.ERROR", "event", event.String(), "error", err.Error())
+			returning.Set(rid, err)
+			continue
+		}
+
+		msg := NatsMsgFromEvent(event.Subject, event)
+		p.Go(func(subctx context.Context) error {
+			// We don't want to return the error inside this goroutine
+			// because we want to set error for each id individually, not merge all of them
+
+			// we will let jetstream handle the context timeout by themself
+			ack, err := publisher.js.PublishMsg(subctx, msg)
+			if err != nil {
+				publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_PUBLISH.ERROR", "event", event.String())
+				returning.Set(rid, err)
+				return nil
 			}
 
-			msg := NatsMsgFromEvent(event.Subject, event)
-			p.Go(func() {
-				ack, err := publisher.js.PublishMsg(ctx, msg)
-				if err != nil {
-					publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_PUBLISH.ERROR", "event", event.String())
-					returning.Set(refId, err)
-					return
-				}
-
-				if ack.Duplicate {
-					publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_DUPLICATED.ERROR", "event", event.String())
-					returning.Set(refId, errors.New("STREAMING.PUBLISHER.EVENT_DUPLICATED.ERROR"))
-					return
-				}
-			})
-		}
-		p.Wait()
-
-		donec <- true
-	}()
-
-	select {
-	case <-donec:
-		return returning.Data()
-	case <-ctx.Done():
-		data := returning.Data()
-		for refId := range events {
-			if _, exist := data[refId]; !exist {
-				data[refId] = ctx.Err()
+			if ack.Duplicate {
+				duperr := errors.New("STREAMING.PUBLISHER.EVENT_DUPLICATED.ERROR")
+				publisher.logger.Errorw(duperr.Error(), "event", event.String())
+				returning.Set(rid, duperr)
+				return nil
 			}
-		}
-		return data
+
+			return nil
+		})
 	}
+
+	// no error to handle error because we didn't return it in the p.Go
+	p.Wait()
+
+	return returning.Data()
 }

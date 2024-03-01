@@ -114,25 +114,22 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 	expires := time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout)
 	go func() {
 		for {
+			// the subscription is no longer available because we closed it programmatically
+			if subscriber.status == patterns.StatusDisconnected {
+				return
+			}
+
 			handlerctx := context.Background()
 			batch, err := consumer.Fetch(
 				subscriber.conf.Subscriber.Concurrency,
 				jetstream.FetchMaxWait(expires),
 			)
 			if err != nil {
-				// the subscription is no longer available because we closed it programmatically
-				if subscriber.status == patterns.StatusDisconnected {
-					return
-				}
-
-				if !errors.Is(err, natsio.ErrTimeout) {
-					subscriber.logger.Errorw(
-						"STREAMING.SUBSCRIBER.PULL.ERROR",
-						"error", err.Error(),
-						"wait_time", fmt.Sprintf("%dms", subscriber.conf.Subscriber.Timeout),
-					)
-				}
-				continue
+				subscriber.logger.Errorw(
+					"STREAMING.SUBSCRIBER.PULL.ERROR",
+					"error", err.Error(),
+					"wait_time", fmt.Sprintf("%dms", subscriber.conf.Subscriber.Timeout),
+				)
 			}
 
 			messages := map[string]jetstream.Msg{}
@@ -150,14 +147,17 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 				events[eventId] = event
 			}
 
-			errors := handler(handlerctx, events)
+			if len(events) == 0 {
+				continue
+			}
+			errs := handler(handlerctx, events)
 
 			var wg conc.WaitGroup
 			for id := range events {
 				event := events[id]
 
 				wg.Go(func() {
-					if err, ok := errors[event.Id]; ok && err != nil {
+					if err, ok := errs[event.Id]; ok && err != nil {
 						if err := messages[event.Id].Nak(); err != nil {
 							// it's important to log entire event here to trace it in our log system
 							subscriber.logger.Errorw(ErrSubNakFail.Error(), "event", event.String())
@@ -172,6 +172,14 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 				})
 			}
 			wg.Wait()
+
+			if batch.Error() != nil && !errors.Is(batch.Error(), natsio.ErrTimeout) {
+				subscriber.logger.Errorw(
+					"STREAMING.SUBSCRIBER.PULL.ERROR",
+					"error", batch.Error().Error(),
+					"wait_time", fmt.Sprintf("%dms", subscriber.conf.Subscriber.Timeout),
+				)
+			}
 		}
 	}()
 

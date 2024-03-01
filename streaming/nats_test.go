@@ -39,7 +39,7 @@ func TestNats(t *testing.T) {
 
 		topic := strings.ReplaceAll(uuid.NewString(), "-", "") + "." + strings.ReplaceAll(uuid.NewString(), "-", "")
 		count := testdata.Fake.IntBetween(conf.Subscriber.Concurrency+1, conf.Subscriber.Concurrency*2-1)
-		items := NewItems(count)
+		items := fakeitems(count)
 		datac := make(chan *testdata.User, count)
 
 		require.Nil(st, subscriber.Connect(ctx))
@@ -100,7 +100,7 @@ func TestNats(t *testing.T) {
 
 func testconf(uri string) *config.Config {
 	return &config.Config{
-		Name: strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", ""),
+		Name: streamname(),
 		Uri:  uri,
 		Nats: config.Nats{
 			Replicas: 0,

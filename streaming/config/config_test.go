@@ -12,7 +12,7 @@ import (
 func TestConfig(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := &Config{
-			Name:      strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", ""),
+			Name:      streamname(),
 			Uri:       "nats://localhost:4222",
 			Nats:      *natsconf,
 			Publisher: Publisher{RateLimit: testdata.Fake.IntBetween(1, 1000)},
@@ -27,7 +27,7 @@ func TestConfig(t *testing.T) {
 
 	t.Run("KO", func(st *testing.T) {
 		conf := &Config{
-			Name: strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", ""),
+			Name: streamname(),
 			Uri:  "http://localhost:4222",
 		}
 		require.ErrorContains(st, conf.Validate(), "STREAMING.CONFIG.URI")
@@ -35,7 +35,7 @@ func TestConfig(t *testing.T) {
 
 	t.Run("KO - nats error", func(st *testing.T) {
 		conf := &Config{
-			Name: strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", ""),
+			Name: streamname(),
 			Uri:  "nats://localhost:4222",
 			Nats: Nats{},
 		}
@@ -45,7 +45,7 @@ func TestConfig(t *testing.T) {
 
 	t.Run("KO - publisher error", func(st *testing.T) {
 		conf := &Config{
-			Name:      strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", ""),
+			Name:      streamname(),
 			Uri:       "nats://localhost:4222",
 			Nats:      *natsconf,
 			Publisher: Publisher{},
@@ -56,7 +56,7 @@ func TestConfig(t *testing.T) {
 
 	t.Run("KO - subscriber error", func(st *testing.T) {
 		conf := &Config{
-			Name:      strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", ""),
+			Name:      streamname(),
 			Uri:       "nats://localhost:4222",
 			Nats:      *natsconf,
 			Publisher: Publisher{RateLimit: testdata.Fake.IntBetween(1, 1000)},
@@ -64,4 +64,8 @@ func TestConfig(t *testing.T) {
 
 		require.ErrorContains(st, conf.Validate(), "STREAMING.CONFIG.SUBSCRIBER")
 	})
+}
+
+func streamname() string {
+	return strings.ReplaceAll(uuid.NewString(), "-", "") + "_" + strings.ReplaceAll(uuid.NewString(), "-", "")
 }

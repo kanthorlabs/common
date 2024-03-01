@@ -20,9 +20,9 @@ type Event struct {
 
 func (e *Event) Validate() error {
 	return validator.Validate(
-		validator.StringRequired("subject", e.Subject),
-		validator.StringRequired("id", e.Id),
-		validator.SliceRequired("data", e.Data),
+		validator.StringAlphaNumericUnderscoreDot("STREAMING.ENTITIES.EVENT.SUBJECT", e.Subject),
+		validator.StringRequired("STREAMING.ENTITIES.EVENT.ID", e.Id),
+		validator.SliceRequired("STREAMING.ENTITIES.EVENT.DATA", e.Data),
 	)
 }
 

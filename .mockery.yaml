@@ -42,3 +42,10 @@ packages:
       mockname: "{{ .InterfaceName }}"
     interfaces:
       Gatekeeper:
+  github.com/nats-io/nats.go/jetstream:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      JetStream:
