@@ -11,6 +11,12 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 )
 
+// New creates a new cache instance based on the provided configuration.
+// The cache instance is selected based on the URI scheme.
+// Supported schemes are:
+// - memory://
+// - redis://
+// If the URI scheme is not supported, an error is returned.
 func New(conf *config.Config, logger logging.Logger) (Cache, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
@@ -29,7 +35,7 @@ func New(conf *config.Config, logger logging.Logger) (Cache, error) {
 
 type Cache interface {
 	patterns.Connectable
-	Get(ctx context.Context, key string) ([]byte, error)
+	Get(ctx context.Context, key string, entry any) error
 	Set(ctx context.Context, key string, entry any, ttl time.Duration) error
 	Exist(ctx context.Context, key string) bool
 	Del(ctx context.Context, key string) error

@@ -37,24 +37,24 @@ func TestOpa(t *testing.T) {
 
 	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
 		gk, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
-		require.Nil(st, gk.Connect(context.Background()))
-		require.Nil(st, gk.Readiness())
-		require.Nil(st, gk.Liveness())
-		require.Nil(st, gk.Disconnect(context.Background()))
+		require.NoError(st, gk.Connect(context.Background()))
+		require.NoError(st, gk.Readiness())
+		require.NoError(st, gk.Liveness())
+		require.NoError(st, gk.Disconnect(context.Background()))
 	})
 
 	t.Run(".Grant", func(st *testing.T) {
 		gk, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		gk.Connect(context.Background())
 		defer gk.Disconnect(context.Background())
 
 		orm := gk.(*opa).orm
 		tx := orm.Create(privileges)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(privileges)-1)
@@ -64,7 +64,7 @@ func TestOpa(t *testing.T) {
 				Role:     privileges[i].Role,
 			}
 
-			require.Nil(sst, gk.Grant(context.Background(), evaluation))
+			require.NoError(sst, gk.Grant(context.Background(), evaluation))
 		})
 
 		st.Run("KO - role not exist error", func(sst *testing.T) {
@@ -104,14 +104,14 @@ func TestOpa(t *testing.T) {
 
 	t.Run(".Enforce", func(st *testing.T) {
 		gk, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		gk.Connect(context.Background())
 		defer gk.Disconnect(context.Background())
 
 		orm := gk.(*opa).orm
 		tx := orm.Create(privileges)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			evaluation := &entities.Evaluation{
@@ -120,7 +120,7 @@ func TestOpa(t *testing.T) {
 				Role:     "own",
 			}
 			// grant the permissions first
-			require.Nil(sst, gk.Grant(context.Background(), evaluation))
+			require.NoError(sst, gk.Grant(context.Background(), evaluation))
 
 			permission := &entities.Permission{
 				Action: "DELETE",
@@ -172,14 +172,14 @@ func TestOpa(t *testing.T) {
 
 	t.Run(".Revoke", func(st *testing.T) {
 		gk, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		gk.Connect(context.Background())
 		defer gk.Disconnect(context.Background())
 
 		orm := gk.(*opa).orm
 		tx := orm.Create(privileges)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(privileges)-1)
@@ -188,7 +188,7 @@ func TestOpa(t *testing.T) {
 				Username: privileges[i].Username,
 			}
 
-			require.Nil(sst, gk.Revoke(context.Background(), evaluation))
+			require.NoError(sst, gk.Revoke(context.Background(), evaluation))
 		})
 
 		st.Run("KO - evaluation error", func(sst *testing.T) {
@@ -215,21 +215,21 @@ func TestOpa(t *testing.T) {
 
 	t.Run(".Users", func(st *testing.T) {
 		gk, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		gk.Connect(context.Background())
 		defer gk.Disconnect(context.Background())
 
 		orm := gk.(*opa).orm
 		tx := orm.Create(privileges)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(privileges)-1)
 			tenant := privileges[i].Tenant
 
 			users, err := gk.Users(context.Background(), tenant)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 
 			require.Equal(sst, count, len(users))
 
@@ -241,21 +241,21 @@ func TestOpa(t *testing.T) {
 
 	t.Run(".Tenants", func(st *testing.T) {
 		gk, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		gk.Connect(context.Background())
 		defer gk.Disconnect(context.Background())
 
 		orm := gk.(*opa).orm
 		tx := orm.Create(privileges)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(privileges)-1)
 			username := privileges[i].Username
 
 			users, err := gk.Tenants(context.Background(), username)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 
 			require.Equal(sst, 1, len(users))
 

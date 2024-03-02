@@ -19,7 +19,7 @@ var natsconf = &Nats{
 
 func TestNats(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		require.Nil(st, natsconf.Validate())
+		require.NoError(st, natsconf.Validate())
 	})
 
 	t.Run("KO", func(st *testing.T) {

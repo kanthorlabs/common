@@ -21,41 +21,41 @@ func TestMemory(t *testing.T) {
 
 	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
 		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
 
-		require.Nil(st, c.Connect(context.Background()))
+		require.NoError(st, c.Connect(context.Background()))
 
 		require.ErrorIs(st, c.Connect(context.Background()), ErrAlreadyConnected)
 
-		require.Nil(st, c.Readiness())
-		require.Nil(st, c.Liveness())
+		require.NoError(st, c.Readiness())
+		require.NoError(st, c.Liveness())
 
-		require.Nil(st, c.Disconnect(context.Background()))
+		require.NoError(st, c.Disconnect(context.Background()))
 
-		require.Nil(st, c.Readiness())
-		require.Nil(st, c.Liveness())
+		require.NoError(st, c.Readiness())
+		require.NoError(st, c.Liveness())
 
 		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
 	})
 
 	t.Run(".Validate", func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 		c.Connect(context.Background())
 		defer c.Disconnect(context.Background())
 
 		st.Run("OK", func(sst *testing.T) {
 			key := uuid.NewString()
 			err := c.Validate(context.Background(), key)
-			require.Nil(st, err)
+			require.NoError(st, err)
 		})
 
 		st.Run("KO", func(sst *testing.T) {
 			key := uuid.NewString()
-			require.Nil(st, c.Validate(context.Background(), key))
+			require.NoError(st, c.Validate(context.Background(), key))
 			require.ErrorIs(st, c.Validate(context.Background(), key), ErrConflict)
 		})
 	})

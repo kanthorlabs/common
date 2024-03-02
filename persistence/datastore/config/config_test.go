@@ -10,7 +10,7 @@ import (
 
 func TestDefault(t *testing.T) {
 	provider, err := configuration.New("kanthor")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	_, err = New(provider)
 	require.ErrorContains(t, err, "DATASTORE.CONFIG.ENGINE")
@@ -23,5 +23,5 @@ func TestDefault(t *testing.T) {
 	provider.SetDefault("datastore.sqlx.uri", testdata.SqliteUri)
 
 	_, err = New(provider)
-	require.Nil(t, err)
+	require.NoError(t, err)
 }

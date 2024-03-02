@@ -25,7 +25,7 @@ func TestConfig(t *testing.T) {
 				},
 			},
 		}
-		require.Nil(st, conf.Validate())
+		require.NoError(st, conf.Validate())
 	})
 
 	t.Run("KO", func(st *testing.T) {

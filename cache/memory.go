@@ -2,8 +2,8 @@ package cache
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -13,6 +13,7 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 )
 
+// NewMemory creates a new memory cache instance that use ttlcache as the underlying engine.
 func NewMemory(conf *config.Config, logger logging.Logger) (Cache, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
@@ -82,47 +83,70 @@ func (instance *memory) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *memory) Get(ctx context.Context, key string) ([]byte, error) {
-	item := instance.client.Get(Key(key))
-	if item == nil {
-		return nil, ErrEntryNotFound
-	}
-	return item.Value(), nil
-}
-
-func (instance *memory) Set(ctx context.Context, key string, entry any, ttl time.Duration) error {
-	var value []byte
-	var err error
-	if entry != nil {
-		value, err = json.Marshal(entry)
-		if err != nil {
-			return err
-		}
-	}
-	instance.client.Set(Key(key), value, ttl)
-	return nil
-}
-
-func (instance *memory) Exist(ctx context.Context, key string) bool {
-	return instance.client.Has(Key(key))
-}
-
-func (instance *memory) Del(ctx context.Context, key string) error {
-	instance.client.Delete(Key(key))
-	return nil
-}
-
-func (instance *memory) Expire(ctx context.Context, key string, at time.Time) error {
-	value, err := instance.Get(ctx, key)
+func (instance *memory) Get(ctx context.Context, key string, entry any) error {
+	k, err := Key(key)
 	if err != nil {
 		return err
 	}
 
-	ttl := at.Sub(time.Now())
-	if ttl < 0 {
-		return errors.New("CACHE.EXPIRE.EXPIRED_AT_TIME_PASS.ERROR")
+	item := instance.client.Get(k)
+	if item == nil {
+		return ErrEntryNotFound
 	}
 
-	instance.client.Set(Key(key), value, ttl)
+	return Unmarshal(item.Value(), entry)
+}
+
+func (instance *memory) Set(ctx context.Context, key string, entry any, ttl time.Duration) error {
+	k, err := Key(key)
+	if err != nil {
+		return err
+	}
+
+	v, err := Marshal(entry)
+	if err != nil {
+		return fmt.Errorf("CACHE.VALUE.MARSHAL.ERROR: %w", err)
+	}
+
+	instance.client.Set(k, v, ttl)
+	return nil
+}
+
+func (instance *memory) Exist(ctx context.Context, key string) bool {
+	k, err := Key(key)
+	if err != nil {
+		return false
+	}
+
+	return instance.client.Has(k)
+}
+
+func (instance *memory) Del(ctx context.Context, key string) error {
+	k, err := Key(key)
+	if err != nil {
+		return err
+	}
+
+	instance.client.Delete(k)
+	return nil
+}
+
+func (instance *memory) Expire(ctx context.Context, key string, at time.Time) error {
+	k, err := Key(key)
+	if err != nil {
+		return err
+	}
+
+	item := instance.client.Get(k)
+	if item == nil {
+		return ErrEntryNotFound
+	}
+
+	ttl := time.Until(at)
+	if ttl < 0 {
+		return errors.New("CACHE.TIME_TO_LIVE.NEGATIVE.ERROR")
+	}
+
+	instance.client.Set(k, item.Value(), ttl)
 	return nil
 }

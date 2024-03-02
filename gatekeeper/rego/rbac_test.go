@@ -25,12 +25,12 @@ type regodata struct {
 func TestRBAC(t *testing.T) {
 	var rdata regodata
 	err := json.Unmarshal(data, &rdata)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	t.Run("New", func(st *testing.T) {
 		st.Run("OK", func(sst *testing.T) {
 			_, err := RBAC(context.Background(), rdata.Data.Definitions)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 		})
 
 		st.Run("KO - empty definitions", func(sst *testing.T) {
@@ -50,7 +50,7 @@ func TestRBAC(t *testing.T) {
 
 	t.Run("Evaluate", func(st *testing.T) {
 		evaluate, err := RBAC(context.Background(), rdata.Data.Definitions)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		st.Run("OK", func(sst *testing.T) {
 			permission := &entities.Permission{
@@ -58,7 +58,7 @@ func TestRBAC(t *testing.T) {
 				Object: "/api/application/:id",
 			}
 			err := evaluate(permission, rdata.Input["administrator"].Privileges)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 		})
 
 		st.Run("KO", func(sst *testing.T) {

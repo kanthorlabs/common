@@ -52,7 +52,7 @@ func TestConfig(t *testing.T) {
 		})
 
 		st.Run("OK", func(sst *testing.T) {
-			require.Nil(sst, testconf.Validate())
+			require.NoError(sst, testconf.Validate())
 		})
 	})
 }
@@ -65,13 +65,13 @@ func TestParseDefinitionsToPermissions(t *testing.T) {
 	permission := utils.Stringify(definitions)
 
 	dpath := os.TempDir() + "/" + uuid.NewString()
-	require.Nil(t, os.WriteFile(dpath, []byte(permission), os.ModePerm))
+	require.NoError(t, os.WriteFile(dpath, []byte(permission), os.ModePerm))
 	dbase64 := base64.StdEncoding.EncodeToString([]byte(permission))
 
 	t.Run("file", func(st *testing.T) {
 		st.Run("OK", func(sst *testing.T) {
 			definitions, err := ParseDefinitionsToPermissions("file://" + dpath)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			require.Equal(sst, definitions, definitions)
 		})
@@ -83,7 +83,7 @@ func TestParseDefinitionsToPermissions(t *testing.T) {
 
 		st.Run("KO - unmarshal error", func(sst *testing.T) {
 			p := os.TempDir() + "/" + uuid.NewString()
-			require.Nil(sst, os.WriteFile(p, []byte(""), os.ModePerm))
+			require.NoError(sst, os.WriteFile(p, []byte(""), os.ModePerm))
 
 			_, err := ParseDefinitionsToPermissions("file://" + p)
 			require.ErrorContains(st, err, "unexpected end of JSON input")
@@ -94,7 +94,7 @@ func TestParseDefinitionsToPermissions(t *testing.T) {
 	t.Run("base64", func(st *testing.T) {
 		st.Run("OK", func(sst *testing.T) {
 			definitions, err := ParseDefinitionsToPermissions("base64://" + dbase64)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			require.Equal(sst, definitions, definitions)
 		})

@@ -256,34 +256,22 @@ func (_c *Cache_Expire_Call) RunAndReturn(run func(context.Context, string, time
 	return _c
 }
 
-// Get provides a mock function with given fields: ctx, key
-func (_m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
-	ret := _m.Called(ctx, key)
+// Get provides a mock function with given fields: ctx, key, entry
+func (_m *Cache) Get(ctx context.Context, key string, entry interface{}) error {
+	ret := _m.Called(ctx, key, entry)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 []byte
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) ([]byte, error)); ok {
-		return rf(ctx, key)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) []byte); ok {
-		r0 = rf(ctx, key)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}) error); ok {
+		r0 = rf(ctx, key, entry)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, key)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Cache_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
@@ -294,23 +282,24 @@ type Cache_Get_Call struct {
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
 //   - key string
-func (_e *Cache_Expecter) Get(ctx interface{}, key interface{}) *Cache_Get_Call {
-	return &Cache_Get_Call{Call: _e.mock.On("Get", ctx, key)}
+//   - entry interface{}
+func (_e *Cache_Expecter) Get(ctx interface{}, key interface{}, entry interface{}) *Cache_Get_Call {
+	return &Cache_Get_Call{Call: _e.mock.On("Get", ctx, key, entry)}
 }
 
-func (_c *Cache_Get_Call) Run(run func(ctx context.Context, key string)) *Cache_Get_Call {
+func (_c *Cache_Get_Call) Run(run func(ctx context.Context, key string, entry interface{})) *Cache_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(interface{}))
 	})
 	return _c
 }
 
-func (_c *Cache_Get_Call) Return(_a0 []byte, _a1 error) *Cache_Get_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *Cache_Get_Call) Return(_a0 error) *Cache_Get_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Cache_Get_Call) RunAndReturn(run func(context.Context, string) ([]byte, error)) *Cache_Get_Call {
+func (_c *Cache_Get_Call) RunAndReturn(run func(context.Context, string, interface{}) error) *Cache_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -21,7 +21,7 @@ func New(conf *config.Config, logger logging.Logger) (Send, error) {
 	return func(ctx context.Context, r *entities.Request) (*entities.Response, error) {
 		uri, err := url.ParseRequestURI(r.Uri)
 		if err != nil {
-			return nil, errors.New("SENDER.URL_PARSE.ERROR")
+			return nil, errors.New("SENDER.URL.PARSE.ERROR")
 		}
 
 		// http & https
@@ -29,7 +29,7 @@ func New(conf *config.Config, logger logging.Logger) (Send, error) {
 			return http(ctx, r)
 		}
 
-		return nil, fmt.Errorf("SENDER.SCHEME_NOT_SUPPORT.ERROR(%s)", strings.ToUpper(uri.Scheme))
+		return nil, fmt.Errorf("SENDER.SCHEME.NOT_SUPPORT.ERROR: %s", strings.ToUpper(uri.Scheme))
 	}, nil
 }
 

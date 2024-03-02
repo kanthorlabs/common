@@ -43,19 +43,19 @@ func TestAsk(t *testing.T) {
 	t.Run(".Connect/.Readiness/.Liveness/.Logout/.Disconnect", func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
-		require.Nil(st, strategy.Connect(context.Background()))
-		require.Nil(st, strategy.Readiness())
-		require.Nil(st, strategy.Liveness())
-		require.Nil(st, strategy.Logout(context.Background(), nil))
-		require.Nil(st, strategy.Disconnect(context.Background()))
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Readiness())
+		require.NoError(st, strategy.Liveness())
+		require.NoError(st, strategy.Logout(context.Background(), nil))
+		require.NoError(st, strategy.Disconnect(context.Background()))
 	})
 
 	t.Run(".Login", func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -64,7 +64,7 @@ func TestAsk(t *testing.T) {
 				Password: passwords[i],
 			}
 			acc, err := strategy.Login(context.Background(), credentials)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Equal(sst, credentials.Username, acc.Username)
 			require.Empty(sst, acc.PasswordHash)
 		})
@@ -100,7 +100,7 @@ func TestAsk(t *testing.T) {
 	t.Run(".Verify", func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -109,7 +109,7 @@ func TestAsk(t *testing.T) {
 				Password: passwords[i],
 			}
 			acc, err := strategy.Verify(context.Background(), credentials)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Equal(sst, credentials.Username, acc.Username)
 			require.Empty(sst, acc.PasswordHash)
 		})
@@ -118,7 +118,7 @@ func TestAsk(t *testing.T) {
 	t.Run(".Register", func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		st.Run("KO - unimplement error", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -130,7 +130,7 @@ func TestAsk(t *testing.T) {
 	t.Run(".Deactivate", func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		st.Run("KO - unimplement error", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)

@@ -42,7 +42,7 @@ func TestClient(t *testing.T) {
 			data := time.Now().Format(time.RFC3339)
 
 			err := os.WriteFile(filepath, []byte(data), os.ModePerm)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 
 			require.ErrorContains(sst, client.Liveness(), "strconv.ParseInt")
 		})
@@ -51,7 +51,7 @@ func TestClient(t *testing.T) {
 			data := fmt.Sprintf("%d", time.Now().Add(-time.Hour).UnixMilli())
 
 			err := os.WriteFile(filepath, []byte(data), os.ModePerm)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 
 			require.ErrorContains(sst, client.Liveness(), "HEALTHCHECK.BACKGROUND.CLIENT.LIVENESS.TIMEOUT.ERROR")
 		})

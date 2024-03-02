@@ -18,7 +18,7 @@ func TestConfig(t *testing.T) {
 				WaitTime: testdata.Fake.Int64Between(1000, 10000),
 			},
 		}
-		require.Nil(st, conf.Validate())
+		require.NoError(st, conf.Validate())
 	})
 
 	t.Run("KO ", func(st *testing.T) {

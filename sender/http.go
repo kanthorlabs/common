@@ -40,7 +40,7 @@ func Http(conf *config.Config, logger logging.Logger) (Send, error) {
 			SetHeaderMultiValues(r.Headers)
 
 		var res *resty.Response
-		var err = fmt.Errorf("SENDER.METHOD_NOT_SUPPORT.ERROR(%s)", strings.ToUpper(req.Method))
+		var err = fmt.Errorf("SENDER.METHOD_NOT_SUPPORT.ERROR: %s", strings.ToUpper(req.Method))
 
 		if r.Method == http.MethodGet {
 			res, err = req.Get(r.Uri)

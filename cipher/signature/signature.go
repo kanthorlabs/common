@@ -15,6 +15,8 @@ func init() {
 	versions["v1"] = &v1{}
 }
 
+// Sign signs the data with the provided key using all available versions.
+// The result is a string with all signatures with format "version=signature" separated by commas.
 func Sign(key, data string) string {
 	var signatures []string
 
@@ -26,6 +28,9 @@ func Sign(key, data string) string {
 	return strings.Join(signatures, SignatureDivider)
 }
 
+// Verify verifies the data with the provided key using all available versions.
+// It compares the provided signature with all available versions.
+// If any of the versions match, it returns no error, otherwise it returns an error of type "SIGNATURE.VERIFY.NOT_MATCH.ERROR".
 func Verify(key, data, signature string) error {
 	signatures := strings.Split(signature, SignatureDivider)
 	for i := range signatures {

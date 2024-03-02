@@ -29,20 +29,20 @@ func TestNats(t *testing.T) {
 
 		conf := testconf(server.ClientURL())
 		stream, err := NewNats(conf, testify.Logger())
-		require.Nil(st, err)
-		require.Nil(st, stream.Connect(ctx))
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(ctx))
 		defer stream.Disconnect(ctx)
 
 		name := strings.ReplaceAll(uuid.NewString(), "-", "")
 		subscriber, err := stream.Subscriber(name)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		topic := strings.ReplaceAll(uuid.NewString(), "-", "") + "." + strings.ReplaceAll(uuid.NewString(), "-", "")
 		count := testdata.Fake.IntBetween(conf.Subscriber.Concurrency+1, conf.Subscriber.Concurrency*2-1)
 		items := fakeitems(count)
 		datac := make(chan *testdata.User, count)
 
-		require.Nil(st, subscriber.Connect(ctx))
+		require.NoError(st, subscriber.Connect(ctx))
 		defer subscriber.Disconnect(ctx)
 		err = subscriber.Sub(ctx, topic, func(ctx context.Context, events map[string]*entities.Event) map[string]error {
 			returning := map[string]error{}
@@ -61,10 +61,10 @@ func TestNats(t *testing.T) {
 			}
 			return returning
 		})
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		publisher, err := stream.Publisher(name)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		events := map[string]*entities.Event{}
 		for id, item := range items {

@@ -8,12 +8,238 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/cache/config"
+	"github.com/kanthorlabs/common/clock"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
-func TestRedis(t *testing.T) {
+func TestRedis_New(t *testing.T) {
+	t.Run("KO - configuration error", func(st *testing.T) {
+		conf := &config.Config{}
+		_, err := NewRedis(conf, testify.Logger())
+		require.ErrorContains(t, err, "CACHE.CONFIG.")
+	})
+}
+
+func TestRedis_Connect(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+
+	require.NoError(t, c.Connect(context.Background()))
+	require.ErrorIs(t, c.Connect(context.Background()), ErrAlreadyConnected)
+}
+
+func TestRedis_Readiness(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+
+	require.ErrorIs(t, c.Readiness(), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.NoError(t, c.Readiness())
+	require.NoError(t, c.Disconnect(context.Background()))
+	require.NoError(t, c.Readiness())
+}
+
+func TestRedis_Liveness(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+
+	require.ErrorIs(t, c.Liveness(), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.NoError(t, c.Liveness())
+	require.NoError(t, c.Disconnect(context.Background()))
+	require.NoError(t, c.Liveness())
+}
+
+func TestRedis_Disconnect(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+
+	require.ErrorIs(t, c.Disconnect(context.Background()), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.NoError(t, c.Disconnect(context.Background()))
+}
+
+func TestRedis_Get(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+		c.Set(context.Background(), key, value, ttl)
+		require.NoError(st, err)
+
+		var dest testdata.User
+		err := c.Get(context.Background(), key, &dest)
+		require.NoError(st, err)
+		require.Equal(st, value, dest)
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		var dest string
+		err := c.Get(context.Background(), "", &dest)
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+
+	t.Run("KO - key not found error", func(st *testing.T) {
+		key := uuid.NewString()
+		var dest testdata.User
+		err := c.Get(context.Background(), key, &dest)
+		require.ErrorIs(st, err, ErrEntryNotFound)
+	})
+
+	t.Run("KO - unmarshal error", func(st *testing.T) {
+		key := uuid.NewString()
+		c.Set(context.Background(), key, value, ttl)
+
+		var dest chan int
+		err := c.Get(context.Background(), key, &dest)
+		require.ErrorContains(st, err, "CACHE.VALUE.UNMARSHAL.ERROR")
+	})
+}
+
+func TestRedis_Set(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	key := uuid.NewString()
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK - not nil", func(st *testing.T) {
+		key := uuid.NewString()
+		err := c.Set(context.Background(), key, value, ttl)
+		require.NoError(st, err)
+	})
+
+	t.Run("OK - nil", func(st *testing.T) {
+		err := c.Set(context.Background(), key, nil, ttl)
+		require.NoError(st, err)
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		err := c.Set(context.Background(), "", value, ttl)
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+
+	t.Run("KO - marshal error", func(st *testing.T) {
+		err := c.Set(context.Background(), key, make(chan int), ttl)
+		require.ErrorContains(st, err, "CACHE.VALUE.MARSHAL.ERROR")
+	})
+}
+
+func TestRedis_Exist(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+
+		c.Set(context.Background(), key, value, ttl)
+		require.True(st, c.Exist(context.Background(), key))
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		require.False(st, c.Exist(context.Background(), ""))
+	})
+
+	t.Run("OK - key not found err", func(st *testing.T) {
+		key := uuid.NewString()
+
+		require.False(st, c.Exist(context.Background(), key))
+	})
+}
+
+func TestRedis_Delete(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+
+		c.Set(context.Background(), key, value, ttl)
+		require.True(st, c.Exist(context.Background(), key))
+
+		err := c.Del(context.Background(), key)
+		require.NoError(st, err)
+		require.False(st, c.Exist(context.Background(), key))
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		err := c.Del(context.Background(), "")
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+}
+
+func TestRedis_Expire(t *testing.T) {
+	c, err := NewRedis(redistestconf(), testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Second
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+
+		c.Set(context.Background(), key, value, ttl)
+		require.True(st, c.Exist(context.Background(), key))
+
+		err := c.Expire(context.Background(), key, time.Now().Add(time.Second))
+		require.NoError(st, err)
+
+		for i := 0; i < 10; i++ {
+			if c.Exist(context.Background(), key) {
+				time.Sleep(time.Second / 2)
+				continue
+			}
+
+			return
+		}
+
+		require.Fail(st, "key still exists after expiration")
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		err := c.Expire(context.Background(), "", time.Now())
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+
+	t.Run("KO - key not found error", func(st *testing.T) {
+		key := uuid.NewString()
+		err := c.Expire(context.Background(), key, time.Now().Add(time.Second))
+		require.ErrorIs(st, err, ErrEntryNotFound)
+	})
+
+	t.Run("KO - negative ttl error", func(st *testing.T) {
+		key := uuid.NewString()
+		c.Set(context.Background(), key, value, ttl)
+
+		err := c.Expire(context.Background(), key, time.Now().Add(-time.Second))
+		require.ErrorContains(st, err, "CACHE.TIME_TO_LIVE.NEGATIVE.ERROR")
+	})
+}
+
+func redistestconf() *config.Config {
 	testconf := &config.Config{
 		Uri: os.Getenv("REDIS_URI"),
 	}
@@ -21,128 +247,5 @@ func TestRedis(t *testing.T) {
 		testconf.Uri = "redis://localhost:6379/0"
 	}
 
-	t.Run("New", func(st *testing.T) {
-		st.Run("KO - configuration error", func(sst *testing.T) {
-			conf := &config.Config{}
-			_, err := NewRedis(conf, testify.Logger())
-			require.ErrorContains(st, err, "CACHE.CONFIG.")
-		})
-	})
-
-	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
-		c, err := NewRedis(testconf, testify.Logger())
-		require.Nil(st, err)
-
-		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
-		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
-
-		require.Nil(st, c.Connect(context.Background()))
-
-		require.ErrorIs(st, c.Connect(context.Background()), ErrAlreadyConnected)
-
-		require.Nil(st, c.Readiness())
-		require.Nil(st, c.Liveness())
-
-		require.Nil(st, c.Disconnect(context.Background()))
-
-		require.Nil(st, c.Readiness())
-		require.Nil(st, c.Liveness())
-
-		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
-	})
-
-	t.Run(".Get", func(st *testing.T) {
-		c, err := NewRedis(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Set(context.Background(), key, testdata.Fake.Blood().Name(), time.Hour)
-			require.Nil(st, err)
-
-			_, err = c.Get(context.Background(), key)
-			require.Nil(st, err)
-		})
-
-		st.Run("KO - not found error", func(sst *testing.T) {
-			key := uuid.NewString()
-			_, err := c.Get(context.Background(), key)
-			require.ErrorIs(st, err, ErrEntryNotFound)
-		})
-	})
-
-	t.Run(".Set", func(st *testing.T) {
-		c, err := NewRedis(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK - not nil", func(sst *testing.T) {
-			key := uuid.NewString()
-			value := testdata.Fake.Blood().Name()
-			err := c.Set(context.Background(), key, value, time.Hour)
-			require.Nil(st, err)
-		})
-
-		st.Run("OK - nil", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Set(context.Background(), key, nil, time.Hour)
-			require.Nil(st, err)
-		})
-
-		st.Run("KO - marshal error", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Set(context.Background(), key, make(chan int), time.Hour)
-			require.ErrorContains(st, err, "json: unsupported type")
-		})
-	})
-
-	t.Run(".Exist", func(st *testing.T) {
-		c, err := NewRedis(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK", func(sst *testing.T) {
-			key := uuid.NewString()
-			exist := c.Exist(context.Background(), key)
-			require.False(st, exist)
-		})
-	})
-
-	t.Run(".Del", func(st *testing.T) {
-		c, err := NewRedis(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Del(context.Background(), key)
-			require.Nil(st, err)
-		})
-	})
-
-	t.Run(".Expire", func(st *testing.T) {
-		c, err := NewRedis(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		key := uuid.NewString()
-		err = c.Set(context.Background(), key, testdata.Fake.Blood().Name(), time.Hour)
-		require.Nil(st, err)
-
-		st.Run("OK", func(sst *testing.T) {
-			err = c.Expire(context.Background(), key, time.Now().Add(time.Hour))
-			require.Nil(st, err)
-		})
-
-		st.Run("KO - not found error", func(sst *testing.T) {
-			err = c.Expire(context.Background(), uuid.NewString(), time.Now())
-			require.ErrorIs(st, err, ErrEntryNotFound)
-		})
-	})
+	return testconf
 }

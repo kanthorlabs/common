@@ -42,13 +42,13 @@ func TestDurability(t *testing.T) {
 			},
 		}}
 		strategy, err := NewDurability(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
-		require.Nil(st, strategy.Connect(context.Background()))
-		require.Nil(st, strategy.Readiness())
-		require.Nil(st, strategy.Liveness())
-		require.Nil(st, strategy.Logout(context.Background(), nil))
-		require.Nil(st, strategy.Disconnect(context.Background()))
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Readiness())
+		require.NoError(st, strategy.Liveness())
+		require.NoError(st, strategy.Logout(context.Background(), nil))
+		require.NoError(st, strategy.Disconnect(context.Background()))
 	})
 
 	t.Run(".Login", func(st *testing.T) {
@@ -62,14 +62,14 @@ func TestDurability(t *testing.T) {
 			},
 		}}
 		strategy, err := NewDurability(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		strategy.Connect(context.Background())
 		defer strategy.Disconnect(context.Background())
 
 		orm := strategy.(*durability).orm
 		tx := orm.Create(accounts)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -78,7 +78,7 @@ func TestDurability(t *testing.T) {
 				Password: passwords[i],
 			}
 			acc, err := strategy.Login(context.Background(), credentials)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Equal(sst, credentials.Username, acc.Username)
 			require.Empty(sst, acc.PasswordHash)
 		})
@@ -122,14 +122,14 @@ func TestDurability(t *testing.T) {
 			},
 		}}
 		strategy, err := NewDurability(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		strategy.Connect(context.Background())
 		defer strategy.Disconnect(context.Background())
 
 		orm := strategy.(*durability).orm
 		tx := orm.Create(accounts)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -138,7 +138,7 @@ func TestDurability(t *testing.T) {
 				Password: passwords[i],
 			}
 			acc, err := strategy.Verify(context.Background(), credentials)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Equal(sst, credentials.Username, acc.Username)
 			require.Empty(sst, acc.PasswordHash)
 		})
@@ -155,19 +155,19 @@ func TestDurability(t *testing.T) {
 			},
 		}}
 		strategy, err := NewDurability(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		strategy.Connect(context.Background())
 		defer strategy.Disconnect(context.Background())
 
 		orm := strategy.(*durability).orm
 		tx := orm.Create(accounts)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		t.Run("KO", func(sst *testing.T) {
 			pass := uuid.NewString()
 			hash, err := password.HashString(pass)
-			require.Nil(st, err)
+			require.NoError(st, err)
 
 			acc := &entities.Account{
 				Username:     uuid.NewString(),
@@ -177,7 +177,7 @@ func TestDurability(t *testing.T) {
 				UpdatedAt:    time.Now().UnixMilli(),
 			}
 
-			require.Nil(st, strategy.Register(context.Background(), acc))
+			require.NoError(st, strategy.Register(context.Background(), acc))
 		})
 
 		t.Run("KO", func(sst *testing.T) {
@@ -198,14 +198,14 @@ func TestDurability(t *testing.T) {
 			},
 		}}
 		strategy, err := NewDurability(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		strategy.Connect(context.Background())
 		defer strategy.Disconnect(context.Background())
 
 		orm := strategy.(*durability).orm
 		tx := orm.Create(accounts)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 
 		st.Run("OK", func(sst *testing.T) {
 			i := testdata.Fake.IntBetween(0, len(accounts)-1)
@@ -213,7 +213,7 @@ func TestDurability(t *testing.T) {
 			ts := time.Now().UnixMilli()
 
 			err := strategy.Deactivate(context.Background(), username, ts)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 		})
 
 		st.Run("KO - user not found", func(sst *testing.T) {

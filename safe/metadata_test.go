@@ -96,14 +96,14 @@ func TestMetadata(t *testing.T) {
 			metadata.Set(id, true)
 
 			value, err := metadata.Value()
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Contains(sst, value, id)
 		})
 
 		st.Run("nullable", func(sst *testing.T) {
 			var metadata Metadata
 			value, err := metadata.Value()
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Empty(sst, value)
 		})
 	})
@@ -114,14 +114,14 @@ func TestMetadata(t *testing.T) {
 			src.Set(uuid.NewString(), true)
 
 			var metadata Metadata
-			require.Nil(sst, metadata.Scan(src.String()))
+			require.NoError(sst, metadata.Scan(src.String()))
 
 			require.Equal(sst, src.kv, metadata.kv)
 		})
 
 		st.Run("nullable", func(sst *testing.T) {
 			var metadata Metadata
-			require.Nil(sst, metadata.Scan(""))
+			require.NoError(sst, metadata.Scan(""))
 		})
 	})
 }

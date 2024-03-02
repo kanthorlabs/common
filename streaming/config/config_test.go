@@ -22,7 +22,7 @@ func TestConfig(t *testing.T) {
 				Concurrency: testdata.Fake.IntBetween(1, 1000),
 			},
 		}
-		require.Nil(st, conf.Validate())
+		require.NoError(st, conf.Validate())
 	})
 
 	t.Run("KO", func(st *testing.T) {

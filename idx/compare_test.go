@@ -13,7 +13,7 @@ func TestBeforeTime(t *testing.T) {
 
 	id := BeforeTime(now)
 	uid, err := ksuid.Parse(id)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.GreaterOrEqual(t, now.UnixMilli(), uid.Time().UnixMilli())
 }
 
@@ -22,6 +22,6 @@ func TestAfterTime(t *testing.T) {
 
 	id := AfterTime(now)
 	uid, err := ksuid.Parse(id)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.LessOrEqual(t, now.UnixMilli(), uid.Time().UnixMilli())
 }

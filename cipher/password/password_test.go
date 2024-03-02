@@ -12,9 +12,9 @@ func TestPassword(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		pass := faker.New().Internet().Password()
 		hash, err := HashString(pass)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
-		require.Nil(st, CompareString(pass, hash))
+		require.NoError(st, CompareString(pass, hash))
 
 	})
 

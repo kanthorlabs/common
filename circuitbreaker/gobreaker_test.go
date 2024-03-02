@@ -16,7 +16,7 @@ import (
 func TestGoBreaker(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		cb, err := NewGoBreaker(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		cmd := uuid.NewString()
 		count := testdata.Fake.IntBetween(10, 100)
@@ -24,7 +24,7 @@ func TestGoBreaker(t *testing.T) {
 			_, err = cb.Do(cmd, func() (any, error) {
 				return testdata.NewUser(clock.New()), nil
 			}, passerror)
-			require.Nil(st, err)
+			require.NoError(st, err)
 		}
 	})
 
@@ -36,7 +36,7 @@ func TestGoBreaker(t *testing.T) {
 
 	t.Run("KO - consecutive error", func(st *testing.T) {
 		cb, err := NewGoBreaker(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		cmd := uuid.NewString()
 		for {
@@ -52,7 +52,7 @@ func TestGoBreaker(t *testing.T) {
 
 	t.Run("KO - ratio error", func(st *testing.T) {
 		cb, err := NewGoBreaker(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		cmd := uuid.NewString()
 		errorable := false

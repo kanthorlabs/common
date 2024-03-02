@@ -28,21 +28,21 @@ func TestGateway(t *testing.T) {
 
 	t.Run(".Start/.Stop", func(st *testing.T) {
 		gw, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
-		require.Nil(st, gw.Start(context.Background()))
+		require.NoError(st, gw.Start(context.Background()))
 		require.ErrorIs(st, gw.Start(context.Background()), ErrAlreadyStarted)
-		require.Nil(st, gw.Stop(context.Background()))
+		require.NoError(st, gw.Stop(context.Background()))
 		require.ErrorIs(st, gw.Stop(context.Background()), ErrNotStarted)
 	})
 
 	t.Run(".UseHttpx/.Run", func(st *testing.T) {
 		gw, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.ErrorIs(st, gw.Run(context.Background()), ErrHandlerNotSet)
-		require.Nil(st, gw.UseHttpx(chi.NewRouter()))
+		require.NoError(st, gw.UseHttpx(chi.NewRouter()))
 		require.ErrorIs(st, gw.UseHttpx(chi.NewRouter()), ErrHandlerAlreadySet)
-		require.Nil(st, gw.Run(context.Background()))
+		require.NoError(st, gw.Run(context.Background()))
 	})
 }

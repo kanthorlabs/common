@@ -35,7 +35,7 @@ var testconf = &config.Config{
 
 func definitions(t *testing.T) map[string][]entities.Permission {
 	definitions, err := config.ParseDefinitionsToPermissions(testconf.Definitions.Uri)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	return definitions
 }

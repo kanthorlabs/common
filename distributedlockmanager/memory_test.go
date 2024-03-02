@@ -21,19 +21,19 @@ func TestMemory(t *testing.T) {
 
 	t.Run(".Lock/.Unlock", func(st *testing.T) {
 		dlm, err := NewMemory(testconf)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		key := uuid.NewString()
 		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
 
 		err = locker.Lock(context.Background())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		err = locker.Lock(context.Background())
 		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.LOCK.ERROR")
 
 		err = locker.Unlock(context.Background())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		err = locker.Unlock(context.Background())
 		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.UNLOCK.ERROR")

@@ -46,7 +46,7 @@ func TestAuthz(t *testing.T) {
 
 	t.Run("OK - tenant from header", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
 		req.Header.Set(HeaderAuthzTenant, tenantId)
@@ -64,7 +64,7 @@ func TestAuthz(t *testing.T) {
 
 	t.Run("OK - tenant from metadata", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		// prepare attached tenant id in account metadata
 		attachedTenantId := uuid.NewString()
@@ -95,7 +95,7 @@ func TestAuthz(t *testing.T) {
 
 	t.Run("KO - not permission error", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
 		req.Header.Set(HeaderAuthzTenant, tenantId)
@@ -113,14 +113,14 @@ func TestAuthz(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], exception.Error())
 	})
 
 	t.Run("KO - no account error", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req.Header.Set(HeaderAuthzTenant, tenantId)
 
@@ -131,14 +131,14 @@ func TestAuthz(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.AUTHZ.ACCOUNT_EMPTY.ERROR")
 	})
 
 	t.Run("KO - no tenant error", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
 
@@ -149,7 +149,7 @@ func TestAuthz(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.AUTHZ.TENANT_EMPTY.ERROR")
 	})
@@ -164,7 +164,7 @@ func TestAuthz(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodGet, "/undetectable", nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
 		req.Header.Set(HeaderAuthzTenant, tenantId)
@@ -176,7 +176,7 @@ func TestAuthz(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.AUTHZ.OBJECT_EMPTY.ERROR")
 	})

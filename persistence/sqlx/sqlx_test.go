@@ -24,15 +24,15 @@ func TestSqlite(t *testing.T) {
 		require.ErrorIs(st, instance.Readiness(), ErrNotConnected)
 
 		// connect then check readiness
-		require.Nil(st, instance.Connect(context.Background()))
-		require.Nil(st, instance.Readiness())
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Readiness())
 
 		// disconnect then check readiness
-		require.Nil(st, instance.Disconnect(context.Background()))
-		require.Nil(st, instance.Readiness())
+		require.NoError(st, instance.Disconnect(context.Background()))
+		require.NoError(st, instance.Readiness())
 
 		// close the connection manually
-		require.Nil(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Connect(context.Background()))
 		end(st, instance)
 
 		// the readiness should be failed
@@ -44,15 +44,15 @@ func TestSqlite(t *testing.T) {
 		require.ErrorIs(st, instance.Liveness(), ErrNotConnected)
 
 		// connect then check readiness
-		require.Nil(st, instance.Connect(context.Background()))
-		require.Nil(st, instance.Liveness())
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Liveness())
 
 		// disconnect then check readiness
-		require.Nil(st, instance.Disconnect(context.Background()))
-		require.Nil(st, instance.Liveness())
+		require.NoError(st, instance.Disconnect(context.Background()))
+		require.NoError(st, instance.Liveness())
 
 		// close the connection manually
-		require.Nil(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Connect(context.Background()))
 		end(st, instance)
 
 		// the readiness should be failed
@@ -67,11 +67,11 @@ func TestSqlite(t *testing.T) {
 		// unabel to disconnect if you didn't connect first
 		require.ErrorIs(st, instance.Disconnect(ctx), ErrNotConnected)
 
-		require.Nil(st, instance.Connect(ctx))
+		require.NoError(st, instance.Connect(ctx))
 		// already connect, should not start new connection
 		require.ErrorIs(st, instance.Connect(ctx), ErrAlreadyConnected)
 
-		require.Nil(st, instance.Disconnect(ctx))
+		require.NoError(st, instance.Disconnect(ctx))
 	})
 }
 
@@ -86,14 +86,14 @@ func start(t *testing.T) persistence.Persistence {
 		},
 	}
 	instance, err := New(conf, testify.Logger())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	return instance
 }
 
 func end(t *testing.T, instance persistence.Persistence) {
 	conn, err := instance.Client().(*gorm.DB).DB()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	err = conn.Close()
-	require.Nil(t, err)
+	require.NoError(t, err)
 }

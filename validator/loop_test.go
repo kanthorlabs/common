@@ -14,7 +14,7 @@ func TestSliceRequired(t *testing.T) {
 			testdata.Fake.UserAgent().Firefox(),
 			testdata.Fake.UserAgent().Safari(),
 		}
-		require.Nil(st, SliceRequired("agents", agents)())
+		require.NoError(st, SliceRequired("agents", agents)())
 	})
 
 	t.Run("KO - nil slice", func(st *testing.T) {
@@ -31,7 +31,7 @@ func TestSliceMaxLength(t *testing.T) {
 	items := make([]int, count)
 
 	t.Run("OK", func(st *testing.T) {
-		require.Nil(st, SliceMaxLength("items", items, count)())
+		require.NoError(st, SliceMaxLength("items", items, count)())
 	})
 
 	t.Run("KO - exceeded maximum capacity", func(st *testing.T) {
@@ -46,7 +46,7 @@ func TestMapRequired(t *testing.T) {
 			"firefox": testdata.Fake.UserAgent().Firefox(),
 			"safar":   testdata.Fake.UserAgent().Safari(),
 		}
-		require.Nil(st, MapRequired("agents", agents)())
+		require.NoError(st, MapRequired("agents", agents)())
 	})
 
 	t.Run("KO - nil map", func(st *testing.T) {

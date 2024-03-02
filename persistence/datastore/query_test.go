@@ -37,7 +37,7 @@ func TestScanningQuery(t *testing.T) {
 		var rows []*testdata.User
 		tx := query.Sqlx(db, condition).Find(&rows)
 
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		// make sure we only retrieve records in the range of .From and .To
 		require.Equal(st, size, len(rows))
 
@@ -59,7 +59,7 @@ func TestScanningQuery(t *testing.T) {
 		var rows []*testdata.User
 		tx := query.Sqlx(db, condition).Find(&rows)
 
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		require.Equal(st, 1, len(rows))
 
 		require.Equal(st, rows[0], records[search])
@@ -78,7 +78,7 @@ func TestScanningQuery(t *testing.T) {
 		var rows []*testdata.User
 		tx := query.Sqlx(db, condition).Find(&rows)
 
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		require.Equal(st, size/2, len(rows))
 
 		for i := range rows {
@@ -100,10 +100,10 @@ func setup(t *testing.T, db *gorm.DB, query *ScanningQuery) (map[string]*testdat
 	query.Size = size
 
 	from, err := idx.ToTime(ids[count-mid-1])
-	require.Nil(t, err)
+	require.NoError(t, err)
 	query.From = from
 	to, err := idx.ToTime(ids[count-mid-size])
-	require.Nil(t, err)
+	require.NoError(t, err)
 	query.To = to
 
 	return records, ids, mid, size, count

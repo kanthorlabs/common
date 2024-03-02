@@ -34,7 +34,7 @@ func TestToTime(t *testing.T) {
 		id := FromTime(testdata.Fake.Color().SafeColorName(), now)
 
 		ts, err := ToTime(id)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		// idx is only guaranteed to be unique at the second level
 		require.Equal(st, now.Unix(), ts.Unix())

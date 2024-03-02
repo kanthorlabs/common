@@ -33,7 +33,7 @@ func TestSender(t *testing.T) {
 		defer server.Close()
 
 		send, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		id := uuid.NewString()
 		req := &entities.Request{
@@ -42,7 +42,7 @@ func TestSender(t *testing.T) {
 			Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
 		}
 		res, err := send(context.Background(), req)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		require.Equal(st, http.StatusOK, res.Status)
 		require.Contains(st, string(res.Body), id)
@@ -55,7 +55,7 @@ func TestSender(t *testing.T) {
 
 	t.Run("KO - url parse error", func(st *testing.T) {
 		send, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		id := uuid.NewString()
 		req := &entities.Request{
@@ -64,12 +64,12 @@ func TestSender(t *testing.T) {
 			Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
 		}
 		_, err = send(context.Background(), req)
-		require.ErrorContains(t, err, "SENDER.URL_PARSE.ERROR")
+		require.ErrorContains(t, err, "SENDER.URL.PARSE.ERROR")
 	})
 
 	t.Run("KO - unsupported scheme error", func(st *testing.T) {
 		send, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		id := uuid.NewString()
 		req := &entities.Request{
@@ -78,7 +78,7 @@ func TestSender(t *testing.T) {
 			Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
 		}
 		_, err = send(context.Background(), req)
-		require.ErrorContains(t, err, "SENDER.SCHEME_NOT_SUPPORT.ERROR")
+		require.ErrorContains(t, err, "SENDER.SCHEME.NOT_SUPPORT.ERROR")
 	})
 }
 

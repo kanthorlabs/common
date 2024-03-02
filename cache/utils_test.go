@@ -2,118 +2,89 @@ package cache
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	mcache "github.com/kanthorlabs/common/mocks/cache"
+	"github.com/kanthorlabs/common/clock"
 	"github.com/kanthorlabs/common/testdata"
-	"github.com/stretchr/testify/mock"
+	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetOrSet(t *testing.T) {
-	c := mcache.NewCache(t)
-	key := uuid.NewString()
-	value := uuid.NewString()
-	entry, _ := json.Marshal(value)
-	ttl := time.Hour
+func TestKey(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+		expected := "cache/" + key
 
-	t.Run("OK - insert to cache", func(st *testing.T) {
-		c.EXPECT().Get(mock.Anything, key).Return(nil, ErrEntryNotFound).Once()
-		c.EXPECT().Set(mock.Anything, key, entry, ttl).Return(nil).Once()
+		k, err := Key(key)
 
-		v, err := GetOrSet[string](c, context.Background(), key, ttl, func() (*string, error) {
-			return &value, nil
-		})
-
-		require.Nil(st, err)
-		require.Equal(st, value, *v)
+		require.NoError(st, err)
+		require.Equal(st, expected, k)
 	})
+
+	t.Run("KO - empty key error", func(st *testing.T) {
+		k, err := Key("")
+
+		require.Empty(st, k)
+		require.ErrorIs(st, err, ErrKeyEmpty)
+	})
+}
+
+func TestGetOrSet(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	ttl := time.Minute
+	value := testdata.NewUser(clock.New())
 
 	t.Run("OK - get from cache", func(st *testing.T) {
-		c.EXPECT().Get(mock.Anything, key).Return(entry, nil).Once()
+		key := uuid.NewString()
+		err := c.Set(context.Background(), key, value, ttl)
+		require.NoError(st, err)
 
-		v, err := GetOrSet[string](c, context.Background(), key, ttl, func() (*string, error) {
-			x := uuid.NewString()
-			return &x, nil
+		entry, err := GetOrSet(c, context.Background(), key, ttl, func() (*testdata.User, error) {
+			return nil, nil
 		})
 
-		require.Nil(st, err)
-		require.Equal(st, value, *v)
+		require.NoError(st, err)
+		require.Equal(st, value, *entry)
 	})
 
-	t.Run("KO - get error", func(st *testing.T) {
-		expected := errors.New(testdata.Fake.Lorem().Sentence(1))
-		c.EXPECT().Get(mock.Anything, key).Return(nil, expected).Once()
+	t.Run("OK - get from fn", func(st *testing.T) {
+		key := uuid.NewString()
 
-		_, err := GetOrSet[string](c, context.Background(), key, ttl, func() (*string, error) {
+		entry, err := GetOrSet(c, context.Background(), key, ttl, func() (*testdata.User, error) {
 			return &value, nil
 		})
 
-		require.ErrorIs(st, err, expected)
+		require.NoError(st, err)
+		require.Equal(st, value, *entry)
 	})
 
-	t.Run("KO - unmarshal error", func(st *testing.T) {
-		c.EXPECT().Get(mock.Anything, key).Return([]byte(uuid.NewString()), nil).Once()
+	t.Run("KO - get from cache error", func(st *testing.T) {
+		key := uuid.NewString()
+		err := c.Set(context.Background(), key, "-", ttl)
+		require.NoError(st, err)
 
-		_, err := GetOrSet[string](c, context.Background(), key, ttl, func() (*string, error) {
-			x := uuid.NewString()
-			return &x, nil
+		_, err = GetOrSet(c, context.Background(), key, 0, func() (*testdata.User, error) {
+			return nil, nil
 		})
 
-		require.ErrorContains(st, err, "invalid character")
+		require.Error(st, err)
 	})
 
-	t.Run("KO - handler error", func(st *testing.T) {
-		expected := errors.New(testdata.Fake.Lorem().Sentence(1))
+	t.Run("KO - get from fn error", func(st *testing.T) {
+		key := uuid.NewString()
+		expected := errors.New("error")
 
-		c.EXPECT().Get(mock.Anything, key).Return(nil, ErrEntryNotFound).Once()
-
-		_, err := GetOrSet[string](c, context.Background(), key, ttl, func() (*string, error) {
+		_, err := GetOrSet(c, context.Background(), key, 0, func() (*string, error) {
 			return nil, expected
 		})
 
 		require.ErrorIs(st, err, expected)
 	})
-
-	t.Run("KO - marshal error", func(st *testing.T) {
-		c.EXPECT().Get(mock.Anything, key).Return(nil, ErrEntryNotFound).Once()
-
-		_, err := GetOrSet[person](c, context.Background(), key, ttl, func() (*person, error) {
-			parent := &person{
-				Name: testdata.Fake.Person().FirstName(),
-				Children: []*person{
-					{Name: testdata.Fake.Person().FirstName()},
-					{Name: testdata.Fake.Person().FirstName()},
-				},
-			}
-			parent.Children[0].Parent = parent
-			parent.Children[1].Parent = parent
-			return parent, nil
-		})
-
-		require.ErrorContains(st, err, "json: unsupported value")
-	})
-
-	t.Run("KO - set error", func(st *testing.T) {
-		expected := errors.New(testdata.Fake.Lorem().Sentence(1))
-
-		c.EXPECT().Get(mock.Anything, key).Return(nil, ErrEntryNotFound).Once()
-		c.EXPECT().Set(mock.Anything, key, entry, ttl).Return(expected).Once()
-
-		_, err := GetOrSet[string](c, context.Background(), key, ttl, func() (*string, error) {
-			return &value, nil
-		})
-
-		require.ErrorIs(st, err, expected)
-	})
-}
-
-type person struct {
-	Name     string
-	Parent   *person
-	Children []*person
 }

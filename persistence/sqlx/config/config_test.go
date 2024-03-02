@@ -20,5 +20,5 @@ func TestDefault(t *testing.T) {
 		MaxIdleCount: DefaultConnMaxIdleCount,
 		MaxOpenCount: DefaultConnMaxOpenCount,
 	}
-	require.Nil(t, conf.Validate())
+	require.NoError(t, conf.Validate())
 }

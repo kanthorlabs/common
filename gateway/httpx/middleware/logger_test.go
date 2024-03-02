@@ -38,7 +38,7 @@ func TestLogger(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -79,7 +79,7 @@ func TestLogger(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -122,7 +122,7 @@ func TestLogger(t *testing.T) {
 
 		body := utils.Stringify(map[string]string{"id": uuid.NewString()})
 		req, err := http.NewRequest(http.MethodPost, path, strings.NewReader(body))
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)

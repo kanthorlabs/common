@@ -23,19 +23,19 @@ func GormStart(t *testing.T) *gorm.DB {
 			},
 		),
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = db.AutoMigrate(&testdata.User{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	return db
 }
 
 func GormEnd(t *testing.T, db *gorm.DB) {
 	conn, err := db.DB()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	err = conn.Close()
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func GormInsert(t *testing.T, db *gorm.DB, count int) (map[string]*testdata.User, []string) {
@@ -49,7 +49,7 @@ func GormInsert(t *testing.T, db *gorm.DB, count int) (map[string]*testdata.User
 
 		row := testdata.NewUser(watch)
 		tx := db.Create(&row)
-		require.Nil(t, tx.Error)
+		require.NoError(t, tx.Error)
 
 		ids = append(ids, row.Id)
 		rows[row.Id] = &row

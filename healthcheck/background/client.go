@@ -64,7 +64,7 @@ func (client *client) Liveness() (err error) {
 
 		delta = int64(client.conf.Liveness.Timeout * client.conf.Liveness.MaxTry)
 		if diff > delta {
-			err = fmt.Errorf("HEALTHCHECK.BACKGROUND.CLIENT.LIVENESS.TIMEOUT.ERROR(diff:%d > delta:%d)", diff, delta)
+			err = fmt.Errorf("HEALTHCHECK.BACKGROUND.CLIENT.LIVENESS.TIMEOUT.ERROR: diff(%d) > delta(:%d)", diff, delta)
 			continue
 		}
 

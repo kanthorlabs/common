@@ -29,7 +29,7 @@ func TestIdempotency(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodPost, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		key := uuid.NewString()
 		req.Header.Set(HeaderIdempotencyKey, key)
@@ -47,7 +47,7 @@ func TestIdempotency(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["key"], key)
 	})
@@ -64,7 +64,7 @@ func TestIdempotency(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		key := uuid.NewString()
 		req.Header.Set(HeaderIdempotencyKey, key)
@@ -76,7 +76,7 @@ func TestIdempotency(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.False(st, body["ok"].(bool))
 	})
@@ -93,7 +93,7 @@ func TestIdempotency(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodPost, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -102,7 +102,7 @@ func TestIdempotency(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.IDEMPOTENCY.KEY_EMPTY.ERROR")
 	})
@@ -119,7 +119,7 @@ func TestIdempotency(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodPost, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		key := uuid.NewString()
 		req.Header.Set(HeaderIdempotencyKey, key)
@@ -137,7 +137,7 @@ func TestIdempotency(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], idempotency.ErrConflict.Error())
 	})

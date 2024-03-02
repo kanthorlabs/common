@@ -28,7 +28,7 @@ func TestSlice(t *testing.T) {
 	}
 	t.Run("OK", func(st *testing.T) {
 		err := Validate(Slice(items, svalidate(high+1)))
-		require.Nil(st, err)
+		require.NoError(st, err)
 	})
 
 	t.Run("KO - item error", func(st *testing.T) {
@@ -53,7 +53,7 @@ func TestMap(t *testing.T) {
 	}
 	t.Run("OK", func(st *testing.T) {
 		err := Validate(Map(items, mvalidate(high+1)))
-		require.Nil(st, err)
+		require.NoError(st, err)
 	})
 
 	t.Run("KO - item error", func(st *testing.T) {

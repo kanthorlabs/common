@@ -2,44 +2,38 @@ package cache
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 )
 
-func Key(k string) string {
-	return "cache/" + k
+func Key(k string) (string, error) {
+	if k == "" {
+		return "", ErrKeyEmpty
+	}
+	return "cache/" + k, nil
 }
 
+// GetOrSet is a helper function that allow you get existing entry from the cache or set it if it does not exist yet
+// the function must return a pointer of the expected type and an error
 func GetOrSet[T any](cache Cache, ctx context.Context, key string, ttl time.Duration, fn func() (*T, error)) (*T, error) {
-	entry, err := cache.Get(ctx, key)
-	if err == nil {
-		var dest T
-		if err := json.Unmarshal(entry, &dest); err != nil {
-			return nil, err
-		}
+	var err error
+	var dest T
 
+	err = cache.Get(ctx, key, &dest)
+	if err == nil {
 		return &dest, nil
 	}
 
-	// if we catched any error other than ErrEntryNotFound, return it immediately
+	// if the error is returned and it is not ErrEntryNotFound, return the error
 	if !errors.Is(err, ErrEntryNotFound) {
 		return nil, err
 	}
 
-	data, err := fn()
+	// otherwise, retrieve the entry and set it in the cache
+	entry, err := fn()
 	if err != nil {
 		return nil, err
 	}
 
-	entry, err = json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := cache.Set(ctx, key, entry, ttl); err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return entry, cache.Set(ctx, key, entry, ttl)
 }

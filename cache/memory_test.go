@@ -7,139 +7,226 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/cache/config"
+	"github.com/kanthorlabs/common/clock"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMemory(t *testing.T) {
-	t.Run("New", func(st *testing.T) {
-		st.Run("KO - configuration error", func(sst *testing.T) {
-			conf := &config.Config{}
-			_, err := NewMemory(conf, testify.Logger())
-			require.ErrorContains(st, err, "CACHE.CONFIG.")
-		})
+func TestMemory_New(t *testing.T) {
+	t.Run("KO - configuration error", func(st *testing.T) {
+		conf := &config.Config{}
+		_, err := NewMemory(conf, testify.Logger())
+		require.ErrorContains(t, err, "CACHE.CONFIG.")
 	})
+}
 
-	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
+func TestMemory_Connect(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
 
-		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
-		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.ErrorIs(t, c.Connect(context.Background()), ErrAlreadyConnected)
+}
 
-		require.Nil(st, c.Connect(context.Background()))
+func TestMemory_Disconnect(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
 
-		require.ErrorIs(st, c.Connect(context.Background()), ErrAlreadyConnected)
+	require.ErrorIs(t, c.Disconnect(context.Background()), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.NoError(t, c.Disconnect(context.Background()))
+}
 
-		require.Nil(st, c.Readiness())
-		require.Nil(st, c.Liveness())
+func TestMemory_Liveness(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
 
-		require.Nil(st, c.Disconnect(context.Background()))
+	require.ErrorIs(t, c.Liveness(), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.NoError(t, c.Liveness())
+	require.NoError(t, c.Disconnect(context.Background()))
+	require.NoError(t, c.Liveness())
+}
 
-		require.Nil(st, c.Readiness())
-		require.Nil(st, c.Liveness())
+func TestMemory_Readiness(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
 
-		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
-	})
+	require.ErrorIs(t, c.Readiness(), ErrNotConnected)
+	require.NoError(t, c.Connect(context.Background()))
+	require.NoError(t, c.Readiness())
+	require.NoError(t, c.Disconnect(context.Background()))
+	require.NoError(t, c.Readiness())
+}
 
-	t.Run(".Get", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
+func TestMemory_Get(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
 
-		st.Run("OK", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Set(context.Background(), key, testdata.Fake.Blood().Name(), time.Hour)
-			require.Nil(st, err)
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
 
-			_, err = c.Get(context.Background(), key)
-			require.Nil(st, err)
-		})
-
-		st.Run("KO - not found error", func(sst *testing.T) {
-			key := uuid.NewString()
-			_, err := c.Get(context.Background(), key)
-			require.ErrorIs(st, err, ErrEntryNotFound)
-		})
-	})
-
-	t.Run(".Set", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK - not nil", func(sst *testing.T) {
-			key := uuid.NewString()
-			value := testdata.Fake.Blood().Name()
-			err := c.Set(context.Background(), key, value, time.Hour)
-			require.Nil(st, err)
-		})
-
-		st.Run("OK - nil", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Set(context.Background(), key, nil, time.Hour)
-			require.Nil(st, err)
-		})
-
-		st.Run("KO - marshal error", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Set(context.Background(), key, make(chan int), time.Hour)
-			require.ErrorContains(st, err, "json: unsupported type")
-		})
-	})
-
-	t.Run(".Exist", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK", func(sst *testing.T) {
-			key := uuid.NewString()
-			exist := c.Exist(context.Background(), key)
-			require.False(st, exist)
-		})
-	})
-
-	t.Run(".Del", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
-		st.Run("OK", func(sst *testing.T) {
-			key := uuid.NewString()
-			err := c.Del(context.Background(), key)
-			require.Nil(st, err)
-		})
-	})
-
-	t.Run(".Expire", func(st *testing.T) {
-		c, err := NewMemory(testconf, testify.Logger())
-		require.Nil(st, err)
-		c.Connect(context.Background())
-		defer c.Disconnect(context.Background())
-
+	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
-		err = c.Set(context.Background(), key, testdata.Fake.Blood().Name(), time.Hour)
-		require.Nil(st, err)
+		c.Set(context.Background(), key, value, ttl)
 
-		st.Run("OK", func(sst *testing.T) {
-			err = c.Expire(context.Background(), key, time.Now().Add(time.Hour))
-			require.Nil(st, err)
-		})
+		var dest testdata.User
+		err := c.Get(context.Background(), key, &dest)
+		require.NoError(st, err)
+		require.Equal(st, value, dest)
+	})
 
-		st.Run("KO - not found error", func(sst *testing.T) {
-			err = c.Expire(context.Background(), uuid.NewString(), time.Now())
-			require.ErrorIs(st, err, ErrEntryNotFound)
-		})
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		var dest string
+		err := c.Get(context.Background(), "", &dest)
+		require.ErrorContains(t, err, "CACHE.KEY.EMPTY.ERROR")
+	})
 
-		st.Run("KO - pass time", func(sst *testing.T) {
-			err = c.Expire(context.Background(), key, time.Now().Add(-time.Hour))
-			require.ErrorContains(st, err, "CACHE.EXPIRE.EXPIRED_AT_TIME_PASS.ERROR")
-		})
+	t.Run("KO - key not found error", func(st *testing.T) {
+		key := uuid.NewString()
+		var dest testdata.User
+		err := c.Get(context.Background(), key, &dest)
+		require.ErrorIs(st, err, ErrEntryNotFound)
+	})
+
+	t.Run("KO - unmarshal error", func(st *testing.T) {
+		key := uuid.NewString()
+		c.Set(context.Background(), key, value, ttl)
+
+		var dest chan int
+		err := c.Get(context.Background(), key, &dest)
+		require.ErrorContains(st, err, "CACHE.VALUE.UNMARSHAL.ERROR")
+	})
+}
+
+func TestMemory_Set(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	key := uuid.NewString()
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK", func(st *testing.T) {
+		err := c.Set(context.Background(), key, value, ttl)
+		require.NoError(st, err)
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		err := c.Set(context.Background(), "", value, ttl)
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+
+	t.Run("KO - marshal error", func(st *testing.T) {
+		err := c.Set(context.Background(), key, make(chan int), ttl)
+		require.ErrorContains(st, err, "CACHE.VALUE.MARSHAL.ERROR")
+	})
+}
+
+func TestMemory_Exist(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+
+		c.Set(context.Background(), key, value, ttl)
+		require.True(st, c.Exist(context.Background(), key))
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		require.False(st, c.Exist(context.Background(), ""))
+	})
+
+	t.Run("OK - key not found err", func(st *testing.T) {
+		key := uuid.NewString()
+
+		require.False(st, c.Exist(context.Background(), key))
+	})
+}
+
+func TestNenory_Del(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Minute
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+
+		c.Set(context.Background(), key, value, ttl)
+		require.True(st, c.Exist(context.Background(), key))
+
+		err := c.Del(context.Background(), key)
+		require.NoError(st, err)
+		require.False(st, c.Exist(context.Background(), key))
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		err := c.Del(context.Background(), "")
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+}
+
+func TestMemory_Expire(t *testing.T) {
+	c, err := NewMemory(testconf, testify.Logger())
+	require.NoError(t, err)
+	c.Connect(context.Background())
+	defer c.Disconnect(context.Background())
+
+	value := testdata.NewUser(clock.New())
+	ttl := time.Second
+
+	t.Run("OK", func(st *testing.T) {
+		key := uuid.NewString()
+
+		c.Set(context.Background(), key, value, ttl)
+		require.True(st, c.Exist(context.Background(), key))
+
+		err := c.Expire(context.Background(), key, time.Now().Add(time.Second))
+		require.NoError(st, err)
+
+		for i := 0; i < 10; i++ {
+			if c.Exist(context.Background(), key) {
+				time.Sleep(time.Second / 2)
+				continue
+			}
+
+			return
+		}
+
+		require.Fail(st, "key still exists after expiration")
+	})
+
+	t.Run("KO - key is empty error", func(st *testing.T) {
+		err := c.Expire(context.Background(), "", time.Now())
+		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+	})
+
+	t.Run("KO - key not found error", func(st *testing.T) {
+		key := uuid.NewString()
+		err := c.Expire(context.Background(), key, time.Now())
+		require.ErrorIs(st, err, ErrEntryNotFound)
+	})
+
+	t.Run("KO - negative ttl error", func(st *testing.T) {
+		key := uuid.NewString()
+		c.Set(context.Background(), key, value, ttl)
+
+		err := c.Expire(context.Background(), key, time.Now().Add(-time.Second))
+		require.ErrorContains(st, err, "CACHE.TIME_TO_LIVE.NEGATIVE.ERROR")
 	})
 }

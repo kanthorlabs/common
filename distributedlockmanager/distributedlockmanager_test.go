@@ -20,7 +20,7 @@ func TestIdempotency(t *testing.T) {
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf)
-		require.Nil(st, err)
+		require.NoError(st, err)
 	})
 
 	t.Run("OK - redlock", func(st *testing.T) {
@@ -29,7 +29,7 @@ func TestIdempotency(t *testing.T) {
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf)
-		require.Nil(st, err)
+		require.NoError(st, err)
 	})
 
 	t.Run("KO - unknown error", func(st *testing.T) {

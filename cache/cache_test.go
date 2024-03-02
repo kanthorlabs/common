@@ -18,7 +18,7 @@ func TestCache(t *testing.T) {
 			Uri: "memory://",
 		}
 		_, err := New(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 	})
 
 	t.Run("OK - redis", func(st *testing.T) {
@@ -26,7 +26,7 @@ func TestCache(t *testing.T) {
 			Uri: "redis://localhost:6379/0",
 		}
 		_, err := New(conf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 	})
 
 	t.Run("KO - unknown error", func(st *testing.T) {

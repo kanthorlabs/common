@@ -29,7 +29,7 @@ func NewFile(ns string, dirs []string) (Provider, error) {
 	if err := instance.MergeInConfig(); err != nil {
 		// ignore not found files, otherwise return error
 		if _, notfound := err.(viper.ConfigFileNotFoundError); !notfound {
-			return nil, fmt.Errorf("CONFIGURATION.FILE.ERROR(%v)", err)
+			return nil, fmt.Errorf("CONFIGURATION.FILE.ERROR: %w", err)
 		}
 	}
 

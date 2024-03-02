@@ -56,7 +56,7 @@ func TestWriter(t *testing.T) {
 	for i := range status {
 		path := fmt.Sprintf("/%d", status[i])
 		req, err := http.NewRequest(http.MethodPost, path, nil)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -65,7 +65,7 @@ func TestWriter(t *testing.T) {
 
 		var body M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		require.Contains(t, reply[key], body[key])
 	}
@@ -84,7 +84,7 @@ func TestWriter(t *testing.T) {
 	for i := range errs {
 		path := errs[i]
 		req, err := http.NewRequest(http.MethodPost, path, nil)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -93,7 +93,7 @@ func TestWriter(t *testing.T) {
 
 		var body M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		require.Contains(t, msg, body["error"])
 	}

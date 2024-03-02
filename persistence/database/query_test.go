@@ -33,7 +33,7 @@ func TestPagingQuery(t *testing.T) {
 
 		var rows []*testdata.User
 		tx := query.Sqlx(db.Model(&testdata.User{}), "id", []string{"username"}).Find(&rows)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		require.Equal(st, len(query.Ids), len(rows))
 
 		for i := range rows {
@@ -53,7 +53,7 @@ func TestPagingQuery(t *testing.T) {
 
 		var rows []*testdata.User
 		tx := query.Sqlx(db.Model(&testdata.User{}), "id", []string{"username"}).Find(&rows)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		require.Equal(st, 1, len(rows))
 
 		require.Equal(st, record, rows[0])
@@ -72,7 +72,7 @@ func TestPagingQuery(t *testing.T) {
 
 		var count int64
 		tx := query.SqlxCount(db.Model(&testdata.User{}), "id", []string{"username"}).Count(&count)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		require.Equal(st, int64(len(query.Ids)), count)
 
 	})
@@ -89,7 +89,7 @@ func TestPagingQuery(t *testing.T) {
 
 		var count int64
 		tx := query.SqlxCount(db.Model(&testdata.User{}), "id", []string{"username"}).Count(&count)
-		require.Nil(st, tx.Error)
+		require.NoError(st, tx.Error)
 		require.Equal(st, int64(1), count)
 	})
 

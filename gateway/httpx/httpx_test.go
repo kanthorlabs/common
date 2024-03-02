@@ -23,7 +23,7 @@ var testconf = &config.Config{
 func TestHttpx(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		s, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		path := "/ping"
 
@@ -32,7 +32,7 @@ func TestHttpx(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -42,7 +42,7 @@ func TestHttpx(t *testing.T) {
 
 	t.Run("OK - panic recover", func(st *testing.T) {
 		s, err := New(testconf, testify.Logger())
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		path := "/exception"
 
@@ -51,7 +51,7 @@ func TestHttpx(t *testing.T) {
 		})
 
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)

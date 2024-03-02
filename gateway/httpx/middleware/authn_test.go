@@ -44,7 +44,7 @@ func TestAuthn(t *testing.T) {
 
 	t.Run("OK - fallback", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
 
@@ -62,7 +62,7 @@ func TestAuthn(t *testing.T) {
 
 	t.Run("OK - set via header", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req.Header.Set(HeaderAuthnEngine, config.EngineDurability)
 		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
@@ -81,7 +81,7 @@ func TestAuthn(t *testing.T) {
 
 	t.Run("KO - unknown engine", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req.Header.Set(HeaderAuthnEngine, testdata.Fake.Blood().Name())
 		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
@@ -93,14 +93,14 @@ func TestAuthn(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.AUTHN.ENGINE_UNKNOWN.ERROR")
 	})
 
 	t.Run("KO - parse credentials error", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		res := httptest.NewRecorder()
 		s.ServeHTTP(res, req)
@@ -109,14 +109,14 @@ func TestAuthn(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.AUTHN.CRENDEITALS_PARSE.ERROR")
 	})
 
 	t.Run("KO - verify error", func(st *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		req.Header.Set(HeaderAuthnCredentials, "basic "+credentials)
 
@@ -133,7 +133,7 @@ func TestAuthn(t *testing.T) {
 
 		var body writer.M
 		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.Nil(st, err)
+		require.NoError(st, err)
 
 		require.Contains(st, body["error"], expected.Error())
 	})

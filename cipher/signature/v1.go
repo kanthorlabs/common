@@ -7,6 +7,7 @@ import (
 	"errors"
 )
 
+// v1 is the implementation of the signature version 1 that is based on HMAC-SHA256 with hex encoding.
 type v1 struct{}
 
 func (signature *v1) Sign(key, data string) string {

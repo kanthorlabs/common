@@ -64,18 +64,18 @@ func TestPassport(t *testing.T) {
 
 	t.Run(".Connect/.Readiness/.Liveness/.Disconnect", func(st *testing.T) {
 		pp, _ := instance(t)
-		require.Nil(st, pp.Connect(context.Background()))
-		require.Nil(st, pp.Readiness())
-		require.Nil(st, pp.Liveness())
-		require.Nil(st, pp.Disconnect(context.Background()))
+		require.NoError(st, pp.Connect(context.Background()))
+		require.NoError(st, pp.Readiness())
+		require.NoError(st, pp.Liveness())
+		require.NoError(st, pp.Disconnect(context.Background()))
 	})
 
 	t.Run(".Login", func(st *testing.T) {
 		t.Run("Ok", func(sst *testing.T) {
 			pp, conf := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			acc := askacc(conf)
@@ -86,15 +86,15 @@ func TestPassport(t *testing.T) {
 				Password: pass.(string),
 			}
 			account, err := pp.Login(context.Background(), askname(conf), credentials)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Equal(sst, credentials.Username, account.Username)
 		})
 
 		t.Run("KO - strategy not found", func(sst *testing.T) {
 			pp, _ := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			_, err := pp.Login(context.Background(), testdata.Fake.Beer().Name(), nil)
@@ -105,20 +105,20 @@ func TestPassport(t *testing.T) {
 	t.Run(".Logout", func(st *testing.T) {
 		t.Run("Ok", func(sst *testing.T) {
 			pp, conf := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			err := pp.Logout(context.Background(), askname(conf), nil)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 		})
 
 		t.Run("KO - strategy not found", func(sst *testing.T) {
 			pp, _ := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			err := pp.Logout(context.Background(), testdata.Fake.Beer().Name(), nil)
@@ -129,9 +129,9 @@ func TestPassport(t *testing.T) {
 	t.Run(".Verify", func(st *testing.T) {
 		t.Run("Ok", func(sst *testing.T) {
 			pp, conf := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			acc := askacc(conf)
@@ -141,15 +141,15 @@ func TestPassport(t *testing.T) {
 				Password: pass.(string),
 			}
 			account, err := pp.Verify(context.Background(), askname(conf), credentials)
-			require.Nil(sst, err)
+			require.NoError(sst, err)
 			require.Equal(sst, credentials.Username, account.Username)
 		})
 
 		t.Run("KO - strategy not found", func(sst *testing.T) {
 			pp, _ := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			_, err := pp.Verify(context.Background(), testdata.Fake.Beer().Name(), nil)
@@ -160,9 +160,9 @@ func TestPassport(t *testing.T) {
 	t.Run(".Register", func(st *testing.T) {
 		t.Run("OK", func(sst *testing.T) {
 			pp, conf := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			err := pp.Register(context.Background(), askname(conf), nil)
@@ -171,9 +171,9 @@ func TestPassport(t *testing.T) {
 
 		t.Run("KO - strategy not found", func(sst *testing.T) {
 			pp, _ := instance(sst)
-			require.Nil(sst, pp.Connect(context.Background()))
+			require.NoError(sst, pp.Connect(context.Background()))
 			defer func() {
-				require.Nil(sst, pp.Disconnect(context.Background()))
+				require.NoError(sst, pp.Disconnect(context.Background()))
 			}()
 
 			err := pp.Register(context.Background(), testdata.Fake.Beer().Name(), nil)
@@ -188,7 +188,7 @@ func instance(t *testing.T) (Passport, *config.Config) {
 	conf.Strategies = append(conf.Strategies, ask())
 
 	pp, err := New(conf, testify.Logger())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	return pp, conf
 }

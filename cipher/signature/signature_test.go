@@ -32,7 +32,7 @@ func TestVerify(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		sign := Sign(key, data)
 
-		require.Nil(st, Verify(key, data, sign))
+		require.NoError(st, Verify(key, data, sign))
 	})
 
 	t.Run("KO - malformed signature", func(st *testing.T) {

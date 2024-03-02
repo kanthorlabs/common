@@ -14,7 +14,7 @@ import (
 
 func TestHttp(t *testing.T) {
 	send, err := Http(testconf, testify.Logger())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	t.Run("OK", func(st *testing.T) {
 		server := httpserver()
@@ -35,7 +35,7 @@ func TestHttp(t *testing.T) {
 				Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
 			}
 			res, err := send(context.Background(), req)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			require.Equal(st, http.StatusOK, res.Status)
 
@@ -58,7 +58,7 @@ func TestHttp(t *testing.T) {
 			Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
 		}
 		res, err := send(context.Background(), req)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		require.Equal(st, http.StatusInternalServerError, res.Status)
 	})
