@@ -10,6 +10,7 @@ import (
 	"github.com/kanthorlabs/common/gatekeeper/entities"
 	"github.com/kanthorlabs/common/gatekeeper/rego"
 	"github.com/kanthorlabs/common/logging"
+	"github.com/kanthorlabs/common/patterns"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx"
 	"github.com/kanthorlabs/common/safe"
@@ -36,7 +37,9 @@ type opa struct {
 	logger logging.Logger
 	sequel persistence.Persistence
 
-	mu          sync.Mutex
+	mu     sync.Mutex
+	status int
+
 	orm         *gorm.DB
 	definitions map[string][]entities.Permission
 	evaluate    rego.Evaluate
@@ -45,6 +48,10 @@ type opa struct {
 func (instance *opa) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
+
+	if instance.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
 
 	if err := instance.sequel.Connect(ctx); err != nil {
 		return err
@@ -67,20 +74,40 @@ func (instance *opa) Connect(ctx context.Context) error {
 	}
 	instance.evaluate = evaluate
 
+	instance.status = patterns.StatusConnected
 	return nil
 }
 
 func (instance *opa) Readiness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return instance.sequel.Readiness()
 }
 
 func (instance *opa) Liveness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return instance.sequel.Liveness()
 }
 
 func (instance *opa) Disconnect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
+
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	instance.status = patterns.StatusDisconnected
 
 	return instance.sequel.Disconnect(ctx)
 }

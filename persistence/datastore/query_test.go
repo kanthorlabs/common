@@ -93,8 +93,8 @@ func TestScanningQuery(t *testing.T) {
 
 func setup(t *testing.T, db *gorm.DB, query *ScanningQuery) (map[string]*testdata.User, []string, int, int, int) {
 	mid := testdata.Fake.IntBetween(0, 9)
-	size := testdata.Fake.IntBetween(11, 99)
-	count := testdata.Fake.IntBetween(101, 101+size)
+	size := testdata.Fake.IntBetween(99, 999)
+	count := testdata.Fake.IntBetween(1001, 1001+size)
 	records, ids := testify.GormInsert(t, db, count)
 
 	query.Size = size

@@ -22,52 +22,54 @@ type regodata struct {
 	}
 }
 
-func TestRBAC(t *testing.T) {
+func TestRBAC_New(t *testing.T) {
 	var rdata regodata
 	err := json.Unmarshal(data, &rdata)
 	require.NoError(t, err)
 
-	t.Run("New", func(st *testing.T) {
-		st.Run("OK", func(sst *testing.T) {
-			_, err := RBAC(context.Background(), rdata.Data.Definitions)
-			require.NoError(sst, err)
-		})
-
-		st.Run("KO - empty definitions", func(sst *testing.T) {
-			_, err := RBAC(context.Background(), make(map[string][]entities.Permission))
-			require.ErrorContains(sst, err, "GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY")
-		})
-
-		st.Run("KO - definition error", func(sst *testing.T) {
-			definitions := map[string][]entities.Permission{
-				"administrator": {{Action: "*"}},
-			}
-
-			_, err = RBAC(context.Background(), definitions)
-			require.ErrorContains(sst, err, "GATEKEEPER.PERMISSION.")
-		})
+	t.Run("OK", func(st *testing.T) {
+		_, err := RBAC(context.Background(), rdata.Data.Definitions)
+		require.NoError(st, err)
 	})
 
-	t.Run("Evaluate", func(st *testing.T) {
-		evaluate, err := RBAC(context.Background(), rdata.Data.Definitions)
+	t.Run("KO - empty definitions", func(st *testing.T) {
+		_, err := RBAC(context.Background(), make(map[string][]entities.Permission))
+		require.ErrorContains(st, err, "GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY")
+	})
+
+	t.Run("KO - definition error", func(st *testing.T) {
+		definitions := map[string][]entities.Permission{
+			"administrator": {{Action: "*"}},
+		}
+
+		_, err = RBAC(context.Background(), definitions)
+		require.ErrorContains(st, err, "GATEKEEPER.PERMISSION.")
+	})
+}
+
+func TestRBAC_Evaluate(t *testing.T) {
+	var rdata regodata
+	err := json.Unmarshal(data, &rdata)
+	require.NoError(t, err)
+
+	evaluate, err := RBAC(context.Background(), rdata.Data.Definitions)
+	require.NoError(t, err)
+
+	t.Run("OK", func(st *testing.T) {
+		permission := &entities.Permission{
+			Action: "DELETE",
+			Object: "/api/application/:id",
+		}
+		err := evaluate(permission, rdata.Input["administrator"].Privileges)
 		require.NoError(st, err)
+	})
 
-		st.Run("OK", func(sst *testing.T) {
-			permission := &entities.Permission{
-				Action: "DELETE",
-				Object: "/api/application/:id",
-			}
-			err := evaluate(permission, rdata.Input["administrator"].Privileges)
-			require.NoError(sst, err)
-		})
-
-		st.Run("KO", func(sst *testing.T) {
-			permission := &entities.Permission{
-				Action: "DELETE",
-				Object: "/api/application/:id",
-			}
-			err := evaluate(permission, rdata.Input["readonly"].Privileges)
-			require.ErrorContains(sst, err, "GATEKEEPER.REGO.RBAC.NOT_ALLOW")
-		})
+	t.Run("KO", func(st *testing.T) {
+		permission := &entities.Permission{
+			Action: "DELETE",
+			Object: "/api/application/:id",
+		}
+		err := evaluate(permission, rdata.Input["readonly"].Privileges)
+		require.ErrorContains(st, err, "GATEKEEPER.REGO.RBAC.NOT_ALLOW")
 	})
 }

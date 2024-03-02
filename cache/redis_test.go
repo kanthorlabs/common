@@ -244,7 +244,7 @@ func redistestconf() *config.Config {
 		Uri: os.Getenv("REDIS_URI"),
 	}
 	if testconf.Uri == "" {
-		testconf.Uri = "redis://localhost:6379/0"
+		testconf.Uri = testdata.RedisUrl
 	}
 
 	return testconf

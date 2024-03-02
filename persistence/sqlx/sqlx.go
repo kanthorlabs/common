@@ -3,6 +3,7 @@ package sqlx
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/kanthorlabs/common/logging"
@@ -44,7 +45,7 @@ func (instance *sql) Connect(ctx context.Context) error {
 
 	client, err := NewGorm(instance.conf, instance.logger)
 	if err != nil {
-		return err
+		return fmt.Errorf("SQLX.CONNECT.ERROR: %w", err)
 	}
 	instance.client = client
 

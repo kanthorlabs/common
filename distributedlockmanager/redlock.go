@@ -25,33 +25,44 @@ func NewRedlock(conf *config.Config) (Factory, error) {
 	rs := redsync.New(wrapper.NewPool(client))
 
 	return func(key string, opts ...config.Option) DistributedLockManager {
-		k := Key(key)
+		k, err := Key(key)
+		instance := &redlock{key: k, err: err}
 
-		cconf := &config.Config{Uri: conf.Uri, TimeToLive: conf.TimeToLive}
-		for _, opt := range opts {
-			opt(cconf)
+		if instance.err == nil {
+			fconf := &config.Config{Uri: conf.Uri, TimeToLive: conf.TimeToLive}
+			for _, opt := range opts {
+				opt(fconf)
+			}
+			instance.conf = fconf
+			instance.mu = rs.NewMutex(k, redsync.WithExpiry(time.Millisecond*time.Duration(fconf.TimeToLive)))
 		}
 
-		return &redlock{
-			key:  k,
-			conf: cconf,
-			mu:   rs.NewMutex(k, redsync.WithExpiry(time.Millisecond*time.Duration(cconf.TimeToLive))),
-		}
+		return instance
 	}, nil
 }
 
 type redlock struct {
 	key string
+	err error
 
 	conf *config.Config
 	mu   *redsync.Mutex
 }
 
 func (dlm *redlock) Lock(ctx context.Context) error {
-	return dlm.mu.LockContext(ctx)
+	if dlm.err != nil {
+		return dlm.err
+	}
+	if err := dlm.mu.LockContext(ctx); err != nil {
+		return errors.New("DISTRIBUTED_LOCK_MANAGER.LOCK.ERROR")
+	}
+	return nil
 }
 
 func (dlm *redlock) Unlock(ctx context.Context) error {
+	if dlm.err != nil {
+		return dlm.err
+	}
 	ok, err := dlm.mu.UnlockContext(ctx)
 	if err != nil || !ok {
 		return errors.New("DISTRIBUTED_LOCK_MANAGER.UNLOCK.ERROR")

@@ -18,7 +18,7 @@ func TestRedis(t *testing.T) {
 		TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 	}
 	if testconf.Uri == "" {
-		testconf.Uri = "redis://localhost:6379/0"
+		testconf.Uri = testdata.RedisUrl
 	}
 
 	t.Run("New", func(st *testing.T) {

@@ -14,6 +14,11 @@ var FileName = "configs"
 var FileExt = "yaml"
 
 func NewFile(ns string, dirs []string) (Provider, error) {
+	if len(dirs) == 0 {
+		return nil, fmt.Errorf("CONFIGURATION.FILE.NO_DIRECTOY.ERROR")
+
+	}
+
 	instance := viper.New()
 	instance.SetConfigName(FileName) // name of config file (without extension)
 	instance.SetConfigType(FileExt)  // extension

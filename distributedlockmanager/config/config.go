@@ -10,7 +10,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.StringUri("DISTRIBUTED_LOCK_MANAGER.CONFIG.URI", conf.Uri),
-		validator.NumberGreaterThan("DISTRIBUTED_LOCK_MANAGER.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
+		validator.NumberGreaterThanOrEqual("DISTRIBUTED_LOCK_MANAGER.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
 	)
 }
 

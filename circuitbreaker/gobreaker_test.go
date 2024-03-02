@@ -13,19 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGoBreaker(t *testing.T) {
+func TestGoBreaker_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		cb, err := NewGoBreaker(testconf, testify.Logger())
+		_, err := NewGoBreaker(testconf, testify.Logger())
 		require.NoError(st, err)
-
-		cmd := uuid.NewString()
-		count := testdata.Fake.IntBetween(10, 100)
-		for i := 0; i < count; i++ {
-			_, err = cb.Do(cmd, func() (any, error) {
-				return testdata.NewUser(clock.New()), nil
-			}, passerror)
-			require.NoError(st, err)
-		}
 	})
 
 	t.Run("KO - validation error", func(st *testing.T) {
@@ -33,7 +24,9 @@ func TestGoBreaker(t *testing.T) {
 		_, err := NewGoBreaker(conf, testify.Logger())
 		require.ErrorContains(st, err, "CIRCUIT_BREAKER.CONFIG")
 	})
+}
 
+func TestGoBreaker_Do(t *testing.T) {
 	t.Run("KO - consecutive error", func(st *testing.T) {
 		cb, err := NewGoBreaker(testconf, testify.Logger())
 		require.NoError(st, err)

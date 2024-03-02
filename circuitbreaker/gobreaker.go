@@ -10,6 +10,9 @@ import (
 	"github.com/sony/gobreaker"
 )
 
+// NewGoBreaker creates a new circuit breaker instance that is using go-breaker as the implementation and the LRU cache for the storage.
+// For each command, it will create a new circuit breaker instance and store it in the LRU cache.
+// That means, if the command is not used for a while, it will be removed from the cache to free up the memory.
 func NewGoBreaker(conf *config.Config, logger logging.Logger) (CircuitBreaker, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err

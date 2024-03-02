@@ -26,7 +26,7 @@ func TestIdempotency(t *testing.T) {
 
 	t.Run("OK - redis", func(st *testing.T) {
 		conf := &config.Config{
-			Uri:        "redis://localhost:6379/0",
+			Uri:        testdata.RedisUrl,
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf, testify.Logger())

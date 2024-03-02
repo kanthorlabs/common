@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kanthorlabs/common/cache/config"
+	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +24,7 @@ func TestCache(t *testing.T) {
 
 	t.Run("OK - redis", func(st *testing.T) {
 		conf := &config.Config{
-			Uri: "redis://localhost:6379/0",
+			Uri: testdata.RedisUrl,
 		}
 		_, err := New(conf, testify.Logger())
 		require.NoError(st, err)

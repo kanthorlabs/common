@@ -8,17 +8,27 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	t.Run("KO", func(st *testing.T) {
-		conf := &Config{}
-		require.ErrorContains(st, conf.Validate(), "DISTRIBUTED_LOCK_MANAGER.CONFIG.")
+	t.Run("OK", func(st *testing.T) {
+		conf := &Config{
+			Uri:        testdata.RedisUrl,
+			TimeToLive: 1000,
+		}
+		require.NoError(st, conf.Validate())
+	})
+
+	t.Run("KO - uri error", func(st *testing.T) {
+		conf := &Config{
+			Uri:        "invalid",
+			TimeToLive: testdata.Fake.UInt64Between(1000, 100000),
+		}
+		require.ErrorContains(st, conf.Validate(), "DISTRIBUTED_LOCK_MANAGER.CONFIG.URI")
 	})
 }
 
 func TestTimeToLive(t *testing.T) {
-	ttl := testdata.Fake.UInt64Between(100000, 1000000)
-	conf := &Config{}
-
-	TimeToLive(ttl)(conf)
-
-	require.Equal(t, ttl, conf.TimeToLive)
+	t.Run("OK", func(st *testing.T) {
+		conf := &Config{}
+		TimeToLive(1000)(conf)
+		require.Equal(st, uint64(1000), conf.TimeToLive)
+	})
 }

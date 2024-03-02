@@ -15,8 +15,6 @@ func NewMemory(conf *config.Config) (Factory, error) {
 	}
 
 	return func(key string, opts ...config.Option) DistributedLockManager {
-		k := Key(key)
-
 		cconf := &config.Config{Uri: conf.Uri, TimeToLive: conf.TimeToLive}
 		for _, opt := range opts {
 			opt(cconf)
@@ -25,7 +23,7 @@ func NewMemory(conf *config.Config) (Factory, error) {
 		client := ttlcache.New[string, int]()
 		go client.Start()
 		return &memory{
-			key:    k,
+			key:    key,
 			client: client,
 			conf:   cconf,
 		}
@@ -40,7 +38,10 @@ type memory struct {
 }
 
 func (dlm *memory) Lock(ctx context.Context) error {
-	k := Key(dlm.key)
+	k, err := Key(dlm.key)
+	if err != nil {
+		return err
+	}
 
 	if dlm.client.Has(k) {
 		return errors.New("DISTRIBUTED_LOCK_MANAGER.LOCK.ERROR")
@@ -52,7 +53,10 @@ func (dlm *memory) Lock(ctx context.Context) error {
 }
 
 func (dlm *memory) Unlock(ctx context.Context) error {
-	k := Key(dlm.key)
+	k, err := Key(dlm.key)
+	if err != nil {
+		return err
+	}
 
 	if !dlm.client.Has(k) {
 		return errors.New("DISTRIBUTED_LOCK_MANAGER.UNLOCK.ERROR")

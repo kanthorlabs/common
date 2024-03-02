@@ -45,7 +45,7 @@ func TestNatsPublisher(t *testing.T) {
 			id := uuid.NewString()
 			events := map[string]*entities.Event{
 				id: {
-					Subject:  testdata.Fake.App().Name(),
+					Subject:  testdata.Fake.Internet().Email(),
 					Id:       id,
 					Data:     data.Bytes(),
 					Metadata: map[string]string{},

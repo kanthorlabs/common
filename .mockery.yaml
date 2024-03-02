@@ -7,6 +7,13 @@ packages:
       mockname: "{{ .InterfaceName }}"
     interfaces:
       Cache:
+  github.com/kanthorlabs/common/circuitbreaker:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      CircuitBreaker:
   github.com/kanthorlabs/common/clock:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"

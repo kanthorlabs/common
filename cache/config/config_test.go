@@ -3,13 +3,14 @@ package config
 import (
 	"testing"
 
+	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 )
 
 func TestConfig(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := &Config{
-			Uri: "redis://localhost:6379/0",
+			Uri: testdata.RedisUrl,
 		}
 		require.NoError(t, conf.Validate())
 	})
