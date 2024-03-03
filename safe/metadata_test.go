@@ -10,118 +10,100 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMetadata(t *testing.T) {
-	t.Run(".Set", func(st *testing.T) {
-		var metadata Metadata
+func TestMetadata_Set(t *testing.T) {
+	var metadata Metadata
 
-		var wg conc.WaitGroup
-		counter := testdata.Fake.IntBetween(100000, 999999)
-		for i := 0; i < counter; i++ {
-			index := i
-			wg.Go(func() {
-				metadata.Set(fmt.Sprintf("index_%d", index), index)
-			})
-		}
-		wg.Wait()
-
-		require.Equal(st, counter, len(metadata.kv))
-	})
-
-	t.Run(".Set", func(st *testing.T) {
-		var metadata Metadata
-
-		var wg conc.WaitGroup
-		counter := testdata.Fake.IntBetween(100000, 999999)
-		for i := 0; i < counter; i++ {
-			index := i
-			wg.Go(func() {
-				metadata.Set(fmt.Sprintf("index_%d", index), index)
-			})
-		}
-		wg.Wait()
-
+	var wg conc.WaitGroup
+	counter := testdata.Fake.IntBetween(100000, 999999)
+	for i := 0; i < counter; i++ {
+		index := i
 		wg.Go(func() {
-			v, has := metadata.Get(fmt.Sprintf("index_%d", counter-1))
-			require.True(st, has)
-			require.Equal(st, counter-1, v)
+			metadata.Set(fmt.Sprintf("index_%d", index), index)
 		})
-		wg.Wait()
+	}
+	wg.Wait()
+
+	require.Equal(t, counter, len(metadata.kv))
+}
+
+func TestMetadata_Get(t *testing.T) {
+	var metadata Metadata
+	counter := testdata.Fake.IntBetween(100000, 999999)
+
+	v, has := metadata.Get(fmt.Sprintf("index_%d", counter+1))
+	require.False(t, has)
+	require.Nil(t, v)
+
+	var wg conc.WaitGroup
+	for i := 0; i < counter; i++ {
+		index := i
+		wg.Go(func() {
+			metadata.Set(fmt.Sprintf("index_%d", index), index)
+		})
+	}
+	wg.Wait()
+
+	wg.Go(func() {
+		v, has := metadata.Get(fmt.Sprintf("index_%d", counter-1))
+		require.True(t, has)
+		require.Equal(t, counter-1, v)
 	})
+	wg.Wait()
+}
 
-	t.Run(".Merge", func(st *testing.T) {
-		dest := &Metadata{}
+func TestMetadata_Merge(t *testing.T) {
+	dest := &Metadata{}
 
-		dest.Merge(nil)
-		require.Equal(st, 0, len(dest.kv))
+	dest.Merge(nil)
+	require.Equal(t, 0, len(dest.kv))
 
-		src := &Metadata{}
+	src := &Metadata{}
 
-		var wg conc.WaitGroup
-		counter := testdata.Fake.IntBetween(100000, 999999)
-		for i := 0; i < counter; i++ {
-			index := i
-			wg.Go(func() {
-				src.Set(fmt.Sprintf("index_%d", index), index)
-			})
-		}
-		wg.Wait()
-
-		dest.Merge(src)
-		require.Equal(st, counter, len(dest.kv))
-
-		dest.Merge(&Metadata{})
-		require.Equal(st, counter, len(dest.kv))
-	})
-
-	t.Run(".String", func(st *testing.T) {
-		st.Run("OK", func(sst *testing.T) {
-			var metadata Metadata
-			id := uuid.NewString()
-			metadata.Set(id, true)
-
-			str := metadata.String()
-			require.Contains(sst, str, id)
+	var wg conc.WaitGroup
+	counter := testdata.Fake.IntBetween(100000, 999999)
+	for i := 0; i < counter; i++ {
+		index := i
+		wg.Go(func() {
+			src.Set(fmt.Sprintf("index_%d", index), index)
 		})
+	}
+	wg.Wait()
 
-		st.Run("nullable", func(sst *testing.T) {
-			var metadata Metadata
-			require.Empty(sst, metadata.String())
-		})
-	})
+	dest.Merge(src)
+	require.Equal(t, counter, len(dest.kv))
 
-	t.Run(".Value", func(st *testing.T) {
-		st.Run("OK", func(sst *testing.T) {
-			var metadata Metadata
-			id := uuid.NewString()
-			metadata.Set(id, true)
+	dest.Merge(&Metadata{})
+	require.Equal(t, counter, len(dest.kv))
+}
 
-			value, err := metadata.Value()
-			require.NoError(sst, err)
-			require.Contains(sst, value, id)
-		})
+func TestMetadata_String(t *testing.T) {
+	var metadata Metadata
+	require.Empty(t, metadata.String())
 
-		st.Run("nullable", func(sst *testing.T) {
-			var metadata Metadata
-			value, err := metadata.Value()
-			require.NoError(sst, err)
-			require.Empty(sst, value)
-		})
-	})
+	metadata.Set(uuid.NewString(), true)
+	require.NotEmpty(t, metadata.String())
+}
 
-	t.Run(".Scan", func(st *testing.T) {
-		st.Run("OK", func(sst *testing.T) {
-			var src Metadata
-			src.Set(uuid.NewString(), true)
+func TestMetadata_Value(t *testing.T) {
+	var metadata Metadata
+	emptv, emptyerr := metadata.Value()
+	require.NoError(t, emptyerr)
+	require.Empty(t, emptv)
 
-			var metadata Metadata
-			require.NoError(sst, metadata.Scan(src.String()))
+	id := uuid.NewString()
+	metadata.Set(id, true)
 
-			require.Equal(sst, src.kv, metadata.kv)
-		})
+	value, err := metadata.Value()
+	require.NoError(t, err)
+	require.Contains(t, value, id)
+}
 
-		st.Run("nullable", func(sst *testing.T) {
-			var metadata Metadata
-			require.NoError(sst, metadata.Scan(""))
-		})
-	})
+func TestMetadata_Scan(t *testing.T) {
+	var metadata Metadata
+	require.NoError(t, metadata.Scan(""))
+
+	var src Metadata
+	src.Set(uuid.NewString(), true)
+	require.NoError(t, metadata.Scan(src.String()))
+	require.Equal(t, src.kv, metadata.kv)
 }

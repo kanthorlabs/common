@@ -24,5 +24,4 @@ func TestSlice(t *testing.T) {
 	require.Equal(t, counter, s.Count())
 	_, err := uuid.Parse(s.Data()[s.Count()-1])
 	require.NoError(t, err)
-
 }
