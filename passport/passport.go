@@ -12,6 +12,8 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
+// New creates a new passport instance with all registered strategies.
+// That instance is a facade that allows to interact with all strategies at once.
 func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err

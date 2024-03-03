@@ -7,10 +7,6 @@ import (
 
 // New creates a new CircuitBreaker instance that is using go-breaker of Sony by default.
 func New(conf *config.Config, logger logging.Logger) (CircuitBreaker, error) {
-	if err := conf.Validate(); err != nil {
-		return nil, err
-	}
-
 	return NewGoBreaker(conf, logger)
 }
 

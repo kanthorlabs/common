@@ -14,6 +14,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// NewDurability creates a new durability strategy instance what allows to authenticate users based on a username and password.
+// The storage is based on a SQL database.
 func NewDurability(conf *config.Durability, logger logging.Logger) (Strategy, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
@@ -142,5 +144,4 @@ func (instance *durability) Deactivate(ctx context.Context, username string, ts 
 
 		return nil
 	})
-
 }

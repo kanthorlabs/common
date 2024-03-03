@@ -13,81 +13,116 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestSqlite(t *testing.T) {
-	t.Run("Ko because of configuration validation", func(st *testing.T) {
+func TestSqlx_New(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		conf := config.Default(testdata.SqliteUri)
+		instance, err := New(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NotNil(st, instance)
+		require.Implements(st, (*persistence.Persistence)(nil), instance)
+	})
+
+	t.Run("KO - configuration error", func(st *testing.T) {
 		_, err := New(&config.Config{}, testify.Logger())
 		assert.NotNil(t, err)
 	})
+}
 
-	t.Run("readiness", func(st *testing.T) {
-		instance := start(st)
-		require.ErrorIs(st, instance.Readiness(), ErrNotConnected)
+func TestSqlx_Connect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		instance := start(t)
+		defer end(t, instance)
 
-		// connect then check readiness
 		require.NoError(st, instance.Connect(context.Background()))
-		require.NoError(st, instance.Readiness())
-
-		// disconnect then check readiness
-		require.NoError(st, instance.Disconnect(context.Background()))
-		require.NoError(st, instance.Readiness())
-
-		// close the connection manually
-		require.NoError(st, instance.Connect(context.Background()))
-		end(st, instance)
-
-		// the readiness should be failed
-		require.ErrorIs(st, instance.Readiness(), ErrNotReady)
 	})
 
-	t.Run("liveness", func(st *testing.T) {
-		instance := start(st)
-		require.ErrorIs(st, instance.Liveness(), ErrNotConnected)
+	t.Run("KO - already connected", func(st *testing.T) {
+		instance := start(t)
+		defer end(t, instance)
 
-		// connect then check readiness
 		require.NoError(st, instance.Connect(context.Background()))
-		require.NoError(st, instance.Liveness())
-
-		// disconnect then check readiness
-		require.NoError(st, instance.Disconnect(context.Background()))
-		require.NoError(st, instance.Liveness())
-
-		// close the connection manually
-		require.NoError(st, instance.Connect(context.Background()))
-		end(st, instance)
-
-		// the readiness should be failed
-		require.ErrorIs(st, instance.Liveness(), ErrNotLive)
-
+		require.ErrorIs(st, instance.Connect(context.Background()), ErrAlreadyConnected)
 	})
 
-	t.Run("connection", func(st *testing.T) {
-		instance := start(st)
-		ctx := context.Background()
+	t.Run("KO - connection error", func(st *testing.T) {
+		conf := config.Default(testdata.PostgresUri)
+		instance, err := New(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NotNil(st, instance)
 
-		// unabel to disconnect if you didn't connect first
-		require.ErrorIs(st, instance.Disconnect(ctx), ErrNotConnected)
-
-		require.NoError(st, instance.Connect(ctx))
-		// already connect, should not start new connection
-		require.ErrorIs(st, instance.Connect(ctx), ErrAlreadyConnected)
-
-		require.NoError(st, instance.Disconnect(ctx))
+		require.ErrorContains(st, instance.Connect(context.Background()), "SQLX.CONNECT.ERROR")
 	})
 }
 
+func TestSqlx_Readiness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		instance := start(t)
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Readiness())
+		require.NoError(st, instance.Disconnect(context.Background()))
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		instance := start(t)
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Disconnect(context.Background()))
+		require.NoError(st, instance.Readiness())
+	})
+
+	t.Run("KO - not connected", func(st *testing.T) {
+		instance := start(t)
+		require.ErrorIs(st, instance.Readiness(), ErrNotConnected)
+	})
+}
+
+func TestSqlx_Liveness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		instance := start(t)
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Liveness())
+		require.NoError(st, instance.Disconnect(context.Background()))
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		instance := start(t)
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Disconnect(context.Background()))
+		require.NoError(st, instance.Liveness())
+	})
+
+	t.Run("KO - not connected", func(st *testing.T) {
+		instance := start(t)
+		require.ErrorIs(st, instance.Liveness(), ErrNotConnected)
+	})
+}
+
+func TestSqlx_Disconnect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		instance := start(t)
+		require.NoError(st, instance.Connect(context.Background()))
+		require.NoError(st, instance.Disconnect(context.Background()))
+	})
+
+	t.Run("KO - not connected", func(st *testing.T) {
+		instance := start(t)
+		require.ErrorIs(st, instance.Disconnect(context.Background()), ErrNotConnected)
+	})
+}
+
+func TestSqlx_Client(t *testing.T) {
+	instance := start(t)
+
+	require.Nil(t, instance.Client())
+	require.NoError(t, instance.Connect(context.Background()))
+	require.NotNil(t, instance.Client())
+	require.NoError(t, instance.Disconnect(context.Background()))
+	require.Nil(t, instance.Client())
+}
+
 func start(t *testing.T) persistence.Persistence {
-	conf := &config.Config{
-		Uri: testdata.SqliteUri,
-		Connection: config.Connection{
-			MaxLifetime:  config.DefaultConnMaxLifetime,
-			MaxIdletime:  config.DefaultConnMaxIdletime,
-			MaxIdleCount: config.DefaultConnMaxIdleCount,
-			MaxOpenCount: config.DefaultConnMaxOpenCount,
-		},
-	}
+	conf := config.Default(testdata.SqliteUri)
 	instance, err := New(conf, testify.Logger())
 	require.NoError(t, err)
-
 	return instance
 }
 

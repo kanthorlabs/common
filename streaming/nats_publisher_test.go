@@ -79,13 +79,13 @@ func TestNatsPublisher(t *testing.T) {
 			}
 
 			msg := NatsMsgFromEvent(events[id].Subject, events[id])
-			js.EXPECT().PublishMsg(mock.Anything, msg).Return(nil, testdata.ErrorGeneric).Once()
+			js.EXPECT().PublishMsg(mock.Anything, msg).Return(nil, testdata.ErrGeneric).Once()
 
 			ctx := context.Background()
 			errs := publisher.Pub(ctx, events)
 			require.Equal(sst, len(events), len(errs))
 
-			require.ErrorIs(sst, errs[id], testdata.ErrorGeneric)
+			require.ErrorIs(sst, errs[id], testdata.ErrGeneric)
 		})
 
 		st.Run("KO - duplicated error", func(sst *testing.T) {

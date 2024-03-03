@@ -3,5 +3,5 @@ package testdata
 import "errors"
 
 var (
-	ErrorGeneric = errors.New("TEST.GENERIC.ERROR")
+	ErrGeneric = errors.New("TEST.GENERIC.ERROR")
 )

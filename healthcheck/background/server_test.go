@@ -34,8 +34,8 @@ func TestServer_Readiness(t *testing.T) {
 	}()
 
 	t.Run("KO - check function error", func(st *testing.T) {
-		err := server.Readiness(func() error { return testdata.ErrorGeneric })
-		require.ErrorIs(st, err, testdata.ErrorGeneric)
+		err := server.Readiness(func() error { return testdata.ErrGeneric })
+		require.ErrorIs(st, err, testdata.ErrGeneric)
 	})
 
 	t.Run("KO  - write fail", func(st *testing.T) {
@@ -58,11 +58,11 @@ func TestServer_Liveness(t *testing.T) {
 	t.Run("KO - check function error", func(st *testing.T) {
 		errc := make(chan error, 1)
 		go func() {
-			errc <- server.Liveness(func() error { return testdata.ErrorGeneric })
+			errc <- server.Liveness(func() error { return testdata.ErrGeneric })
 
 		}()
 		err := <-errc
-		require.ErrorIs(st, err, testdata.ErrorGeneric)
+		require.ErrorIs(st, err, testdata.ErrGeneric)
 	})
 
 	t.Run("KO  - write fail", func(st *testing.T) {

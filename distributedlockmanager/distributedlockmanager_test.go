@@ -13,7 +13,7 @@ var testconf = &config.Config{
 	TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 }
 
-func TestDistributedLockManager(t *testing.T) {
+func TestDistributedLockManager_New(t *testing.T) {
 	t.Run("OK - memory", func(st *testing.T) {
 		conf := &config.Config{
 			Uri:        testdata.MemoryUri,
@@ -30,12 +30,6 @@ func TestDistributedLockManager(t *testing.T) {
 		}
 		_, err := New(conf)
 		require.NoError(st, err)
-	})
-
-	t.Run("KO - configuration error", func(st *testing.T) {
-		conf := &config.Config{}
-		_, err := New(conf)
-		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.CONFIG.")
 	})
 
 	t.Run("KO - unknown error", func(st *testing.T) {

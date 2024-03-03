@@ -12,6 +12,8 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 )
 
+// NewAsk creates a new ask strategy instance what allows to authenticate users based on a username and password.
+// The storage is based on a map of accounts in memory.
 func NewAsk(conf *config.Ask, logger logging.Logger) (Strategy, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
@@ -39,6 +41,9 @@ type ask struct {
 }
 
 func (instance *ask) Connect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
 	if instance.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
@@ -70,6 +75,9 @@ func (instance *ask) Liveness() error {
 }
 
 func (instance *ask) Disconnect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
 	if instance.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

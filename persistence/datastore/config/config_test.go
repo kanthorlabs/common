@@ -3,25 +3,30 @@ package config
 import (
 	"testing"
 
-	"github.com/kanthorlabs/common/configuration"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 )
 
-func TestDefault(t *testing.T) {
-	provider, err := configuration.New("kanthor")
-	require.NoError(t, err)
+func TestConfig(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		conf := Config{
+			Engine: EngineSqlx,
+			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
+		}
+		require.NoError(st, conf.Validate())
+	})
 
-	_, err = New(provider)
-	require.ErrorContains(t, err, "DATASTORE.CONFIG.ENGINE")
+	t.Run("KO - engine unknown error", func(st *testing.T) {
+		conf := Config{}
+		require.ErrorContains(st, conf.Validate(), "DATASTORE.CONFIG")
+	})
 
-	provider.SetDefault("datastore.engine", EngineSqlx)
-
-	_, err = New(provider)
-	require.ErrorContains(t, err, "SQLX.CONFIG.")
-
-	provider.SetDefault("datastore.sqlx.uri", testdata.SqliteUri)
-
-	_, err = New(provider)
-	require.NoError(t, err)
+	t.Run("KO - sqlx configuration error", func(st *testing.T) {
+		conf := Config{
+			Engine: EngineSqlx,
+			Sqlx:   &sqlxconfig.Config{},
+		}
+		require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.URI")
+	})
 }

@@ -3,9 +3,15 @@ package gatekeeper
 import (
 	"context"
 
+	"github.com/kanthorlabs/common/gatekeeper/config"
 	"github.com/kanthorlabs/common/gatekeeper/entities"
+	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 )
+
+func New(conf *config.Config, logger logging.Logger) (Gatekeeper, error) {
+	return NewOpa(conf, logger)
+}
 
 // Gatekeeper is an implementation of multi-tenant RBAC
 type Gatekeeper interface {

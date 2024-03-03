@@ -30,9 +30,9 @@ func TestDo(t *testing.T) {
 	t.Run("KO", func(st *testing.T) {
 		cmd := testdata.Fake.Internet().Domain()
 		_, err := Do[testdata.User](cb, cmd, func() (any, error) {
-			return nil, testdata.ErrorGeneric
+			return nil, testdata.ErrGeneric
 		}, passerror)
 
-		require.ErrorIs(st, err, testdata.ErrorGeneric)
+		require.ErrorIs(st, err, testdata.ErrGeneric)
 	})
 }

@@ -14,27 +14,27 @@ import (
 
 func TestOpa_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		_, err := New(testconf, testify.Logger())
+		_, err := NewOpa(testconf, testify.Logger())
 		require.NoError(st, err)
 	})
 
 	t.Run("KO - configuration error", func(st *testing.T) {
 		conf := &config.Config{}
-		_, err := New(conf, testify.Logger())
+		_, err := NewOpa(conf, testify.Logger())
 		require.ErrorContains(st, err, "GATEKEEPER.CONFIG")
 	})
 }
 
 func TestOpa_Connect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		gk, err := New(testconf, testify.Logger())
+		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
 		require.NoError(st, gk.Connect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
-		gk, err := New(testconf, testify.Logger())
+		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, gk.Connect(context.Background()))
@@ -49,7 +49,7 @@ func TestOpa_Connect(t *testing.T) {
 		}
 		conf.Privilege.Sqlx.Uri = testdata.PostgresUri
 
-		gk, err := New(conf, testify.Logger())
+		gk, err := NewOpa(conf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorContains(st, gk.Connect(context.Background()), "SQLX.CONNECT")
@@ -63,7 +63,7 @@ func TestOpa_Connect(t *testing.T) {
 		}
 		conf.Definitions.Uri = "base64://-"
 
-		gk, err := New(conf, testify.Logger())
+		gk, err := NewOpa(conf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorContains(st, gk.Connect(context.Background()), "GATEKEEPER.CONFIG.DEFINITIONS.BASE64")
@@ -77,7 +77,7 @@ func TestOpa_Connect(t *testing.T) {
 		}
 		conf.Definitions.Uri = "base64://eyJhZG1pbmlzdHJhdG9yIjogW3siYWN0aW9uIjogIioifV19Cg=="
 
-		gk, err := New(conf, testify.Logger())
+		gk, err := NewOpa(conf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorContains(st, gk.Connect(context.Background()), "GATEKEEPER.REGO.RBAC")
@@ -86,7 +86,7 @@ func TestOpa_Connect(t *testing.T) {
 
 func TestOpa_Readiness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		gk, err := New(testconf, testify.Logger())
+		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
 		require.NoError(st, gk.Connect(context.Background()))
@@ -94,7 +94,7 @@ func TestOpa_Readiness(t *testing.T) {
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		gk, err := New(testconf, testify.Logger())
+		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
 		require.NoError(st, gk.Connect(context.Background()))
@@ -105,7 +105,7 @@ func TestOpa_Readiness(t *testing.T) {
 
 func TestOpa_Disconnect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		gk, err := New(testconf, testify.Logger())
+		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
 		require.NoError(st, gk.Connect(context.Background()))
@@ -113,7 +113,7 @@ func TestOpa_Disconnect(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		gk, err := New(testconf, testify.Logger())
+		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
 		require.ErrorIs(st, gk.Disconnect(context.Background()), ErrNotConnected)
@@ -123,7 +123,7 @@ func TestOpa_Disconnect(t *testing.T) {
 func TestOpa_Grant(t *testing.T) {
 	privileges, _ := setup(t)
 
-	gk, err := New(testconf, testify.Logger())
+	gk, err := NewOpa(testconf, testify.Logger())
 	require.NoError(t, err)
 
 	gk.Connect(context.Background())
@@ -182,7 +182,7 @@ func TestOpa_Grant(t *testing.T) {
 func TestOpa_Enforce(t *testing.T) {
 	privileges, _ := setup(t)
 
-	gk, err := New(testconf, testify.Logger())
+	gk, err := NewOpa(testconf, testify.Logger())
 	require.NoError(t, err)
 
 	gk.Connect(context.Background())
@@ -252,7 +252,7 @@ func TestOpa_Enforce(t *testing.T) {
 func TestOpa_Revoke(t *testing.T) {
 	privileges, _ := setup(t)
 
-	gk, err := New(testconf, testify.Logger())
+	gk, err := NewOpa(testconf, testify.Logger())
 	require.NoError(t, err)
 
 	gk.Connect(context.Background())
@@ -298,7 +298,7 @@ func TestOpa_Users(t *testing.T) {
 	privileges, count := setup(t)
 	defs := definitions(t)
 
-	gk, err := New(testconf, testify.Logger())
+	gk, err := NewOpa(testconf, testify.Logger())
 	require.NoError(t, err)
 
 	gk.Connect(context.Background())
@@ -326,7 +326,7 @@ func TestOpa_Users(t *testing.T) {
 func TestOpa_Tenants(t *testing.T) {
 	privileges, _ := setup(t)
 	defs := definitions(t)
-	gk, err := New(testconf, testify.Logger())
+	gk, err := NewOpa(testconf, testify.Logger())
 	require.NoError(t, err)
 
 	gk.Connect(context.Background())

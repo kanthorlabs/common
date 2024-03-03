@@ -17,6 +17,8 @@ type Source struct {
 	Used    bool
 }
 
+// New creates a new configuration provider with the given namespace
+// by default, it will create a file configuration provider
 func New(ns string) (Provider, error) {
 	return NewFile(ns, FileLookingDirs)
 }

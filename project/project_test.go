@@ -22,11 +22,7 @@ func TestEnv(t *testing.T) {
 
 func TestName(t *testing.T) {
 	name := testdata.Fake.Lorem().Word()
-
-	t.Run("default", func(st *testing.T) {
-		got := Name(name)
-		require.Equal(st, fmt.Sprintf("%s_%s", Namespace(), name), got)
-	})
+	require.Equal(t, fmt.Sprintf("%s_%s", Namespace(), name), Name(name))
 }
 
 func TestTopic(t *testing.T) {
@@ -34,13 +30,11 @@ func TestTopic(t *testing.T) {
 	second := testdata.Fake.Lorem().Word()
 
 	t.Run("default", func(st *testing.T) {
-		got := Topic(first, second)
-		require.Equal(st, fmt.Sprintf("%s.%s", first, second), got)
+		require.Equal(st, fmt.Sprintf("%s.%s", first, second), Topic(first, second))
 	})
 
 	t.Run("with empty string", func(st *testing.T) {
-		got := Topic(first, "", second)
-		require.Equal(st, fmt.Sprintf("%s.%s", first, second), got)
+		require.Equal(st, fmt.Sprintf("%s.%s", first, second), Topic(first, second))
 	})
 }
 
@@ -49,13 +43,11 @@ func TestIsTopic(t *testing.T) {
 	second := testdata.Fake.Lorem().Word()
 
 	t.Run("true", func(st *testing.T) {
-		got := IsTopic(Subject(first, second), first)
-		require.True(st, got)
+		require.True(st, IsTopic(Subject(first, second), first))
 	})
 
 	t.Run("false", func(st *testing.T) {
-		got := IsTopic(Subject(first, second), second)
-		require.False(st, got)
+		require.False(st, IsTopic(Subject(first, second), second))
 	})
 }
 
@@ -64,12 +56,12 @@ func TestSubject(t *testing.T) {
 	second := testdata.Fake.Lorem().Word()
 
 	t.Run("default", func(st *testing.T) {
-		got := Subject(first, second)
-		require.Equal(st, fmt.Sprintf("%s.%s.%s.%s.%s", Namespace(), Region(), Tier(), first, second), got)
+		subject := Subject(first, second)
+		require.Equal(st, fmt.Sprintf("%s.%s.%s.%s.%s", Namespace(), Region(), Tier(), first, second), subject)
 	})
 
 	t.Run("with empty string", func(st *testing.T) {
-		got := Subject(first, "", second)
-		require.Equal(st, fmt.Sprintf("%s.%s.%s.%s.%s", Namespace(), Region(), Tier(), first, second), got)
+		subject := Subject(first, "", second)
+		require.Equal(st, fmt.Sprintf("%s.%s.%s.%s.%s", Namespace(), Region(), Tier(), first, second), subject)
 	})
 }

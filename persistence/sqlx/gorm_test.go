@@ -10,17 +10,16 @@ import (
 )
 
 func TestNewGorm(t *testing.T) {
-	t.Run("KO because of connection error", func(st *testing.T) {
-		conf := &config.Config{
-			Uri: testdata.PostgresUri,
-			Connection: config.Connection{
-				MaxLifetime:  300000,
-				MaxIdletime:  60000,
-				MaxIdleCount: 1,
-				MaxOpenCount: 1,
-			},
-		}
+	t.Run("OK - postgres", func(st *testing.T) {
+		conf := config.Default(testdata.PostgresUri)
 		_, err := NewGorm(conf, testify.Logger())
-		require.ErrorContains(t, err, "dial error")
+		require.ErrorContains(st, err, "postgres")
+	})
+
+	t.Run("OK - memory", func(st *testing.T) {
+		conf := config.Default(testdata.SqliteUri)
+		db, err := NewGorm(conf, testify.Logger())
+		require.NoError(st, err)
+		require.Equal(st, "sqlite", db.Dialector.Name())
 	})
 }

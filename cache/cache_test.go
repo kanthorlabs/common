@@ -13,7 +13,7 @@ var testconf = &config.Config{
 	Uri: testdata.MemoryUri,
 }
 
-func TestCache(t *testing.T) {
+func TestCache_New(t *testing.T) {
 	t.Run("OK - memory", func(st *testing.T) {
 		conf := &config.Config{
 			Uri: testdata.MemoryUri,
@@ -36,11 +36,5 @@ func TestCache(t *testing.T) {
 		}
 		_, err := New(conf, testify.Logger())
 		require.ErrorContains(st, err, "CACHE.SCHEME_UNKNOWN.ERROR")
-	})
-
-	t.Run("KO - configuration error", func(st *testing.T) {
-		conf := &config.Config{}
-		_, err := New(conf, testify.Logger())
-		require.ErrorContains(st, err, "CACHE.CONFIG.")
 	})
 }

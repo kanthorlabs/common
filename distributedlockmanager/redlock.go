@@ -11,6 +11,7 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 )
 
+// NewRedlock creates a new distributed lock manager instance that uses redis as the underlying storage and redlock as the algorithm.
 func NewRedlock(conf *config.Config) (Factory, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err

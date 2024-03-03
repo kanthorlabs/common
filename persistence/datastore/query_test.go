@@ -10,26 +10,27 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestScanningQuery(t *testing.T) {
+func TestScanningQuery_Clone(t *testing.T) {
+	original := &ScanningQuery{}
+
+	clone := original.Clone()
+	clone.Search = testdata.Fake.Address().City()
+	require.NotEqual(t, original.Search, clone.Search)
+}
+
+func TestScanningQuery_Sqlx(t *testing.T) {
 	condition := &ScanningCondition{
 		PrimaryKeyNs:  testdata.UserNs,
 		PrimaryKeyCol: "id",
 	}
 	original := &ScanningQuery{}
 
-	t.Run(".Clone", func(st *testing.T) {
-		clone := original.Clone()
-		clone.Search = testdata.Fake.Address().City()
+	db := testify.GormStart(t)
+	defer testify.GormEnd(t, db)
 
-		require.NotEqual(st, original.Search, clone.Search)
-	})
-
-	t.Run(".Sqlx", func(st *testing.T) {
-		db := testify.GormStart(st)
-		defer testify.GormEnd(st, db)
-
+	t.Run("OK", func(st *testing.T) {
 		query := original.Clone()
-		records, _, _, size, count := setup(st, db, query)
+		records, _, _, size, count := setup(t, db, query)
 
 		// request more records than the range of .From and .To
 		query.Size = count
@@ -37,19 +38,16 @@ func TestScanningQuery(t *testing.T) {
 		var rows []*testdata.User
 		tx := query.Sqlx(db, condition).Find(&rows)
 
-		require.NoError(st, tx.Error)
+		require.NoError(t, tx.Error)
 		// make sure we only retrieve records in the range of .From and .To
-		require.Equal(st, size, len(rows))
+		require.Equal(t, size, len(rows))
 
 		for i := range rows {
-			require.Equal(st, rows[i], records[rows[i].Id])
+			require.Equal(t, rows[i], records[rows[i].Id])
 		}
 	})
 
-	t.Run(".Sqlx/Search", func(st *testing.T) {
-		db := testify.GormStart(st)
-		defer testify.GormEnd(st, db)
-
+	t.Run("OK - with search keyword", func(st *testing.T) {
 		query := original.Clone()
 		records, ids, mid, size, count := setup(st, db, query)
 		// use id to search
@@ -65,10 +63,7 @@ func TestScanningQuery(t *testing.T) {
 		require.Equal(st, rows[0], records[search])
 	})
 
-	t.Run(".Sqlx/Cursor", func(st *testing.T) {
-		db := testify.GormStart(st)
-		defer testify.GormEnd(st, db)
-
+	t.Run("OK - with cursor", func(st *testing.T) {
 		query := original.Clone()
 		records, ids, mid, size, count := setup(st, db, query)
 		// use id to search
@@ -92,6 +87,9 @@ func TestScanningQuery(t *testing.T) {
 }
 
 func setup(t *testing.T, db *gorm.DB, query *ScanningQuery) (map[string]*testdata.User, []string, int, int, int) {
+	// .Where("1=1") is a hack to bypass the gorm's check for empty condition
+	require.NoError(t, db.Model(&testdata.User{}).Where("1=1").Delete(nil).Error)
+
 	mid := testdata.Fake.IntBetween(0, 9)
 	size := testdata.Fake.IntBetween(99, 999)
 	count := testdata.Fake.IntBetween(1001, 1001+size)

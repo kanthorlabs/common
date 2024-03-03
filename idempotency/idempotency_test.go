@@ -33,12 +33,6 @@ func TestIdempotency(t *testing.T) {
 		require.NoError(st, err)
 	})
 
-	t.Run("KO - configuration error", func(st *testing.T) {
-		conf := &config.Config{}
-		_, err := New(conf, testify.Logger())
-		require.ErrorContains(st, err, "IDEMPOTENCY.CONFIG.")
-	})
-
 	t.Run("KO - unknown error", func(st *testing.T) {
 		conf := &config.Config{
 			Uri:        "tcp://127.0.0.1",

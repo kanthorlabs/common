@@ -12,16 +12,12 @@ import (
 )
 
 // New creates a new cache instance based on the provided configuration.
-// The cache instance is selected based on the URI scheme.
+// The cache instance is initialized based on the URI scheme.
 // Supported schemes are:
 // - memory://
 // - redis://
 // If the URI scheme is not supported, an error is returned.
 func New(conf *config.Config, logger logging.Logger) (Cache, error) {
-	if err := conf.Validate(); err != nil {
-		return nil, err
-	}
-
 	if strings.HasPrefix(conf.Uri, "memory") {
 		return NewMemory(conf, logger)
 	}

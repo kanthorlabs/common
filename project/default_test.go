@@ -9,42 +9,36 @@ import (
 
 func TestRegion(t *testing.T) {
 	t.Run("default", func(st *testing.T) {
-		got := Region()
-		require.Equal(st, DefaultRegion, got)
+		require.Equal(st, DefaultRegion, Region())
 	})
 
 	t.Run("from env", func(st *testing.T) {
 		region := testdata.Fake.Address().CountryCode()
 		st.Setenv("PROJECT_REGION", region)
-		got := Region()
-		require.Equal(st, region, got)
+		require.Equal(st, region, Region())
 	})
 }
 
 func TestNamespace(t *testing.T) {
 	t.Run("default", func(st *testing.T) {
-		got := Namespace()
-		require.Equal(st, DefaultNamespace, got)
+		require.Equal(st, DefaultNamespace, Namespace())
 	})
 
 	t.Run("from env", func(st *testing.T) {
 		ns := testdata.Fake.App().Name()
 		st.Setenv("PROJECT_NAMESPACE", ns)
-		got := Namespace()
-		require.Equal(st, ns, got)
+		require.Equal(st, ns, Namespace())
 	})
 }
 
 func TestTier(t *testing.T) {
 	t.Run("default", func(st *testing.T) {
-		got := Tier()
-		require.Equal(st, DefaultTier, got)
+		require.Equal(st, DefaultTier, Tier())
 	})
 
 	t.Run("from env", func(st *testing.T) {
 		tier := testdata.Fake.Blood().Name()
 		st.Setenv("PROJECT_TIER", tier)
-		got := Tier()
-		require.Equal(st, tier, got)
+		require.Equal(st, tier, Tier())
 	})
 }

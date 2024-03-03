@@ -16,7 +16,7 @@ var (
 func svalidate(x int) func(i int, item *int) error {
 	return func(i int, item *int) error {
 		if *item >= x {
-			return testdata.ErrorGeneric
+			return testdata.ErrGeneric
 		}
 		return nil
 	}
@@ -33,14 +33,14 @@ func TestSlice(t *testing.T) {
 
 	t.Run("KO - item error", func(st *testing.T) {
 		err := Validate(Slice(items, svalidate(high-step)))
-		require.ErrorIs(st, err, testdata.ErrorGeneric)
+		require.ErrorIs(st, err, testdata.ErrGeneric)
 	})
 }
 
 func mvalidate(x int) func(refId string, item int) error {
 	return func(refId string, item int) error {
 		if item >= x {
-			return testdata.ErrorGeneric
+			return testdata.ErrGeneric
 		}
 		return nil
 	}
@@ -58,6 +58,6 @@ func TestMap(t *testing.T) {
 
 	t.Run("KO - item error", func(st *testing.T) {
 		err := Validate(Map(items, mvalidate(high-step)))
-		require.ErrorIs(st, err, testdata.ErrorGeneric)
+		require.ErrorIs(st, err, testdata.ErrGeneric)
 	})
 }

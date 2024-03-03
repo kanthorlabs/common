@@ -11,6 +11,7 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 )
 
+// NewMemory creates a new idempotency instance that uses ttlcache as the underlying storage.
 func NewMemory(conf *config.Config, logger logging.Logger) (Idempotency, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err

@@ -33,3 +33,15 @@ func (conf *Config) Validate() error {
 
 	return nil
 }
+
+func Default(uri string) *Config {
+	return &Config{
+		Uri: uri,
+		Connection: Connection{
+			MaxLifetime:  DefaultConnMaxLifetime,
+			MaxIdletime:  DefaultConnMaxIdletime,
+			MaxIdleCount: DefaultConnMaxIdleCount,
+			MaxOpenCount: DefaultConnMaxOpenCount,
+		},
+	}
+}

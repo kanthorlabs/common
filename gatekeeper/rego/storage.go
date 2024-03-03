@@ -8,6 +8,7 @@ import (
 	"github.com/open-policy-agent/opa/storage/inmem"
 )
 
+// Memory is a factory function that returns a storage.Store instance based on the provided definitions.
 func Memory(definitions map[string][]entities.Permission) (storage.Store, error) {
 	if len(definitions) == 0 {
 		return nil, errors.New("GATEKEEPER.REGO.RBAC.DEFINITION_EMPTY.ERROR")

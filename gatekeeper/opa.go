@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(conf *config.Config, logger logging.Logger) (Gatekeeper, error) {
+func NewOpa(conf *config.Config, logger logging.Logger) (Gatekeeper, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}

@@ -8,16 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNew(t *testing.T) {
+func TestCircuitBreaker_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		_, err := New(testconf, testify.Logger())
 		require.NoError(st, err)
-	})
-
-	t.Run("KO - validation error", func(st *testing.T) {
-		conf := &config.Config{}
-		_, err := New(conf, testify.Logger())
-		require.ErrorContains(st, err, "CIRCUIT_BREAKER.CONFIG")
 	})
 }
 

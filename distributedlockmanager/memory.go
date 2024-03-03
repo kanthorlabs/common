@@ -9,6 +9,7 @@ import (
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
 )
 
+// NewMemory creates a new distributed lock manager instance that uses ttlcache as the underlying storage.
 func NewMemory(conf *config.Config) (Factory, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err

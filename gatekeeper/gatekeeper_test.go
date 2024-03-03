@@ -10,9 +10,17 @@ import (
 	sqlx "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
+	"github.com/kanthorlabs/common/testify"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 )
+
+func TestGatekeeper_New(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		_, err := NewOpa(testconf, testify.Logger())
+		require.NoError(st, err)
+	})
+}
 
 var testconf = &config.Config{
 	Engine: config.EngineRBAC,

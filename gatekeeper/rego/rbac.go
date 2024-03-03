@@ -18,6 +18,7 @@ var (
 	ErrRBACNotAllow = errors.New("GATEKEEPER.REGO.RBAC.NOT_ALLOW.ERROR")
 )
 
+// RBAC is a factory function that returns a function that evaluates the given permission and privileges based on RBAC rules.
 func RBAC(ctx context.Context, definitions map[string][]entities.Permission) (Evaluate, error) {
 	store, err := Memory(definitions)
 	if err != nil {

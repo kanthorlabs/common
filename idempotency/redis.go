@@ -12,6 +12,7 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 )
 
+// NewRedis creates a new idempotency instance that uses Redis as the underlying storage.
 func NewRedis(conf *config.Config, logger logging.Logger) (Idempotency, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err

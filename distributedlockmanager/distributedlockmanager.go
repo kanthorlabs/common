@@ -8,11 +8,13 @@ import (
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
 )
 
+// New creates a new distributed lock manager instance based on the provided configuration.
+// The distributed lock manager instance initialized based on the URI scheme.
+// Supported schemes are:
+// - memory://
+// - redis://
+// If the URI scheme is not supported, an error is returned.
 func New(conf *config.Config) (Factory, error) {
-	if err := conf.Validate(); err != nil {
-		return nil, err
-	}
-
 	if strings.HasPrefix(conf.Uri, "memory") {
 		return NewMemory(conf)
 	}

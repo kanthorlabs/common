@@ -13,10 +13,14 @@ var FileLookingDirs = []string{"$KANTHOR_HOME/", "$HOME/.kanthor/", "./"}
 var FileName = "configs"
 var FileExt = "yaml"
 
+// NewFile creates a configuration provider that
+//   - reads configuraton with name `configs.yaml` from the given directories
+//   - reads environment variables with prefix `ns`
+//
+// the configuration inside the file will be merged and overriden by the environment variables
 func NewFile(ns string, dirs []string) (Provider, error) {
 	if len(dirs) == 0 {
 		return nil, fmt.Errorf("CONFIGURATION.FILE.NO_DIRECTOY.ERROR")
-
 	}
 
 	instance := viper.New()
