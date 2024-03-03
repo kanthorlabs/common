@@ -40,7 +40,7 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*enti
 			continue
 		}
 
-		msg := NatsMsgFromEvent(event.Subject, event)
+		msg := NatsMsgFromEvent(event)
 		p.Go(func(subctx context.Context) error {
 			// We don't want to return the error inside this goroutine
 			// because we want to set error for each id individually, not merge all of them

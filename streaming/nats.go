@@ -37,36 +37,6 @@ type nats struct {
 	subscribers map[string]Subscriber
 }
 
-func (streaming *nats) Readiness() error {
-	if streaming.status == patterns.StatusDisconnected {
-		return nil
-	}
-	if streaming.status != patterns.StatusConnected {
-		return ErrNotConnected
-	}
-
-	if !streaming.conn.IsConnected() {
-		return ErrNotConnected
-	}
-
-	return nil
-}
-
-func (streaming *nats) Liveness() error {
-	if streaming.status == patterns.StatusDisconnected {
-		return nil
-	}
-	if streaming.status != patterns.StatusConnected {
-		return ErrNotConnected
-	}
-
-	if !streaming.conn.IsConnected() {
-		return ErrNotConnected
-	}
-
-	return nil
-}
-
 func (streaming *nats) Connect(ctx context.Context) error {
 	streaming.mu.Lock()
 	defer streaming.mu.Unlock()
@@ -98,6 +68,36 @@ func (streaming *nats) Connect(ctx context.Context) error {
 		"stream_name", stream.CachedInfo().Config.Name,
 		"stream_created_at", stream.CachedInfo().Created.Format(time.RFC3339),
 	)
+	return nil
+}
+
+func (streaming *nats) Readiness() error {
+	if streaming.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if streaming.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
+	if !streaming.conn.IsConnected() {
+		return ErrNotConnected
+	}
+
+	return nil
+}
+
+func (streaming *nats) Liveness() error {
+	if streaming.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if streaming.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
+	if !streaming.conn.IsConnected() {
+		return ErrNotConnected
+	}
+
 	return nil
 }
 
@@ -170,13 +170,8 @@ func (streaming *nats) Disconnect(ctx context.Context) error {
 	if len(streaming.subscribers) > 0 {
 		streaming.subscribers = nil
 	}
-	if !streaming.conn.IsDraining() {
-		if err := streaming.conn.Drain(); err != nil {
-			retruning = errors.Join(retruning, err)
-		}
-	}
-	if !streaming.conn.IsClosed() {
-		streaming.conn.Close()
+	if err := streaming.conn.Drain(); err != nil {
+		retruning = errors.Join(retruning, err)
 	}
 	streaming.conn = nil
 
@@ -190,7 +185,8 @@ func (streaming *nats) Publisher(name string) (Publisher, error) {
 		return nil, ErrNotConnected
 	}
 
-	if err := validator.StringAlphaNumericUnderscore("name", name)(); err != nil {
+	err := validator.StringAlphaNumericUnderscore("STREAMING.PUBLISHER.NAME", name)()
+	if err != nil {
 		return nil, err
 	}
 
@@ -221,7 +217,8 @@ func (streaming *nats) Subscriber(name string) (Subscriber, error) {
 		return nil, ErrNotConnected
 	}
 
-	if err := validator.StringAlphaNumericUnderscore("name", name)(); err != nil {
+	err := validator.StringAlphaNumericUnderscore("STREAMING.SUBSCRIBER.NAME", name)()
+	if err != nil {
 		return nil, err
 	}
 

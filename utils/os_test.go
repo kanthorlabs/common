@@ -9,8 +9,6 @@ import (
 )
 
 func TestAbsPathify(t *testing.T) {
-	skipWindows(t)
-
 	home := os.Getenv("HOME")
 	homer := filepath.Join(home, "homer")
 	wd, _ := os.Getwd()

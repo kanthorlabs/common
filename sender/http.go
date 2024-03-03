@@ -2,9 +2,7 @@ package sender
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -39,9 +37,12 @@ func Http(conf *config.Config, logger logging.Logger) (Send, error) {
 			SetContext(ctx).
 			SetHeaderMultiValues(r.Headers)
 
-		var res *resty.Response
-		var err = fmt.Errorf("SENDER.METHOD_NOT_SUPPORT.ERROR: %s", strings.ToUpper(req.Method))
+		var err = r.Validate()
+		if err != nil {
+			return nil, err
+		}
 
+		var res *resty.Response
 		if r.Method == http.MethodGet {
 			res, err = req.Get(r.Uri)
 		}

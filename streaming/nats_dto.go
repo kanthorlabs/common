@@ -8,6 +8,20 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 )
 
+func NatsMsgFromEvent(event *entities.Event) *natsio.Msg {
+	msg := &natsio.Msg{
+		Subject: event.Subject,
+		Header: natsio.Header{
+			natsio.MsgIdHdr: []string{event.Id},
+		},
+		Data: event.Data,
+	}
+	for key, value := range event.Metadata {
+		msg.Header.Set(key, value)
+	}
+
+	return msg
+}
 func NatsMsgToEvent(msg jetstream.Msg) *entities.Event {
 	event := &entities.Event{
 		Subject:  msg.Subject(),
@@ -22,19 +36,4 @@ func NatsMsgToEvent(msg jetstream.Msg) *entities.Event {
 		event.Metadata[key] = value[0]
 	}
 	return event
-}
-
-func NatsMsgFromEvent(subject string, event *entities.Event) *natsio.Msg {
-	msg := &natsio.Msg{
-		Subject: subject,
-		Header: natsio.Header{
-			natsio.MsgIdHdr: []string{event.Id},
-		},
-		Data: event.Data,
-	}
-	for key, value := range event.Metadata {
-		msg.Header.Set(key, value)
-	}
-
-	return msg
 }

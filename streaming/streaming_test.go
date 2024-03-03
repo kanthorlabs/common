@@ -34,3 +34,11 @@ func streamname() string {
 func subjectname() string {
 	return strings.ReplaceAll(uuid.NewString(), "-", "") + "." + strings.ReplaceAll(uuid.NewString(), "-", "")
 }
+
+func topicname() string {
+	return strings.ReplaceAll(uuid.NewString(), "-", "") + "." + strings.ReplaceAll(uuid.NewString(), "-", "")
+}
+
+func pubsubname() string {
+	return strings.ReplaceAll(uuid.NewString(), "-", "")
+}

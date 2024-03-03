@@ -15,112 +15,110 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNatsPublisher(t *testing.T) {
-	t.Run(".Name", func(st *testing.T) {
-		st.Run("OK", func(sst *testing.T) {
-			js := mockjetstream.NewJetStream(t)
-			publisher := &NatsPublisher{
-				name:   testdata.Fake.App().Name(),
-				conf:   testconf("nats://127.0.0.1:42222"),
-				logger: testify.Logger(),
-				js:     js,
-			}
-			require.Equal(sst, publisher.name, publisher.Name())
-		})
+func TestNatsPublisher_Name(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		js := mockjetstream.NewJetStream(t)
+		publisher := &NatsPublisher{
+			name:   pubsubname(),
+			conf:   testconf("nats://127.0.0.1:42222"),
+			logger: testify.Logger(),
+			js:     js,
+		}
+		require.Equal(st, publisher.name, publisher.Name())
+	})
+}
+
+func TestNatsPublisher_Pub(t *testing.T) {
+	t.Run("KO - validation error", func(st *testing.T) {
+		js := mockjetstream.NewJetStream(st)
+		publisher := &NatsPublisher{
+			name:   pubsubname(),
+			conf:   testconf("nats://127.0.0.1:42222"),
+			logger: testify.Logger(),
+			js:     js,
+		}
+
+		ctx := context.Background()
+
+		data := testdata.NewUser(clock.New())
+		id := uuid.NewString()
+		events := map[string]*entities.Event{
+			id: {
+				Subject:  subjectname() + "+" + subjectname(),
+				Id:       id,
+				Data:     data.Bytes(),
+				Metadata: map[string]string{},
+			},
+		}
+
+		errs := publisher.Pub(ctx, events)
+		require.Equal(st, len(events), len(errs))
+
+		require.ErrorContains(st, errs[id], "STREAMING.EVENT")
 	})
 
-	t.Run(".Pub", func(st *testing.T) {
-		st.Run("KO - validation error", func(sst *testing.T) {
-			js := mockjetstream.NewJetStream(sst)
-			publisher := &NatsPublisher{
-				name:   testdata.Fake.App().Name(),
-				conf:   testconf("nats://127.0.0.1:42222"),
-				logger: testify.Logger(),
-				js:     js,
-			}
+	t.Run("KO - publish error", func(st *testing.T) {
+		js := mockjetstream.NewJetStream(st)
+		publisher := &NatsPublisher{
+			name:   pubsubname(),
+			conf:   testconf("nats://127.0.0.1:42222"),
+			logger: testify.Logger(),
+			js:     js,
+		}
 
-			ctx := context.Background()
+		data := testdata.NewUser(clock.New())
+		id := uuid.NewString()
+		events := map[string]*entities.Event{
+			id: {
+				Subject:  subjectname(),
+				Id:       id,
+				Data:     data.Bytes(),
+				Metadata: map[string]string{},
+			},
+		}
 
-			data := testdata.NewUser(clock.New())
-			id := uuid.NewString()
-			events := map[string]*entities.Event{
-				id: {
-					Subject:  testdata.Fake.Internet().Email(),
-					Id:       id,
-					Data:     data.Bytes(),
-					Metadata: map[string]string{},
-				},
-			}
+		msg := NatsMsgFromEvent(events[id])
+		js.EXPECT().PublishMsg(mock.Anything, msg).Return(nil, testdata.ErrGeneric).Once()
 
-			errs := publisher.Pub(ctx, events)
-			require.Equal(sst, len(events), len(errs))
+		ctx := context.Background()
+		errs := publisher.Pub(ctx, events)
+		require.Equal(st, len(events), len(errs))
 
-			require.ErrorContains(sst, errs[id], "STREAMING.ENTITIES.EVENT")
-		})
+		require.ErrorIs(st, errs[id], testdata.ErrGeneric)
+	})
 
-		st.Run("KO - publish error", func(sst *testing.T) {
-			js := mockjetstream.NewJetStream(sst)
-			publisher := &NatsPublisher{
-				name:   testdata.Fake.App().Name(),
-				conf:   testconf("nats://127.0.0.1:42222"),
-				logger: testify.Logger(),
-				js:     js,
-			}
+	t.Run("KO - duplicated error", func(st *testing.T) {
+		js := mockjetstream.NewJetStream(st)
+		publisher := &NatsPublisher{
+			name:   pubsubname(),
+			conf:   testconf("nats://127.0.0.1:42222"),
+			logger: testify.Logger(),
+			js:     js,
+		}
 
-			data := testdata.NewUser(clock.New())
-			id := uuid.NewString()
-			events := map[string]*entities.Event{
-				id: {
-					Subject:  subjectname(),
-					Id:       id,
-					Data:     data.Bytes(),
-					Metadata: map[string]string{},
-				},
-			}
+		data := testdata.NewUser(clock.New())
+		id := uuid.NewString()
+		events := map[string]*entities.Event{
+			id: {
+				Subject:  subjectname(),
+				Id:       id,
+				Data:     data.Bytes(),
+				Metadata: map[string]string{},
+			},
+		}
 
-			msg := NatsMsgFromEvent(events[id].Subject, events[id])
-			js.EXPECT().PublishMsg(mock.Anything, msg).Return(nil, testdata.ErrGeneric).Once()
+		msg := NatsMsgFromEvent(events[id])
+		ack := &jetstream.PubAck{
+			Stream:    streamname(),
+			Sequence:  testdata.Fake.UInt64(),
+			Duplicate: true,
+		}
+		js.EXPECT().PublishMsg(mock.Anything, msg).Return(ack, nil).Once()
 
-			ctx := context.Background()
-			errs := publisher.Pub(ctx, events)
-			require.Equal(sst, len(events), len(errs))
+		ctx := context.Background()
+		errs := publisher.Pub(ctx, events)
+		require.Equal(st, len(events), len(errs))
 
-			require.ErrorIs(sst, errs[id], testdata.ErrGeneric)
-		})
-
-		st.Run("KO - duplicated error", func(sst *testing.T) {
-			js := mockjetstream.NewJetStream(sst)
-			publisher := &NatsPublisher{
-				name:   testdata.Fake.App().Name(),
-				conf:   testconf("nats://127.0.0.1:42222"),
-				logger: testify.Logger(),
-				js:     js,
-			}
-
-			data := testdata.NewUser(clock.New())
-			id := uuid.NewString()
-			events := map[string]*entities.Event{
-				id: {
-					Subject:  subjectname(),
-					Id:       id,
-					Data:     data.Bytes(),
-					Metadata: map[string]string{},
-				},
-			}
-
-			msg := NatsMsgFromEvent(events[id].Subject, events[id])
-			ack := &jetstream.PubAck{
-				Stream:    streamname(),
-				Sequence:  testdata.Fake.UInt64(),
-				Duplicate: true,
-			}
-			js.EXPECT().PublishMsg(mock.Anything, msg).Return(ack, nil).Once()
-
-			ctx := context.Background()
-			errs := publisher.Pub(ctx, events)
-			require.Equal(sst, len(events), len(errs))
-
-			require.ErrorContains(sst, errs[id], "STREAMING.PUBLISHER.EVENT_DUPLICATED")
-		})
+		require.ErrorContains(st, errs[id], "STREAMING.PUBLISHER.EVENT_DUPLICATED")
 	})
 }

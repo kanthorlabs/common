@@ -2,6 +2,7 @@ package project
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/kanthorlabs/common/testdata"
@@ -40,7 +41,7 @@ func TestTopic(t *testing.T) {
 
 func TestIsTopic(t *testing.T) {
 	first := testdata.Fake.Lorem().Word()
-	second := testdata.Fake.Lorem().Word()
+	second := strings.Join(testdata.Fake.Lorem().Words(10), " ")
 
 	t.Run("true", func(st *testing.T) {
 		require.True(st, IsTopic(Subject(first, second), first))

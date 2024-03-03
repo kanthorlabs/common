@@ -1,6 +1,7 @@
 package gatekeeper
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -57,7 +58,7 @@ func setup(t *testing.T) ([]entities.Privilege, int) {
 	for i := 0; i < count; i++ {
 		tenant := uuid.NewString()
 		for j := 0; j < count; j++ {
-			username := testdata.Fake.Internet().Email()
+			username := fmt.Sprintf("%s/%s", testdata.Fake.Internet().Email(), uuid.NewString())
 			for k := 0; k < len(roles); k++ {
 				privilege := entities.Privilege{
 					Username:  username,

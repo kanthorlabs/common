@@ -63,14 +63,13 @@ func TestHttp(t *testing.T) {
 		require.Equal(st, http.StatusInternalServerError, res.Status)
 	})
 
-	t.Run("KO", func(st *testing.T) {
+	t.Run("KO - request validation error", func(st *testing.T) {
 		id := uuid.NewString()
 		req := &entities.Request{
-			Method: "-",
-			Uri:    "/200",
+			Method: http.MethodPost,
 			Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
 		}
 		_, err := send(context.Background(), req)
-		require.ErrorContains(t, err, "SENDER.METHOD_NOT_SUPPORT.ERROR")
+		require.ErrorContains(t, err, "SENDER.REQUEST")
 	})
 }

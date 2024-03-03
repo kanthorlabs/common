@@ -31,7 +31,7 @@ func TestMemory_Connect(t *testing.T) {
 		require.NoError(t, c.Connect(context.Background()))
 	})
 
-	t.Run("KO - already connected", func(st *testing.T) {
+	t.Run("KO - already connected error", func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 

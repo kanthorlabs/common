@@ -19,8 +19,260 @@ import (
 	natstest "github.com/nats-io/nats-server/v2/test"
 )
 
+func TestNats_New(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NotNil(st, stream)
+	})
+
+	t.Run("KO - validation error", func(st *testing.T) {
+		stream, err := NewNats(&config.Config{}, testify.Logger())
+		require.Error(st, err)
+		require.Nil(st, stream)
+	})
+}
+
+func TestNats_Connect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+	})
+
+	t.Run("KO - already connected error", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		require.Error(st, stream.Connect(context.Background()))
+	})
+
+	t.Run("KO - connection error", func(st *testing.T) {
+		conf := testconf("nats://localhost:4222")
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.ErrorContains(st, stream.Connect(context.Background()), "nats: ")
+	})
+}
+
+func TestNats_Readiness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		require.NoError(st, stream.Readiness())
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+
+		require.NoError(st, stream.Connect(context.Background()))
+		require.NoError(st, stream.Disconnect(context.Background()))
+		require.NoError(st, stream.Readiness())
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		conf := testconf("nats://localhost:4222")
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.ErrorIs(st, stream.Readiness(), ErrNotConnected)
+	})
+}
+
+func TestNats_Liveness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		require.NoError(st, stream.Liveness())
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+
+		require.NoError(st, stream.Connect(context.Background()))
+		require.NoError(st, stream.Disconnect(context.Background()))
+		require.NoError(st, stream.Liveness())
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		conf := testconf("nats://localhost:4222")
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.ErrorIs(st, stream.Liveness(), ErrNotConnected)
+	})
+}
+
+func TestNats_Disconnect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		require.NoError(st, stream.Disconnect(context.Background()))
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		conf := testconf("nats://localhost:4222")
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.ErrorIs(st, stream.Disconnect(context.Background()), ErrNotConnected)
+	})
+}
+
+func TestNats_Publisher(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		defer stream.Disconnect(context.Background())
+
+		publisher, err := stream.Publisher(pubsubname())
+		require.NoError(st, err)
+		require.NotNil(st, publisher)
+	})
+
+	t.Run("OK - already created", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		defer stream.Disconnect(context.Background())
+
+		name := pubsubname()
+		_, err = stream.Publisher(name)
+		require.NoError(st, err)
+		_, err = stream.Publisher(name)
+		require.NoError(st, err)
+
+		require.Equal(st, 1, len(stream.(*nats).publishers))
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		conf := testconf("nats://localhost:4222")
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		_, err = stream.Publisher(streamname())
+		require.ErrorIs(st, err, ErrNotConnected)
+	})
+
+	t.Run("KO - name error", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		defer stream.Disconnect(context.Background())
+
+		_, err = stream.Publisher("")
+		require.ErrorContains(st, err, "STREAMING.PUBLISHER.NAME")
+	})
+}
+
+func TestNats_Subscriber(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		defer stream.Disconnect(context.Background())
+
+		subscriber, err := stream.Subscriber(pubsubname())
+		require.NoError(st, err)
+		require.NotNil(st, subscriber)
+	})
+
+	t.Run("OK - already created", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		defer stream.Disconnect(context.Background())
+
+		name := pubsubname()
+		_, err = stream.Subscriber(name)
+		require.NoError(st, err)
+		_, err = stream.Subscriber(name)
+		require.NoError(st, err)
+
+		require.Equal(st, 1, len(stream.(*nats).subscribers))
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		conf := testconf("nats://localhost:4222")
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		_, err = stream.Subscriber(streamname())
+		require.ErrorIs(st, err, ErrNotConnected)
+	})
+
+	t.Run("KO - name error", func(st *testing.T) {
+		server := natsserver()
+		defer server.Shutdown()
+
+		conf := testconf(server.ClientURL())
+		stream, err := NewNats(conf, testify.Logger())
+		require.NoError(st, err)
+		require.NoError(st, stream.Connect(context.Background()))
+		defer stream.Disconnect(context.Background())
+
+		_, err = stream.Subscriber("")
+		require.ErrorContains(st, err, "STREAMING.SUBSCRIBER.NAME")
+	})
+}
+
 func TestNats(t *testing.T) {
-	t.Run("OK - not enough events", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
 		server := natsserver()
 		defer server.Shutdown()
 
@@ -95,7 +347,6 @@ func TestNats(t *testing.T) {
 
 		require.Equal(st, 0, len(items))
 	})
-
 }
 
 func testconf(uri string) *config.Config {

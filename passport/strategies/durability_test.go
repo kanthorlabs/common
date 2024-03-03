@@ -60,7 +60,7 @@ func TestDurability_Connect(t *testing.T) {
 		require.NoError(st, c.Connect(context.Background()))
 	})
 
-	t.Run("KO - already connected", func(st *testing.T) {
+	t.Run("KO - already connected error", func(st *testing.T) {
 		c, err := NewDurability(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -97,7 +97,7 @@ func TestDurability_Readiness(t *testing.T) {
 		require.NoError(st, c.Readiness())
 	})
 
-	t.Run("KO - not connected", func(st *testing.T) {
+	t.Run("KO - not connected error", func(st *testing.T) {
 		c, err := NewDurability(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -133,7 +133,7 @@ func TestDurability_Liveness(t *testing.T) {
 		require.NoError(st, c.Liveness())
 	})
 
-	t.Run("KO - not connected", func(st *testing.T) {
+	t.Run("KO - not connected error", func(st *testing.T) {
 		c, err := NewDurability(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -160,7 +160,7 @@ func TestDurability_Disconnect(t *testing.T) {
 		require.NoError(st, c.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected", func(st *testing.T) {
+	t.Run("KO - not connected error", func(st *testing.T) {
 		c, err := NewDurability(conf, testify.Logger())
 		require.NoError(st, err)
 

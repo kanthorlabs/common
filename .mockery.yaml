@@ -56,3 +56,6 @@ packages:
       mockname: "{{ .InterfaceName }}"
     interfaces:
       JetStream:
+      Consumer:
+      Msg:
+      MessageBatch:

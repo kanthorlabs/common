@@ -34,6 +34,20 @@ func (subscriber *NatsSubscriber) Name() string {
 	return subscriber.name
 }
 
+func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
+	subscriber.mu.Lock()
+	defer subscriber.mu.Unlock()
+
+	if subscriber.status == patterns.StatusConnected {
+		return ErrSubAlreadyConnected
+	}
+
+	subscriber.logger.Info("connected")
+
+	subscriber.status = patterns.StatusConnected
+	return nil
+}
+
 func (subscriber *NatsSubscriber) Readiness() error {
 	if subscriber.status == patterns.StatusDisconnected {
 		return nil
@@ -66,20 +80,6 @@ func (subscriber *NatsSubscriber) Liveness() error {
 	return err
 }
 
-func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
-	subscriber.mu.Lock()
-	defer subscriber.mu.Unlock()
-
-	if subscriber.status == patterns.StatusConnected {
-		return ErrSubAlreadyConnected
-	}
-
-	subscriber.logger.Info("connected")
-
-	subscriber.status = patterns.StatusConnected
-	return nil
-}
-
 func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
@@ -94,7 +94,12 @@ func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 }
 
 func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler SubHandler) error {
-	if err := validator.StringAlphaNumericUnderscoreDot("topic", topic)(); err != nil {
+	if subscriber.status != patterns.StatusConnected {
+		return ErrSubNotConnected
+	}
+
+	err := validator.StringAlphaNumericUnderscoreDot("STREAMING.SUBSCRIBER.TOPIC", topic)()
+	if err != nil {
 		return err
 	}
 
@@ -130,6 +135,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 					"error", err.Error(),
 					"wait_time", fmt.Sprintf("%dms", subscriber.conf.Subscriber.Timeout),
 				)
+				continue
 			}
 
 			messages := map[string]jetstream.Msg{}
