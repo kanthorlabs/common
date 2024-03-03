@@ -3,5 +3,5 @@ package distributedlockmanager
 import "errors"
 
 var (
-	ErrKeyEmpty = errors.New("DLM.KEY.EMPTY.ERROR")
+	ErrKeyEmpty = errors.New("DISTRIBUTED_LOCK_MANAGER.KEY.EMPTY.ERROR")
 )

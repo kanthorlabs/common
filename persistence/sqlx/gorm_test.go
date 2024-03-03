@@ -12,7 +12,7 @@ import (
 func TestNewGorm(t *testing.T) {
 	t.Run("KO because of connection error", func(st *testing.T) {
 		conf := &config.Config{
-			Uri: testdata.PostgresUrl,
+			Uri: testdata.PostgresUri,
 			Connection: config.Connection{
 				MaxLifetime:  300000,
 				MaxIdletime:  60000,

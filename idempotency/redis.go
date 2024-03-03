@@ -93,13 +93,16 @@ func (instance *redis) Disconnect(ctx context.Context) error {
 }
 
 func (instance *redis) Validate(ctx context.Context, key string) error {
-	k := Key(key)
+	k, err := Key(key)
+	if err != nil {
+		return err
+	}
 
 	var incr *goredis.IntCmd
 	// While the client sends commands using pipelining,
 	// the server will be forced to queue the replies, using memory.
 	// So we cannot get the incr.Val inside the pipeline to validate
-	_, err := instance.client.Pipelined(ctx, func(pipe goredis.Pipeliner) error {
+	_, err = instance.client.Pipelined(ctx, func(pipe goredis.Pipeliner) error {
 		incr = pipe.Incr(ctx, k)
 		pipe.Expire(ctx, k, time.Millisecond*time.Duration(instance.conf.TimeToLive))
 		return nil

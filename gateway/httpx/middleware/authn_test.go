@@ -137,5 +137,4 @@ func TestAuthn(t *testing.T) {
 
 		require.Contains(st, body["error"], expected.Error())
 	})
-
 }

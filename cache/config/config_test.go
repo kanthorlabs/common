@@ -10,7 +10,7 @@ import (
 func TestConfig(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := &Config{
-			Uri: testdata.RedisUrl,
+			Uri: testdata.RedisUri,
 		}
 		require.NoError(t, conf.Validate())
 	})

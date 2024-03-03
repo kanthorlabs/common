@@ -10,13 +10,13 @@ import (
 )
 
 var testconf = &config.Config{
-	Uri: "memory://",
+	Uri: testdata.MemoryUri,
 }
 
 func TestCache(t *testing.T) {
 	t.Run("OK - memory", func(st *testing.T) {
 		conf := &config.Config{
-			Uri: "memory://",
+			Uri: testdata.MemoryUri,
 		}
 		_, err := New(conf, testify.Logger())
 		require.NoError(st, err)
@@ -24,7 +24,7 @@ func TestCache(t *testing.T) {
 
 	t.Run("OK - redis", func(st *testing.T) {
 		conf := &config.Config{
-			Uri: testdata.RedisUrl,
+			Uri: testdata.RedisUri,
 		}
 		_, err := New(conf, testify.Logger())
 		require.NoError(st, err)

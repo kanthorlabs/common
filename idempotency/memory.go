@@ -81,7 +81,10 @@ func (instance *memory) Disconnect(ctx context.Context) error {
 }
 
 func (instance *memory) Validate(ctx context.Context, key string) error {
-	k := Key(key)
+	k, err := Key(key)
+	if err != nil {
+		return err
+	}
 
 	if instance.client.Has(k) {
 		return ErrConflict

@@ -10,6 +10,6 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.StringUri("IDEMPOTENCY.CONFIG.URI", conf.Uri),
-		validator.NumberGreaterThan("IDEMPOTENCY.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
+		validator.NumberGreaterThanOrEqual("IDEMPOTENCY.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
 	)
 }

@@ -99,7 +99,7 @@ func redistestconf() *config.Config {
 		TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 	}
 	if testconf.Uri == "" {
-		testconf.Uri = testdata.RedisUrl
+		testconf.Uri = testdata.RedisUri
 	}
 
 	return testconf

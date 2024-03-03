@@ -10,14 +10,14 @@ import (
 )
 
 var testconf = &config.Config{
-	Uri:        "memory://",
+	Uri:        testdata.MemoryUri,
 	TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 }
 
 func TestIdempotency(t *testing.T) {
 	t.Run("OK - memory", func(st *testing.T) {
 		conf := &config.Config{
-			Uri:        "memory://",
+			Uri:        testdata.MemoryUri,
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf, testify.Logger())
@@ -26,11 +26,17 @@ func TestIdempotency(t *testing.T) {
 
 	t.Run("OK - redis", func(st *testing.T) {
 		conf := &config.Config{
-			Uri:        testdata.RedisUrl,
+			Uri:        testdata.RedisUri,
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf, testify.Logger())
 		require.NoError(st, err)
+	})
+
+	t.Run("KO - configuration error", func(st *testing.T) {
+		conf := &config.Config{}
+		_, err := New(conf, testify.Logger())
+		require.ErrorContains(st, err, "IDEMPOTENCY.CONFIG.")
 	})
 
 	t.Run("KO - unknown error", func(st *testing.T) {
@@ -40,11 +46,5 @@ func TestIdempotency(t *testing.T) {
 		}
 		_, err := New(conf, testify.Logger())
 		require.ErrorContains(st, err, "IDEMPOTENCY.SCHEME_UNKNOWN.ERROR")
-	})
-
-	t.Run("KO - configuration error", func(st *testing.T) {
-		conf := &config.Config{}
-		_, err := New(conf, testify.Logger())
-		require.ErrorContains(st, err, "IDEMPOTENCY.CONFIG.")
 	})
 }

@@ -18,31 +18,85 @@ var testconf = &config.Config{
 	},
 }
 
-func TestGateway(t *testing.T) {
-	t.Run("New", func(st *testing.T) {
-		st.Run("KO - configuration error", func(sst *testing.T) {
-			_, err := New(&config.Config{}, testify.Logger())
-			require.ErrorContains(sst, err, "GATEWAY.CONFIG")
-		})
+func TestGateway_New(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		_, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
 	})
 
-	t.Run(".Start/.Stop", func(st *testing.T) {
-		gw, err := New(testconf, testify.Logger())
-		require.NoError(st, err)
+	t.Run("KO - configuration error", func(st *testing.T) {
+		_, err := New(&config.Config{}, testify.Logger())
+		require.ErrorContains(t, err, "GATEWAY.CONFIG")
+	})
+}
 
-		require.NoError(st, gw.Start(context.Background()))
-		require.ErrorIs(st, gw.Start(context.Background()), ErrAlreadyStarted)
-		require.NoError(st, gw.Stop(context.Background()))
-		require.ErrorIs(st, gw.Stop(context.Background()), ErrNotStarted)
+func TestGateway_Start(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		require.NoError(t, gw.Start(context.Background()))
 	})
 
-	t.Run(".UseHttpx/.Run", func(st *testing.T) {
+	t.Run("KO - already started", func(st *testing.T) {
 		gw, err := New(testconf, testify.Logger())
-		require.NoError(st, err)
+		require.NoError(t, err)
 
-		require.ErrorIs(st, gw.Run(context.Background()), ErrHandlerNotSet)
-		require.NoError(st, gw.UseHttpx(chi.NewRouter()))
-		require.ErrorIs(st, gw.UseHttpx(chi.NewRouter()), ErrHandlerAlreadySet)
-		require.NoError(st, gw.Run(context.Background()))
+		require.NoError(t, gw.Start(context.Background()))
+		require.ErrorIs(t, gw.Start(context.Background()), ErrAlreadyStarted)
+	})
+}
+
+func TestGateway_Stop(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		gw.UseHttpx(chi.NewRouter())
+		require.NoError(t, gw.Start(context.Background()))
+		require.NoError(t, gw.Stop(context.Background()))
+	})
+
+	t.Run("KO - not started", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		require.ErrorIs(t, gw.Stop(context.Background()), ErrNotStarted)
+	})
+}
+
+func TestGateway_Run(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		gw.UseHttpx(chi.NewRouter())
+		require.NoError(t, gw.Start(context.Background()))
+		require.NoError(t, gw.Run(context.Background()))
+		require.NoError(t, gw.Stop(context.Background()))
+	})
+
+	t.Run("KO - handler not set", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		require.ErrorIs(t, gw.Run(context.Background()), ErrHandlerNotSet)
+	})
+}
+
+func TestGateway_UseHttpx(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		require.NoError(t, gw.UseHttpx(chi.NewRouter()))
+	})
+
+	t.Run("KO - handler already set", func(st *testing.T) {
+		gw, err := New(testconf, testify.Logger())
+		require.NoError(t, err)
+
+		require.NoError(t, gw.UseHttpx(chi.NewRouter()))
+		require.ErrorIs(t, gw.UseHttpx(chi.NewRouter()), ErrHandlerAlreadySet)
 	})
 }

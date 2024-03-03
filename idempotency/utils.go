@@ -1,5 +1,8 @@
 package idempotency
 
-func Key(k string) string {
-	return "idempotency/" + k
+func Key(k string) (string, error) {
+	if k == "" {
+		return "", ErrKeyEmpty
+	}
+	return "idempotency/" + k, nil
 }

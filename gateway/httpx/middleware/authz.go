@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -16,7 +17,7 @@ var (
 	HeaderAuthzTenant string = "X-Authorization-Tenant"
 )
 
-func Authz(authz gatekeeper.Gatekeeper) Middleware {
+func Authz(authz gatekeeper.Gatekeeper, scope string) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -45,7 +46,7 @@ func Authz(authz gatekeeper.Gatekeeper) Middleware {
 				}
 				permission := &gkEnt.Permission{
 					Action: r.Method,
-					Object: patterns[i],
+					Object: object(scope, patterns[i]),
 				}
 				err := authz.Enforce(ctx, evaluation, permission)
 				if err != nil {
@@ -70,4 +71,12 @@ func parseTenant(acc *entities.Account, r *http.Request) string {
 	}
 
 	return r.Header.Get(HeaderAuthzTenant)
+}
+
+func object(scope, pattern string) string {
+	if scope == "" {
+		return pattern
+	}
+
+	return fmt.Sprintf("%s -> %s", scope, pattern)
 }

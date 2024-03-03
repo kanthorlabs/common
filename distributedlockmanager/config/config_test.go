@@ -10,7 +10,7 @@ import (
 func TestConfig(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := &Config{
-			Uri:        testdata.RedisUrl,
+			Uri:        testdata.RedisUri,
 			TimeToLive: 1000,
 		}
 		require.NoError(st, conf.Validate())
@@ -21,7 +21,7 @@ func TestConfig(t *testing.T) {
 			Uri:        "invalid",
 			TimeToLive: testdata.Fake.UInt64Between(1000, 100000),
 		}
-		require.ErrorContains(st, conf.Validate(), "DISTRIBUTED_LOCK_MANAGER.CONFIG.URI")
+		require.ErrorContains(st, conf.Validate(), "DISTRIBUTED_LOCK_MANAGER.CONFIG")
 	})
 }
 

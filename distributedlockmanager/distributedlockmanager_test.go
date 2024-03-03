@@ -9,14 +9,14 @@ import (
 )
 
 var testconf = &config.Config{
-	Uri:        "memory://",
+	Uri:        testdata.MemoryUri,
 	TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 }
 
 func TestDistributedLockManager(t *testing.T) {
 	t.Run("OK - memory", func(st *testing.T) {
 		conf := &config.Config{
-			Uri:        "memory://",
+			Uri:        testdata.MemoryUri,
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf)
@@ -25,7 +25,7 @@ func TestDistributedLockManager(t *testing.T) {
 
 	t.Run("OK - redlock", func(st *testing.T) {
 		conf := &config.Config{
-			Uri:        testdata.RedisUrl,
+			Uri:        testdata.RedisUri,
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
 		_, err := New(conf)

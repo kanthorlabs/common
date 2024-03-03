@@ -47,7 +47,7 @@ func TestOpa_Connect(t *testing.T) {
 			Definitions: testconf.Definitions,
 			Privilege:   testconf.Privilege,
 		}
-		conf.Privilege.Sqlx.Uri = testdata.PostgresUrl
+		conf.Privilege.Sqlx.Uri = testdata.PostgresUri
 
 		gk, err := New(conf, testify.Logger())
 		require.NoError(st, err)

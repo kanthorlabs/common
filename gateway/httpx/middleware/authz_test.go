@@ -37,7 +37,7 @@ func TestAuthz(t *testing.T) {
 	}
 
 	s.Route(path, func(r chi.Router) {
-		r.Use(Authz(authz))
+		r.Use(Authz(authz, ""))
 
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			writer.Ok(w, writer.M{})
@@ -158,7 +158,7 @@ func TestAuthz(t *testing.T) {
 		s := chi.NewRouter()
 		authz := gatekeeper.NewGatekeeper(t)
 		// top level will not work because we cannot detect the mattching pattern
-		s.Use(Authz(authz))
+		s.Use(Authz(authz, ""))
 		s.Get("/undetectable", func(w http.ResponseWriter, r *http.Request) {
 			writer.Ok(w, writer.M{})
 		})
