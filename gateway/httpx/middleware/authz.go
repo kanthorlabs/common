@@ -78,5 +78,5 @@ func object(scope, pattern string) string {
 		return pattern
 	}
 
-	return fmt.Sprintf("%s -> %s", scope, pattern)
+	return fmt.Sprintf("%s::%s", scope, pattern)
 }
