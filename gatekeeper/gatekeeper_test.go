@@ -18,7 +18,7 @@ import (
 
 func TestGatekeeper_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		_, err := NewOpa(testconf, testify.Logger())
+		_, err := New(testconf, testify.Logger())
 		require.NoError(st, err)
 	})
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 )
 
+// New returns a new instance of the gatekeeper which is using OPA (Open Policy Agent) as the policy engine by default
 func New(conf *config.Config, logger logging.Logger) (Gatekeeper, error) {
 	return NewOpa(conf, logger)
 }

@@ -12,6 +12,11 @@ import (
 	"github.com/kanthorlabs/common/sender/entities"
 )
 
+// New returns a new instance of the sender which is using URI scheme to determine the sender type.
+// Supported schemes are:
+// - http://
+// - https://
+// If the URI scheme is not supported, an error is returned.
 func New(conf *config.Config, logger logging.Logger) (Send, error) {
 	http, err := Http(conf, logger)
 	if err != nil {

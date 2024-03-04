@@ -2,11 +2,23 @@ package streaming
 
 import (
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/testdata"
+	"github.com/kanthorlabs/common/testify"
+	"github.com/stretchr/testify/require"
 )
+
+func TestStreaming_New(t *testing.T) {
+	t.Run("OK", func(t *testing.T) {
+		t.Run("OK", func(st *testing.T) {
+			_, err := New(testconf("nats://127.0.0.1:42222"), testify.Logger())
+			require.NoError(st, err)
+		})
+	})
+}
 
 func fakeitems(count int) map[string]*testdata.User {
 	items := map[string]*testdata.User{}
