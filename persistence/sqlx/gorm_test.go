@@ -11,13 +11,13 @@ import (
 
 func TestNewGorm(t *testing.T) {
 	t.Run("OK - postgres", func(st *testing.T) {
-		conf := config.Default(testdata.PostgresUri)
+		conf := config.Default(testdata.PostgresUri + "?skip_default_transaction=true")
 		_, err := NewGorm(conf, testify.Logger())
 		require.ErrorContains(st, err, "postgres")
 	})
 
 	t.Run("OK - memory", func(st *testing.T) {
-		conf := config.Default(testdata.SqliteUri)
+		conf := config.Default(testdata.SqliteUri + "&skip_default_transaction=true")
 		db, err := NewGorm(conf, testify.Logger())
 		require.NoError(st, err)
 		require.Equal(st, "sqlite", db.Dialector.Name())

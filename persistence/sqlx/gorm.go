@@ -1,6 +1,7 @@
 package sqlx
 
 import (
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,21 +13,24 @@ import (
 )
 
 func NewGorm(conf *config.Config, logger logging.Logger) (*gorm.DB, error) {
-	opts := &gorm.Config{
+	options := &gorm.Config{
+		Logger: NewLogger(logger),
+	}
+
+	if u, err := url.ParseRequestURI(conf.Uri); err == nil {
 		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
 		// you can disable it during initialization if it is not required,
 		// you will gain about 30%+ performance improvement after that
-		SkipDefaultTransaction: conf.SkipDefaultTxn,
-		Logger:                 NewLogger(logger),
+		options.SkipDefaultTransaction = u.Query().Get("skip_default_transaction") != ""
 	}
 
 	var orm *gorm.DB
 	var err error
 
 	if strings.HasPrefix(conf.Uri, "postgres") {
-		orm, err = gorm.Open(postgres.Open(conf.Uri), opts)
+		orm, err = gorm.Open(postgres.Open(conf.Uri), options)
 	} else {
-		orm, err = gorm.Open(sqlite.Open(conf.Uri), opts)
+		orm, err = gorm.Open(sqlite.Open(conf.Uri), options)
 	}
 	if err != nil {
 		return nil, err
