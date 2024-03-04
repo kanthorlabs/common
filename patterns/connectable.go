@@ -2,9 +2,12 @@ package patterns
 
 import "context"
 
-// Connectable define how our external services should be implement
-// one of important implementation is healthcheck
-// we don't want to start an application that cannot connect to other services like database, cache, ...
+var (
+	StatusDisconnected = -100
+	StatusConnected    = 100
+)
+
+// Connectable interface is a contract for all external services that our application will connect to
 type Connectable interface {
 	Connect(ctx context.Context) error
 
