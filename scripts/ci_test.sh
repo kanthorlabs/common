@@ -12,26 +12,7 @@ then
   opa test gatekeeper/rego/
   
   echo "--> coverage"
-  go test --count=1 -cover -coverprofile cover.out  \
-    ./cache/... \
-    ./cipher/... \
-    ./circuitbreaker/... \
-    ./clock/... \
-    ./configuration/... \
-    ./distributedlockmanager/... \
-    ./gatekeeper/... \
-    ./gateway/... \
-    ./healthcheck/background/... \
-    ./idempotency/... \
-    ./idx/... \
-    ./project/... \
-    ./passport/... \
-    ./persistence/... \
-    ./safe/... \
-    ./utils/... \
-    ./sender/... \
-    ./streaming/... \
-    ./validator/...
+  go test --count=1 -cover -coverprofile cover.out $(go list ./... | grep github.com/kanthorlabs/common)
 fi
 
 if [ "$CI" = "" ];
