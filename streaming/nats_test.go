@@ -60,7 +60,7 @@ func TestNats_Connect(t *testing.T) {
 	})
 
 	t.Run("KO - connection error", func(st *testing.T) {
-		conf := testconf("nats://localhost:4222")
+		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
 		require.ErrorContains(st, stream.Connect(context.Background()), "nats: ")
@@ -94,7 +94,7 @@ func TestNats_Readiness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		conf := testconf("nats://localhost:4222")
+		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
 		require.ErrorIs(st, stream.Readiness(), ErrNotConnected)
@@ -128,7 +128,7 @@ func TestNats_Liveness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		conf := testconf("nats://localhost:4222")
+		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
 		require.ErrorIs(st, stream.Liveness(), ErrNotConnected)
@@ -148,7 +148,7 @@ func TestNats_Disconnect(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		conf := testconf("nats://localhost:4222")
+		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
 		require.ErrorIs(st, stream.Disconnect(context.Background()), ErrNotConnected)
@@ -191,7 +191,7 @@ func TestNats_Publisher(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		conf := testconf("nats://localhost:4222")
+		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
 		_, err = stream.Publisher(streamname())
@@ -249,7 +249,7 @@ func TestNats_Subscriber(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		conf := testconf("nats://localhost:4222")
+		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
 		_, err = stream.Subscriber(streamname())

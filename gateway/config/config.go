@@ -27,12 +27,12 @@ func (conf *Config) Validate() error {
 }
 
 type Cors struct {
-	AllowedOrigins   []string
-	AllowedMethods   []string
-	AllowedHeaders   []string
-	ExposedHeaders   []string
-	AllowCredentials bool
-	MaxAge           int64
+	AllowedOrigins   []string `json:"allowed_origins" yaml:"allowed_origins"`
+	AllowedMethods   []string `json:"allowed_methods" yaml:"allowed_methods"`
+	AllowedHeaders   []string `json:"allowed_headers" yaml:"allowed_headers"`
+	ExposedHeaders   []string `json:"exposed_origins" yaml:"exposed_origins"`
+	AllowCredentials bool     `json:"allow_credentials" yaml:"allow_credentials"`
+	MaxAge           int64    `json:"max_age" yaml:"max_age"`
 }
 
 func (conf *Cors) Validate() error {
