@@ -14,6 +14,8 @@ func TestNewGorm(t *testing.T) {
 		conf := config.Default(testdata.PostgresUri + "?skip_default_transaction=true")
 		_, err := NewGorm(conf, testify.Logger())
 		require.ErrorContains(st, err, "postgres")
+
+		require.NotContains(st, conf.Uri, "skip_default_transaction")
 	})
 
 	t.Run("OK - memory", func(st *testing.T) {
@@ -21,5 +23,7 @@ func TestNewGorm(t *testing.T) {
 		db, err := NewGorm(conf, testify.Logger())
 		require.NoError(st, err)
 		require.Equal(st, "sqlite", db.Dialector.Name())
+
+		require.NotContains(st, conf.Uri, "skip_default_transaction")
 	})
 }

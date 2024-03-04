@@ -1,9 +1,5 @@
 package configuration
 
-type Config interface {
-	Validate() error
-}
-
 type Provider interface {
 	Unmarshal(dest any) error
 	Sources() []Source

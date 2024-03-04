@@ -25,7 +25,7 @@ func IsDev() bool {
 }
 
 func Env() string {
-	if env := os.Getenv("PROJECT_ENV"); env != "" {
+	if env := os.Getenv("KANTHOR_ENV"); env != "" {
 		return env
 	}
 	return ProdEnv

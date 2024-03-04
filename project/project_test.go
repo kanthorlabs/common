@@ -17,7 +17,7 @@ func TestVersion(t *testing.T) {
 
 func TestEnv(t *testing.T) {
 	require.False(t, IsDev())
-	t.Setenv("PROJECT_ENV", DevEnv)
+	t.Setenv("KANTHOR_ENV", DevEnv)
 	require.True(t, IsDev())
 }
 

@@ -11,7 +11,7 @@ var (
 )
 
 func Region() string {
-	region := os.Getenv("PROJECT_REGION")
+	region := os.Getenv("KANTHOR_REGION")
 	if region != "" {
 		return region
 	}
@@ -19,7 +19,7 @@ func Region() string {
 }
 
 func Namespace() string {
-	ns := os.Getenv("PROJECT_NAMESPACE")
+	ns := os.Getenv("KANTHOR_NAMESPACE")
 	if ns != "" {
 		return ns
 	}
@@ -27,7 +27,7 @@ func Namespace() string {
 }
 
 func Tier() string {
-	tier := os.Getenv("PROJECT_TIER")
+	tier := os.Getenv("KANTHOR_TIER")
 	if tier != "" {
 		return tier
 	}

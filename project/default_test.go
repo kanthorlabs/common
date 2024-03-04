@@ -14,7 +14,7 @@ func TestRegion(t *testing.T) {
 
 	t.Run("from env", func(st *testing.T) {
 		region := testdata.Fake.Address().CountryCode()
-		st.Setenv("PROJECT_REGION", region)
+		st.Setenv("KANTHOR_REGION", region)
 		require.Equal(st, region, Region())
 	})
 }
@@ -26,7 +26,7 @@ func TestNamespace(t *testing.T) {
 
 	t.Run("from env", func(st *testing.T) {
 		ns := testdata.Fake.App().Name()
-		st.Setenv("PROJECT_NAMESPACE", ns)
+		st.Setenv("KANTHOR_NAMESPACE", ns)
 		require.Equal(st, ns, Namespace())
 	})
 }
@@ -38,7 +38,7 @@ func TestTier(t *testing.T) {
 
 	t.Run("from env", func(st *testing.T) {
 		tier := testdata.Fake.Blood().Name()
-		st.Setenv("PROJECT_TIER", tier)
+		st.Setenv("KANTHOR_TIER", tier)
 		require.Equal(st, tier, Tier())
 	})
 }
