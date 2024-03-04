@@ -9,7 +9,7 @@ var (
 	DefaultConnMaxLifetime  int64 = 300000
 	DefaultConnMaxIdletime  int64 = 60000
 	DefaultConnMaxIdleCount int   = 1
-	DefaultConnMaxOpenCount int   = 10
+	DefaultConnMaxOpenCount int   = 3
 )
 
 type Config struct {

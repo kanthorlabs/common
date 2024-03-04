@@ -57,9 +57,12 @@ func (conf *Publisher) Validate() error {
 }
 
 type Subscriber struct {
+	// Timeout is how long we should wait for a message in a batch before we consider it as a timeout
+	// then process the batch messages we just received
 	Timeout int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 	// MaxRetry is how many times we should try to re-deliver message if we get any error
-	MaxRetry    int `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
+	MaxRetry int `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
+	// Concurrency is how many messages we should process concurrently in one batch
 	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
 }
 

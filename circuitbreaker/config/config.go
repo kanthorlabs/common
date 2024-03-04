@@ -3,6 +3,7 @@ package config
 import "github.com/kanthorlabs/common/validator"
 
 type Config struct {
+	// Size how many circuit breaker instances we cache inside our LRU cache
 	Size  int   `json:"size" yaml:"size" mapstructure:"size"`
 	Close Close `json:"close" yaml:"close" mapstructure:"close"`
 	Half  Half  `json:"half" yaml:"half" mapstructure:"half"`
