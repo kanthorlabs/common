@@ -31,7 +31,7 @@ func (conf *Wrapper) Validate() error {
 type Config struct {
 	Pretty bool              `json:"pretty" yaml:"pretty" mapstructure:"pretty"`
 	Level  string            `json:"level" yaml:"level" mapstructure:"level"`
-	With   map[string]string `json:"with" yaml:"with"`
+	With   map[string]string `json:"with" yaml:"with" mapstructure:"with"`
 }
 
 func (conf *Config) Validate() error {

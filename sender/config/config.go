@@ -5,10 +5,10 @@ import (
 )
 
 type Config struct {
-	Addr    string            `json:"addr" yaml:"addr"`
-	Timeout int64             `json:"timeout" yaml:"timeout"`
+	Addr    string            `json:"addr" yaml:"addr" mapstructure:"addr"`
+	Timeout int64             `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 	Headers map[string]string `json:"header" yaml:"header" mapstructure:"header"`
-	Retry   Retry             `json:"retry" yaml:"retry"`
+	Retry   Retry             `json:"retry" yaml:"retry" mapstructure:"retry"`
 }
 
 func (conf *Config) Validate() error {
