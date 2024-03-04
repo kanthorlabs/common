@@ -5,9 +5,9 @@ import (
 )
 
 type Config struct {
-	Addr    string `json:"addr" yaml:"addr"`
-	Timeout int64  `json:"timeout" yaml:"timeout"`
-	Cors    Cors   `json:"cors" yaml:"cors"`
+	Addr    string `json:"addr" yaml:"addr" mapstructure:"addr"`
+	Timeout int64  `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Cors    Cors   `json:"cors" yaml:"cors" mapstructure:"cors"`
 }
 
 func (conf *Config) Validate() error {
@@ -27,12 +27,12 @@ func (conf *Config) Validate() error {
 }
 
 type Cors struct {
-	AllowedOrigins   []string `json:"allowed_origins" yaml:"allowed_origins"`
-	AllowedMethods   []string `json:"allowed_methods" yaml:"allowed_methods"`
-	AllowedHeaders   []string `json:"allowed_headers" yaml:"allowed_headers"`
-	ExposedHeaders   []string `json:"exposed_origins" yaml:"exposed_origins"`
-	AllowCredentials bool     `json:"allow_credentials" yaml:"allow_credentials"`
-	MaxAge           int64    `json:"max_age" yaml:"max_age"`
+	AllowedOrigins   []string `json:"allowed_origins" yaml:"allowed_origins" mapstructure:"allowed_origins"`
+	AllowedMethods   []string `json:"allowed_methods" yaml:"allowed_methods" mapstructure:"allowed_methods"`
+	AllowedHeaders   []string `json:"allowed_headers" yaml:"allowed_headers" mapstructure:"allowed_headers"`
+	ExposedHeaders   []string `json:"exposed_origins" yaml:"exposed_origins" mapstructure:"exposed_origins"`
+	AllowCredentials bool     `json:"allow_credentials" yaml:"allow_credentials" mapstructure:"allow_credentials"`
+	MaxAge           int64    `json:"max_age" yaml:"max_age" mapstructure:"max_age"`
 }
 
 func (conf *Cors) Validate() error {
