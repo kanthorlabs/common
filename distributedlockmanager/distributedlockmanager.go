@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
+	"github.com/kanthorlabs/common/patterns"
 )
 
 // New creates a new distributed lock manager instance based on the provided configuration.
@@ -14,7 +15,7 @@ import (
 // - memory://
 // - redis://
 // If the URI scheme is not supported, an error is returned.
-func New(conf *config.Config) (Factory, error) {
+func New(conf *config.Config) (DistributedLockManager, error) {
 	if strings.HasPrefix(conf.Uri, "memory") {
 		return NewMemory(conf)
 	}
@@ -26,9 +27,11 @@ func New(conf *config.Config) (Factory, error) {
 	return nil, errors.New("DISTRIBUTED_LOCK_MANAGER.SCHEME_UNKNOWN.ERROR")
 }
 
-type Factory func(key string, opts ...config.Option) DistributedLockManager
-
 type DistributedLockManager interface {
-	Lock(ctx context.Context) error
+	patterns.Connectable
+	Lock(ctx context.Context, key string, opts ...config.Option) (Identifier, error)
+}
+
+type Identifier interface {
 	Unlock(ctx context.Context) error
 }

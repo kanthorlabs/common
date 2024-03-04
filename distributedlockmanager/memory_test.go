@@ -23,64 +23,144 @@ func TestMemory_New(t *testing.T) {
 	})
 }
 
+func TestMemory_Connect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+	})
+
+	t.Run("KO - already connected error", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.ErrorIs(st, dlm.Connect(context.Background()), ErrAlreadyConnected)
+	})
+}
+
+func TestMemory_Readiness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Readiness())
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Disconnect(context.Background()))
+		require.NoError(st, dlm.Readiness())
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.ErrorIs(st, dlm.Readiness(), ErrNotConnected)
+	})
+}
+
+func TestMemory_Liveness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Liveness())
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Disconnect(context.Background()))
+		require.NoError(st, dlm.Liveness())
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.ErrorIs(st, dlm.Liveness(), ErrNotConnected)
+	})
+}
+
+func TestMemory_Disconnect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Disconnect(context.Background()))
+	})
+
+	t.Run("KO - not connect error", func(st *testing.T) {
+		dlm, err := NewMemory(testconf)
+		require.NoError(t, err)
+
+		require.ErrorIs(st, dlm.Disconnect(context.Background()), ErrNotConnected)
+	})
+}
+
 func TestMemory_Lock(t *testing.T) {
+	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
 	dlm, err := NewMemory(testconf)
 	require.NoError(t, err)
+	dlm.Connect(context.Background())
+	defer dlm.Disconnect(context.Background())
 
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
-
-		err = locker.Lock(context.Background())
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
+		require.NotNil(st, identifier)
 	})
 
 	t.Run("KO - key empty error", func(st *testing.T) {
-		locker := dlm("")
-
-		err = locker.Lock(context.Background())
+		_, err := dlm.Lock(context.Background(), "", ttl)
 		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - key already locked error", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
-
-		err = locker.Lock(context.Background())
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
+		require.NotNil(st, identifier)
 
-		err = locker.Lock(context.Background())
-		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.LOCK.ERROR")
+		_, err = dlm.Lock(context.Background(), key, ttl)
+		require.ErrorContains(st, err, ErrLock.Error())
 	})
 }
 
 func TestMemory_Unlock(t *testing.T) {
+	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
 	dlm, err := NewMemory(testconf)
 	require.NoError(t, err)
 
+	dlm.Connect(context.Background())
+	defer dlm.Disconnect(context.Background())
+
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
-
-		err = locker.Lock(context.Background())
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
+		require.NotNil(st, identifier)
 
-		err = locker.Unlock(context.Background())
-		require.NoError(st, err)
-	})
-
-	t.Run("KO - key empty error", func(st *testing.T) {
-		locker := dlm("")
-
-		err = locker.Unlock(context.Background())
-		require.ErrorIs(st, err, ErrKeyEmpty)
+		require.NoError(st, identifier.Unlock(context.Background()))
 	})
 
 	t.Run("KO - key not locked error", func(st *testing.T) {
-		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
+		k, _ := Key(uuid.NewString())
+		identifier := &midentifier{k: k, client: dlm.(*memory).client}
 
-		err = locker.Unlock(context.Background())
-		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.UNLOCK.ERROR")
+		err = identifier.Unlock(context.Background())
+		require.ErrorContains(st, err, ErrUnlock.Error())
 	})
 }

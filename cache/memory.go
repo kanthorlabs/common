@@ -26,8 +26,8 @@ func NewMemory(conf *config.Config, logger logging.Logger) (Cache, error) {
 type memory struct {
 	conf   *config.Config
 	logger logging.Logger
-	client *ttlcache.Cache[string, []byte]
 
+	client *ttlcache.Cache[string, []byte]
 	mu     sync.Mutex
 	status int
 }

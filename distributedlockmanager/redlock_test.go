@@ -22,74 +22,175 @@ func TestRedlock_New(t *testing.T) {
 		_, err := NewRedlock(conf)
 		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.CONFIG.")
 	})
+}
+
+func TestRedlock_Connect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+	})
+
+	t.Run("KO - already connected error", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.ErrorIs(st, dlm.Connect(context.Background()), ErrAlreadyConnected)
+	})
 
 	t.Run("KO - redis url error", func(st *testing.T) {
 		conf := &config.Config{
 			Uri:        "tcp://localhost:6379/0",
 			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
 		}
-		_, err := NewRedlock(conf)
-		require.ErrorContains(st, err, "redis: ")
+		dlm, err := NewRedlock(conf)
+		require.NoError(t, err)
+
+		require.ErrorContains(st, dlm.Connect(context.Background()), "redis: ")
 	})
 }
 
+func TestRedlock_Readiness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Readiness())
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Disconnect(context.Background()))
+		require.NoError(st, dlm.Readiness())
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.ErrorIs(st, dlm.Readiness(), ErrNotConnected)
+	})
+}
+
+func TestRedlock_Liveness(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Liveness())
+	})
+
+	t.Run("OK - disconnected", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Disconnect(context.Background()))
+		require.NoError(st, dlm.Liveness())
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.ErrorIs(st, dlm.Liveness(), ErrNotConnected)
+	})
+}
+
+func TestRedlock_Disconnect(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+		require.NoError(st, dlm.Disconnect(context.Background()))
+	})
+
+	t.Run("KO", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.NoError(st, dlm.Connect(context.Background()))
+
+		// Close the connection to simulate the error of disconnection
+		require.NoError(t, dlm.(*redlock).gredis.Close())
+
+		require.ErrorContains(st, dlm.Disconnect(context.Background()), "redis: ")
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		dlm, err := NewRedlock(redistestconf())
+		require.NoError(t, err)
+
+		require.ErrorIs(st, dlm.Disconnect(context.Background()), ErrNotConnected)
+	})
+
+}
+
 func TestRedlock_Lock(t *testing.T) {
+	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
 	dlm, err := NewRedlock(redistestconf())
 	require.NoError(t, err)
 
+	dlm.Connect(context.Background())
+	defer dlm.Disconnect(context.Background())
+
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
-
-		err = locker.Lock(context.Background())
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
+		require.NotNil(st, identifier)
 	})
 
 	t.Run("KO - key empty error", func(st *testing.T) {
-		locker := dlm("")
-		err = locker.Lock(context.Background())
+		_, err := dlm.Lock(context.Background(), "", ttl)
 		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - key already locked error", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
-
-		err = locker.Lock(context.Background())
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
+		require.NotNil(st, identifier)
 
-		err = locker.Lock(context.Background())
-		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.LOCK.ERROR")
+		_, err = dlm.Lock(context.Background(), key, ttl)
+		require.ErrorContains(st, err, ErrLock.Error())
 	})
 }
 
 func TestRedlock_Unlock(t *testing.T) {
+	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
 	dlm, err := NewRedlock(redistestconf())
 	require.NoError(t, err)
 
+	dlm.Connect(context.Background())
+	defer dlm.Disconnect(context.Background())
+
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
-
-		err = locker.Lock(context.Background())
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
+		require.NotNil(st, identifier)
 
-		err = locker.Unlock(context.Background())
-		require.NoError(st, err)
-	})
-
-	t.Run("KO - key empty error", func(st *testing.T) {
-		locker := dlm("")
-		err = locker.Unlock(context.Background())
-		require.ErrorIs(st, err, ErrKeyEmpty)
+		require.NoError(st, identifier.Unlock(context.Background()))
 	})
 
 	t.Run("KO - key not locked error", func(st *testing.T) {
 		key := uuid.NewString()
-		locker := dlm(key, config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000)))
+		identifier, err := dlm.Lock(context.Background(), key, ttl)
+		require.NoError(st, err)
+		require.NotNil(st, identifier)
 
-		err = locker.Unlock(context.Background())
-		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.UNLOCK.ERROR")
+		require.NoError(st, identifier.Unlock(context.Background()))
+		require.ErrorContains(st, identifier.Unlock(context.Background()), ErrUnlock.Error())
+
 	})
 }
 

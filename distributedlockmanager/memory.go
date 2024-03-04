@@ -2,67 +2,116 @@ package distributedlockmanager
 
 import (
 	"context"
-	"errors"
+	"sync"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
+	"github.com/kanthorlabs/common/patterns"
 )
 
 // NewMemory creates a new distributed lock manager instance that uses ttlcache as the underlying storage.
-func NewMemory(conf *config.Config) (Factory, error) {
+func NewMemory(conf *config.Config) (DistributedLockManager, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
-	return func(key string, opts ...config.Option) DistributedLockManager {
-		cconf := &config.Config{Uri: conf.Uri, TimeToLive: conf.TimeToLive}
-		for _, opt := range opts {
-			opt(cconf)
-		}
-
-		client := ttlcache.New[string, int]()
-		go client.Start()
-		return &memory{
-			key:    key,
-			client: client,
-			conf:   cconf,
-		}
-	}, nil
+	instance := &memory{conf: conf}
+	return instance, nil
 }
 
 type memory struct {
-	key    string
+	conf *config.Config
+
 	client *ttlcache.Cache[string, int]
 
-	conf *config.Config
+	mu     sync.Mutex
+	status int
 }
 
-func (dlm *memory) Lock(ctx context.Context) error {
-	k, err := Key(dlm.key)
-	if err != nil {
-		return err
+func (instance *memory) Connect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
+	if instance.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
 	}
 
-	if dlm.client.Has(k) {
-		return errors.New("DISTRIBUTED_LOCK_MANAGER.LOCK.ERROR")
-	}
+	withTTL := ttlcache.WithTTL[string, int](time.Millisecond * time.Duration(instance.conf.TimeToLive))
+	instance.client = ttlcache.New(withTTL)
+	go instance.client.Start()
 
-	ttl := time.Millisecond * time.Duration(dlm.conf.TimeToLive)
-	dlm.client.Set(k, int(1), ttl)
+	instance.status = patterns.StatusConnected
 	return nil
 }
 
-func (dlm *memory) Unlock(ctx context.Context) error {
-	k, err := Key(dlm.key)
+func (instance *memory) Readiness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
+	return nil
+}
+
+func (instance *memory) Liveness() error {
+	if instance.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
+	return nil
+}
+
+func (instance *memory) Disconnect(ctx context.Context) error {
+	instance.mu.Lock()
+	defer instance.mu.Unlock()
+
+	if instance.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	instance.status = patterns.StatusDisconnected
+
+	instance.client.Stop()
+	instance.client.DeleteAll()
+	return nil
+}
+
+func (instance *memory) Lock(ctx context.Context, key string, opts ...config.Option) (Identifier, error) {
+	k, err := Key(key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if !dlm.client.Has(k) {
-		return errors.New("DISTRIBUTED_LOCK_MANAGER.UNLOCK.ERROR")
+	conf := &config.Config{Uri: instance.conf.Uri, TimeToLive: instance.conf.TimeToLive}
+	for _, opt := range opts {
+		opt(conf)
 	}
 
-	dlm.client.Delete(k)
+	if instance.client.Has(k) {
+		return nil, ErrLock
+	}
+
+	ttl := time.Millisecond * time.Duration(instance.conf.TimeToLive)
+	instance.client.Set(k, int(1), ttl)
+
+	return &midentifier{k: k, client: instance.client}, nil
+}
+
+type midentifier struct {
+	k      string
+	client *ttlcache.Cache[string, int]
+}
+
+func (identifier *midentifier) Unlock(ctx context.Context) error {
+	if !identifier.client.Has(identifier.k) {
+		return ErrUnlock
+	}
+
+	identifier.client.Delete(identifier.k)
 	return nil
 }

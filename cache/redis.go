@@ -28,7 +28,6 @@ type redis struct {
 	logger logging.Logger
 
 	client *goredis.Client
-
 	mu     sync.Mutex
 	status int
 }
