@@ -32,6 +32,7 @@ func New(conf *config.Config, logger logging.Logger) (Httpx, error) {
 		AllowCredentials: conf.Cors.AllowCredentials,
 		MaxAge:           int(conf.Cors.MaxAge / 1000),
 	}))
+	r.Get("/", UseVersion())
 
 	return r, nil
 }
