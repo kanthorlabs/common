@@ -6,7 +6,12 @@ import (
 	"github.com/kanthorlabs/common/utils"
 )
 
-// M is shortcu of generic data type
+// E is shortcut of error data type
+type E struct {
+	Error string `json:"error"`
+}
+
+// M is shortcut of generic data type
 type M map[string]any
 
 func Write(w http.ResponseWriter, status int, data any) {
