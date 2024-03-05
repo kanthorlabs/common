@@ -10,8 +10,8 @@ var (
 )
 
 type Strategy struct {
-	Engine string `json:"engine" yaml:"engine" mapstructure:"engine"`
 	Name   string `json:"name" yaml:"name" mapstructure:"name"`
+	Engine string `json:"engine" yaml:"engine" mapstructure:"engine"`
 
 	Ask        Ask        `json:"ask" yaml:"ask" mapstructure:"ask"`
 	Durability Durability `json:"durability" yaml:"durability" mapstructure:"durability"`
@@ -19,8 +19,8 @@ type Strategy struct {
 
 func (conf *Strategy) Validate() error {
 	err := validator.Validate(
-		validator.StringOneOf("PASSPORT.STRATEGY.CONFIG.ENGINE", conf.Engine, []string{EngineAsk, EngineDurability}),
 		validator.StringRequired("PASSPORT.STRATEGY.CONFIG.NAME", conf.Name),
+		validator.StringOneOf("PASSPORT.STRATEGY.CONFIG.ENGINE", conf.Engine, []string{EngineAsk, EngineDurability}),
 	)
 	if err != nil {
 		return err

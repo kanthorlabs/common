@@ -6,7 +6,6 @@ import (
 
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/passport/config"
-	"github.com/kanthorlabs/common/passport/entities"
 	"github.com/kanthorlabs/common/passport/strategies"
 	"github.com/kanthorlabs/common/patterns"
 	"github.com/sourcegraph/conc/pool"
@@ -59,10 +58,7 @@ func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 
 type Passport interface {
 	patterns.Connectable
-	Login(ctx context.Context, name string, credentials *entities.Credentials) (*entities.Account, error)
-	Logout(ctx context.Context, name string, credentials *entities.Credentials) error
-	Verify(ctx context.Context, name string, credentials *entities.Credentials) (*entities.Account, error)
-	Register(ctx context.Context, name string, acc *entities.Account) error
+	Strategy(name string) (strategies.Strategy, error)
 }
 
 type passport struct {
@@ -150,38 +146,11 @@ func (instance *passport) Disconnect(ctx context.Context) error {
 	return p.Wait()
 }
 
-func (instance *passport) Login(ctx context.Context, name string, credentials *entities.Credentials) (*entities.Account, error) {
-	strategy, has := instance.strategies[name]
-	if !has {
+func (instance *passport) Strategy(name string) (strategies.Strategy, error) {
+	strategy, exist := instance.strategies[name]
+	if !exist {
 		return nil, ErrStrategyNotFound
 	}
 
-	return strategy.Login(ctx, credentials)
-}
-
-func (instance *passport) Logout(ctx context.Context, name string, credentials *entities.Credentials) error {
-	strategy, has := instance.strategies[name]
-	if !has {
-		return ErrStrategyNotFound
-	}
-
-	return strategy.Logout(ctx, credentials)
-}
-
-func (instance *passport) Verify(ctx context.Context, name string, credentials *entities.Credentials) (*entities.Account, error) {
-	strategy, has := instance.strategies[name]
-	if !has {
-		return nil, ErrStrategyNotFound
-	}
-
-	return strategy.Verify(ctx, credentials)
-}
-
-func (instance *passport) Register(ctx context.Context, name string, acc *entities.Account) error {
-	strategy, has := instance.strategies[name]
-	if !has {
-		return ErrStrategyNotFound
-	}
-
-	return strategy.Register(ctx, acc)
+	return strategy, nil
 }

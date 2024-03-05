@@ -46,6 +46,28 @@ func TestAsk_New(t *testing.T) {
 	})
 }
 
+func TestAsk_ParseCredentials(t *testing.T) {
+	accounts, _ := setup(t)
+
+	t.Run("OK", func(st *testing.T) {
+		conf := &config.Ask{Accounts: accounts}
+		c, err := NewAsk(conf, testify.Logger())
+		require.NoError(st, err)
+
+		_, err = c.ParseCredentials(context.Background(), "basic "+testdata.Fake.Internet().Password())
+		require.ErrorIs(st, err, ErrParseCredentials)
+	})
+
+	t.Run("KO - unknown scheme error", func(st *testing.T) {
+		conf := &config.Ask{Accounts: accounts}
+		c, err := NewAsk(conf, testify.Logger())
+		require.NoError(st, err)
+
+		_, err = c.ParseCredentials(context.Background(), "")
+		require.ErrorIs(st, err, ErrCredentialsScheme)
+	})
+}
+
 func TestAsk_Connect(t *testing.T) {
 	accounts, _ := setup(t)
 
@@ -127,6 +149,28 @@ func TestAsk_Liveness(t *testing.T) {
 
 		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
 	})
+}
+
+func TestAsk_Disconnect(t *testing.T) {
+	accounts, _ := setup(t)
+
+	t.Run("OK", func(st *testing.T) {
+		conf := &config.Ask{Accounts: accounts}
+		c, err := NewAsk(conf, testify.Logger())
+		require.NoError(st, err)
+
+		require.NoError(st, c.Connect(context.Background()))
+		require.NoError(st, c.Disconnect(context.Background()))
+	})
+
+	t.Run("KO - not connected error", func(st *testing.T) {
+		conf := &config.Ask{Accounts: accounts}
+		c, err := NewAsk(conf, testify.Logger())
+		require.NoError(st, err)
+
+		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
+	})
+
 }
 
 func TestAsk_Login(t *testing.T) {

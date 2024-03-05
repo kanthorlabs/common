@@ -40,6 +40,14 @@ type ask struct {
 	accounts map[string]*entities.Account
 }
 
+func (instance *ask) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
+	if IsBasicScheme(raw) {
+		return ParseBasicCredentials(raw)
+	}
+
+	return nil, ErrCredentialsScheme
+}
+
 func (instance *ask) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()

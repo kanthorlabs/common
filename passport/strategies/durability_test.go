@@ -42,26 +42,35 @@ func TestDurability_New(t *testing.T) {
 	})
 }
 
+func TestDurability_ParseCredentials(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		c, err := NewDurability(durabilityconf, testify.Logger())
+		require.NoError(st, err)
+
+		_, err = c.ParseCredentials(context.Background(), "basic "+testdata.Fake.Internet().Password())
+		require.ErrorIs(st, err, ErrParseCredentials)
+	})
+
+	t.Run("KO - unknown scheme error", func(st *testing.T) {
+		c, err := NewDurability(durabilityconf, testify.Logger())
+		require.NoError(st, err)
+
+		_, err = c.ParseCredentials(context.Background(), "")
+		require.ErrorIs(st, err, ErrCredentialsScheme)
+	})
+}
+
 func TestDurability_Connect(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlx.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
-		},
-	}}
 
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -230,6 +239,31 @@ func TestDurability_Login(t *testing.T) {
 	})
 }
 
+func TestDurability_Logout(t *testing.T) {
+	accounts, _ := setup(t)
+
+	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
+	orm := strategy.(*durability).orm
+	tx := orm.Create(accounts)
+	require.NoError(t, tx.Error)
+
+	t.Run("OK", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		username := accounts[i].Username
+		credentials := &entities.Credentials{
+			Username: username,
+		}
+
+		err := strategy.Logout(context.Background(), credentials)
+		require.NoError(st, err)
+	})
+}
+
 func TestDurability_Verify(t *testing.T) {
 	accounts, passwords := setup(t)
 
@@ -376,3 +410,13 @@ func TestDurability_Deactivate(t *testing.T) {
 		require.ErrorIs(st, err, ErrAccountNotFound)
 	})
 }
+
+var durabilityconf = &config.Durability{Sqlx: sqlx.Config{
+	Uri: testdata.SqliteUri,
+	Connection: sqlx.Connection{
+		MaxLifetime:  sqlx.DefaultConnMaxLifetime,
+		MaxIdletime:  sqlx.DefaultConnMaxIdletime,
+		MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
+		MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+	},
+}}

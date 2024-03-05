@@ -42,6 +42,13 @@ packages:
       mockname: "{{ .InterfaceName }}"
     interfaces:
       Passport:
+  github.com/kanthorlabs/common/passport/strategies:
+    config:
+      filename: "{{ .InterfaceName | snakecase }}.go"
+      dir: "mocks//passport/{{ .PackageName }}"
+      mockname: "{{ .InterfaceName }}"
+    interfaces:
+      Strategy:
   github.com/kanthorlabs/common/gatekeeper:
     config:
       filename: "{{ .InterfaceName | snakecase }}.go"

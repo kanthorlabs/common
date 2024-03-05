@@ -39,6 +39,14 @@ type durability struct {
 	orm    *gorm.DB
 }
 
+func (instance *durability) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
+	if IsBasicScheme(raw) {
+		return ParseBasicCredentials(raw)
+	}
+
+	return nil, ErrCredentialsScheme
+}
+
 func (instance *durability) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()

@@ -9,6 +9,7 @@ import (
 
 type Strategy interface {
 	patterns.Connectable
+	ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error)
 	Login(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error)
 	Logout(ctx context.Context, credentials *entities.Credentials) error
 	Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error)
