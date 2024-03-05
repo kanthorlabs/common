@@ -111,6 +111,10 @@ func (instance *sql) Disconnect(ctx context.Context) error {
 	return returning
 }
 
+func (instance *sql) Engine() string {
+	return config.Engine
+}
+
 func (instance *sql) Client() any {
 	return instance.client
 }

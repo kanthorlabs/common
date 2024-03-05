@@ -3,6 +3,7 @@ package config
 import "github.com/kanthorlabs/common/validator"
 
 var (
+	Engine       = "sqlx"
 	TypePostgres = "postgres"
 	TypeSqlite   = "file"
 

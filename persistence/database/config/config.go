@@ -5,10 +5,6 @@ import (
 	"github.com/kanthorlabs/common/validator"
 )
 
-var (
-	EngineSqlx = "sqlx"
-)
-
 type Config struct {
 	Engine string       `json:"engine" yaml:"engine" mapstructure:"engine"`
 	Sqlx   *sqlx.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
@@ -16,13 +12,13 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	err := validator.Validate(
-		validator.StringOneOf("DATABASE.CONFIG.ENGINE", conf.Engine, []string{EngineSqlx}),
+		validator.StringOneOf("DATABASE.CONFIG.ENGINE", conf.Engine, []string{sqlx.Engine}),
 	)
 	if err != nil {
 		return err
 	}
 
-	if conf.Engine == EngineSqlx {
+	if conf.Engine == sqlx.Engine {
 		if err := conf.Sqlx.Validate(); err != nil {
 			return err
 		}

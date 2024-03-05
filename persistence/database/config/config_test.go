@@ -11,7 +11,7 @@ import (
 func TestConfig(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := Config{
-			Engine: EngineSqlx,
+			Engine: sqlxconfig.Engine,
 			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
 		}
 		require.NoError(st, conf.Validate())
@@ -24,7 +24,7 @@ func TestConfig(t *testing.T) {
 
 	t.Run("KO - sqlx configuration error", func(st *testing.T) {
 		conf := Config{
-			Engine: EngineSqlx,
+			Engine: sqlxconfig.Engine,
 			Sqlx:   &sqlxconfig.Config{},
 		}
 		require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.URI")

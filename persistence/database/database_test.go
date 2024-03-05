@@ -13,7 +13,7 @@ import (
 func TestDatabase_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := &config.Config{
-			Engine: config.EngineSqlx,
+			Engine: sqlxconfig.Engine,
 			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
 		}
 		_, err := New(conf, testify.Logger())
