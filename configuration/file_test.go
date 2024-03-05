@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -9,10 +8,11 @@ import (
 	"github.com/kanthorlabs/common/project"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 )
 
 func TestNewFile(t *testing.T) {
-	data, err := json.Marshal(configs{
+	data, err := yaml.Marshal(configs{
 		Counter: testdata.Fake.IntBetween(1, 100),
 		Blood:   testdata.Fake.Blood().Name(),
 	})
@@ -48,7 +48,7 @@ func TestNewFile(t *testing.T) {
 }
 
 func TestFile_Unmarshal(t *testing.T) {
-	data, err := json.Marshal(configs{
+	data, err := yaml.Marshal(configs{
 		Counter: testdata.Fake.IntBetween(1, 100),
 		Blood:   testdata.Fake.Blood().Name(),
 	})
@@ -148,7 +148,7 @@ func TestFile_Set(t *testing.T) {
 }
 
 func setupfile(t *testing.T) {
-	data, err := json.Marshal(configs{
+	data, err := yaml.Marshal(configs{
 		Counter: testdata.Fake.IntBetween(1, 100),
 		Blood:   testdata.Fake.Blood().Name(),
 	})

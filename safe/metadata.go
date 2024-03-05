@@ -4,8 +4,14 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"sync"
+
+	"gopkg.in/yaml.v3"
 )
 
+// Metadata is a thread-safe key-value store.
+// There are some gotchas when using this struct:
+// json marshalling is supported but all number will be parsed as float64.
+// yaml marshalling is supported but all number will be parsed as int.
 type Metadata struct {
 	kv map[string]any
 	mu sync.Mutex
@@ -77,4 +83,21 @@ func (meta *Metadata) Scan(value any) error {
 		return nil
 	}
 	return json.Unmarshal([]byte(v), &meta.kv)
+}
+
+func (meta *Metadata) MarshalJSON() ([]byte, error) {
+	return json.Marshal(meta.kv)
+}
+
+func (meta *Metadata) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &meta.kv)
+}
+
+func (meta *Metadata) MarshalYAML() (interface{}, error) {
+	var value yaml.Node
+	return value, value.Encode(meta.kv)
+}
+
+func (meta *Metadata) UnmarshalYAML(value *yaml.Node) error {
+	return value.Decode(&meta.kv)
 }

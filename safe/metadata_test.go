@@ -1,6 +1,7 @@
 package safe
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -8,7 +9,44 @@ import (
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/sourcegraph/conc"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
+
+type Value struct {
+	Metadata *Metadata `json:"metadata" yaml:"metadata"`
+}
+
+func TestMetadata_Parsing(t *testing.T) {
+	value := Value{
+		Metadata: &Metadata{},
+	}
+	value.Metadata.Set("bool", testdata.Fake.Bool())
+	value.Metadata.Set("number", testdata.Fake.Int64Between(1, 100))
+
+	t.Run("json", func(st *testing.T) {
+		jsonv, err := json.Marshal(value)
+		require.NoError(st, err)
+		require.Contains(st, string(jsonv), "bool")
+		require.Contains(st, string(jsonv), "number")
+
+		var jsonp Value
+		require.NoError(st, json.Unmarshal(jsonv, &jsonp))
+		require.Equal(st, value.Metadata.kv["bool"], jsonp.Metadata.kv["bool"])
+		require.Equal(st, float64(value.Metadata.kv["number"].(int64)), jsonp.Metadata.kv["number"])
+	})
+
+	t.Run("yaml", func(st *testing.T) {
+		yamlv, err := yaml.Marshal(value)
+		require.NoError(st, err)
+		require.Contains(st, string(yamlv), "bool")
+		require.Contains(st, string(yamlv), "number")
+
+		var yamlp Value
+		require.NoError(st, yaml.Unmarshal(yamlv, &yamlp))
+		require.Equal(st, value.Metadata.kv["bool"], yamlp.Metadata.kv["bool"])
+		require.Equal(st, int(value.Metadata.kv["number"].(int64)), yamlp.Metadata.kv["number"])
+	})
+}
 
 func TestMetadata_Set(t *testing.T) {
 	var metadata Metadata

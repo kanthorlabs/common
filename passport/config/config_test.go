@@ -7,15 +7,13 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	t.Run(".Validate", func(st *testing.T) {
-		st.Run("KO - no strategy", func(sst *testing.T) {
-			conf := &Config{Strategies: make([]Strategy, 0)}
-			require.ErrorContains(sst, conf.Validate(), "PASSPORT.CONFIG.STRATEGIES")
-		})
+	t.Run("KO - no strategy", func(st *testing.T) {
+		conf := &Config{Strategies: make([]Strategy, 0)}
+		require.ErrorContains(st, conf.Validate(), "PASSPORT.CONFIG.STRATEGIES")
+	})
 
-		st.Run("KO - strategy error", func(sst *testing.T) {
-			conf := &Config{Strategies: make([]Strategy, 1)}
-			require.ErrorContains(sst, conf.Validate(), "PASSPORT.STRATEGY.CONFIG")
-		})
+	t.Run("KO - strategy error", func(st *testing.T) {
+		conf := &Config{Strategies: make([]Strategy, 1)}
+		require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.CONFIG")
 	})
 }

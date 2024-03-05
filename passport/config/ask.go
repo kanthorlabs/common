@@ -6,7 +6,7 @@ import (
 )
 
 type Ask struct {
-	Accounts []entities.Account `json:"users" yaml:"users" mapstructure:"users"`
+	Accounts []entities.Account `json:"accounts" yaml:"accounts" mapstructure:"accounts"`
 }
 
 func (conf *Ask) Validate() error {
