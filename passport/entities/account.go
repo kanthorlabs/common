@@ -8,14 +8,14 @@ import (
 )
 
 type Account struct {
-	Username     string         `json:"username" yaml:"username" gorm:"primaryKey"`
-	PasswordHash string         `json:"password_hash,omitempty" yaml:"password_hash,omitempty"`
-	Name         string         `json:"name" yaml:"name"`
-	Metadata     *safe.Metadata `json:"metadata" yaml:"metadata"`
+	Username     string         `json:"username" yaml:"username" mapstructure:"username" gorm:"primaryKey"`
+	PasswordHash string         `json:"password_hash,omitempty" yaml:"password_hash,omitempty" mapstructure:"password_hash"`
+	Name         string         `json:"name" yaml:"name" mapstructure:"name"`
+	Metadata     *safe.Metadata `json:"metadata" yaml:"metadata" mapstructure:"metadata"`
 
-	CreatedAt     int64 `json:"created_at" yaml:"created_at"`
-	UpdatedAt     int64 `json:"updated_at" yaml:"updated_at"`
-	DeactivatedAt int64 `json:"deactivated_at" yaml:"deactivated_at"`
+	CreatedAt     int64 `json:"created_at" yaml:"created_at" mapstructure:"created_at"`
+	UpdatedAt     int64 `json:"updated_at" yaml:"updated_at" mapstructure:"updated_at"`
+	DeactivatedAt int64 `json:"deactivated_at" yaml:"deactivated_at" mapstructure:"deactivated_at"`
 }
 
 func (acc *Account) TableName() string {
