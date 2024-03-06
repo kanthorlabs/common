@@ -328,7 +328,7 @@ github.com/kanthorlabs/common/gateway/gateway.go:66.2,66.18 1 1
 github.com/kanthorlabs/common/gateway/gateway.go:69.51,70.26 1 1
 github.com/kanthorlabs/common/gateway/gateway.go:70.26,73.3 2 1
 github.com/kanthorlabs/common/gateway/gateway.go:75.2,75.25 1 1
-github.com/kanthorlabs/common/gateway/gateway.go:78.28,80.47 2 1
+github.com/kanthorlabs/common/gateway/gateway.go:78.28,80.47 2 0
 github.com/kanthorlabs/common/gateway/gateway.go:80.47,82.3 1 0
 github.com/kanthorlabs/common/gateway/gateway.go:85.56,89.26 3 1
 github.com/kanthorlabs/common/gateway/gateway.go:89.26,91.3 1 1

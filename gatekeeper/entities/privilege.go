@@ -17,7 +17,7 @@ type Privilege struct {
 }
 
 func (privilege *Privilege) TableName() string {
-	return project.Name("opm_privilege")
+	return project.Name("gatekeeper_privilege")
 }
 
 func (privilege *Privilege) Validate() error {

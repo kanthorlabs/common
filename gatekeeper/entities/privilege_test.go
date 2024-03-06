@@ -11,7 +11,7 @@ func TestPrivilege(t *testing.T) {
 	t.Run(".TableName", func(st *testing.T) {
 		st.Run("KO", func(sst *testing.T) {
 			evaluation := &Privilege{}
-			require.Equal(sst, evaluation.TableName(), project.Name("opm_privilege"))
+			require.Equal(sst, evaluation.TableName(), project.Name("gatekeeper_privilege"))
 		})
 	})
 
