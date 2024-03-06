@@ -4,19 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	gk "github.com/kanthorlabs/common/gatekeeper"
-	gkEnt "github.com/kanthorlabs/common/gatekeeper/entities"
+	gkentities "github.com/kanthorlabs/common/gatekeeper/entities"
 	"github.com/kanthorlabs/common/gateway/httpx/writer"
 	"github.com/kanthorlabs/common/mocks/gatekeeper"
 	"github.com/kanthorlabs/common/passport"
 	"github.com/kanthorlabs/common/passport/entities"
 	"github.com/kanthorlabs/common/safe"
+	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -25,27 +28,36 @@ func TestAuthz(t *testing.T) {
 	s := chi.NewRouter()
 
 	authz := gatekeeper.NewGatekeeper(t)
-	path := "/private"
 	tenantId := uuid.NewString()
-	evaluation := &gkEnt.Evaluation{
+	evaluation := &gkentities.Evaluation{
 		Tenant:   tenantId,
 		Username: account.Username,
 	}
-	permission := &gkEnt.Permission{
+	path := "/api/workspace/{id}/extra"
+	permission := &gkentities.Permission{
 		Action: http.MethodGet,
 		Object: path,
 	}
 
-	s.Route(path, func(r chi.Router) {
-		r.Use(Authz(authz, ""))
+	s.Route("/api", func(sr chi.Router) {
+		sr.Route("/workspace", func(ssr chi.Router) {
+			ssr.Route("/{id}", func(sssr chi.Router) {
+				sssr.Use(Authz(authz, ""))
 
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			writer.Ok(w, writer.M{})
+				sssr.Get("/extra", func(w http.ResponseWriter, r *http.Request) {
+					writer.Ok(w, writer.M{})
+				})
+			})
 		})
+
 	})
 
 	t.Run("OK - tenant from header", func(st *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, path, nil)
+		req, err := http.NewRequest(
+			http.MethodGet,
+			strings.Replace(path, "{id}", uuid.NewString(), -1),
+			nil,
+		)
 		require.NoError(st, err)
 
 		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
@@ -63,7 +75,11 @@ func TestAuthz(t *testing.T) {
 	})
 
 	t.Run("OK - tenant from metadata", func(st *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, path, nil)
+		req, err := http.NewRequest(
+			http.MethodGet,
+			strings.Replace(path, "{id}", uuid.NewString(), -1),
+			nil,
+		)
 		require.NoError(st, err)
 
 		// prepare attached tenant id in account metadata
@@ -78,7 +94,7 @@ func TestAuthz(t *testing.T) {
 		req.Header.Set(HeaderAuthzTenant, tenantId)
 
 		// expect we use the attached tenant id to be used to enforce permission
-		eval := &gkEnt.Evaluation{
+		eval := &gkentities.Evaluation{
 			Tenant:   attachedTenantId,
 			Username: account.Username,
 		}
@@ -179,5 +195,57 @@ func TestAuthz(t *testing.T) {
 		require.NoError(st, err)
 
 		require.Contains(st, body["error"], "GATEWAY.AUTHZ.OBJECT_EMPTY.ERROR")
+	})
+}
+
+func TestAuthz_Scope(t *testing.T) {
+	s := chi.NewRouter()
+
+	authz := gatekeeper.NewGatekeeper(t)
+	tenantId := uuid.NewString()
+	evaluation := &gkentities.Evaluation{
+		Tenant:   tenantId,
+		Username: account.Username,
+	}
+	path := "/api/workspace/{id}/extra"
+	scope := testdata.Fake.RandomStringWithLength(10)
+	permission := &gkentities.Permission{
+		Action: http.MethodGet,
+		Object: fmt.Sprintf("%s::%s", scope, path),
+	}
+
+	s.Route("/api", func(sr chi.Router) {
+		sr.Route("/workspace", func(ssr chi.Router) {
+			ssr.Route("/{id}", func(sssr chi.Router) {
+				sssr.Use(Authz(authz, scope))
+
+				sssr.Get("/extra", func(w http.ResponseWriter, r *http.Request) {
+					writer.Ok(w, writer.M{})
+				})
+			})
+		})
+
+	})
+
+	t.Run("OK", func(st *testing.T) {
+		req, err := http.NewRequest(
+			http.MethodGet,
+			strings.Replace(path, "{id}", uuid.NewString(), -1),
+			nil,
+		)
+		require.NoError(st, err)
+
+		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
+		req.Header.Set(HeaderAuthzTenant, tenantId)
+
+		authz.EXPECT().
+			Enforce(mock.Anything, evaluation, permission).
+			Return(nil).
+			Once()
+
+		res := httptest.NewRecorder()
+		s.ServeHTTP(res, req)
+
+		require.Equal(st, http.StatusOK, res.Code)
 	})
 }
