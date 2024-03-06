@@ -9,7 +9,7 @@ import (
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
-	sqlx "github.com/kanthorlabs/common/persistence/sqlx/config"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -17,13 +17,13 @@ import (
 
 func TestDurability_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		conf := &config.Durability{Sqlx: sqlx.Config{
+		conf := &config.Durability{Sqlx: sqlxconfig.Config{
 			Uri: testdata.SqliteUri,
-			Connection: sqlx.Connection{
-				MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-				MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-				MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-				MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+			Connection: sqlxconfig.Connection{
+				MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+				MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+				MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+				MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 			},
 		}}
 		_, err := NewDurability(conf, testify.Logger())
@@ -36,7 +36,7 @@ func TestDurability_New(t *testing.T) {
 	})
 
 	t.Run("KO - sqlx error", func(st *testing.T) {
-		conf := &config.Durability{Sqlx: sqlx.Config{}}
+		conf := &config.Durability{Sqlx: sqlxconfig.Config{}}
 		_, err := NewDurability(conf, testify.Logger())
 		require.ErrorContains(st, err, "SQLX.CONFIG")
 	})
@@ -79,13 +79,13 @@ func TestDurability_Connect(t *testing.T) {
 }
 
 func TestDurability_Readiness(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 
@@ -115,13 +115,13 @@ func TestDurability_Readiness(t *testing.T) {
 }
 
 func TestDurability_Liveness(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 
@@ -151,13 +151,13 @@ func TestDurability_Liveness(t *testing.T) {
 }
 
 func TestDurability_Disconnect(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 
@@ -180,13 +180,13 @@ func TestDurability_Disconnect(t *testing.T) {
 func TestDurability_Login(t *testing.T) {
 	accounts, passwords := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 	strategy, err := NewDurability(conf, testify.Logger())
@@ -267,13 +267,13 @@ func TestDurability_Logout(t *testing.T) {
 func TestDurability_Verify(t *testing.T) {
 	accounts, passwords := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 	strategy, err := NewDurability(conf, testify.Logger())
@@ -329,13 +329,13 @@ func TestDurability_Verify(t *testing.T) {
 func TestDurability_Register(t *testing.T) {
 	accounts, _ := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 	strategy, err := NewDurability(conf, testify.Logger())
@@ -374,13 +374,13 @@ func TestDurability_Register(t *testing.T) {
 func TestDurability_Deactivate(t *testing.T) {
 	accounts, _ := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlx.Config{
+	conf := &config.Durability{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
-		Connection: sqlx.Connection{
-			MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+		Connection: sqlxconfig.Connection{
+			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
 	strategy, err := NewDurability(conf, testify.Logger())
@@ -411,12 +411,12 @@ func TestDurability_Deactivate(t *testing.T) {
 	})
 }
 
-var durabilityconf = &config.Durability{Sqlx: sqlx.Config{
+var durabilityconf = &config.Durability{Sqlx: sqlxconfig.Config{
 	Uri: testdata.SqliteUri,
-	Connection: sqlx.Connection{
-		MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-		MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-		MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-		MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+	Connection: sqlxconfig.Connection{
+		MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+		MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+		MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+		MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 	},
 }}

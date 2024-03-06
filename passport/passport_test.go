@@ -10,7 +10,7 @@ import (
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
-	sqlx "github.com/kanthorlabs/common/persistence/sqlx/config"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -219,13 +219,13 @@ func durability() config.Strategy {
 		Engine: config.EngineDurability,
 		Name:   uuid.NewString(),
 		Durability: config.Durability{
-			Sqlx: sqlx.Config{
+			Sqlx: sqlxconfig.Config{
 				Uri: testdata.SqliteUri,
-				Connection: sqlx.Connection{
-					MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-					MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-					MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-					MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+				Connection: sqlxconfig.Connection{
+					MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+					MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+					MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+					MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 				},
 			},
 		},

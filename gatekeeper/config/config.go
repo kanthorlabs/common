@@ -3,7 +3,7 @@ package config
 import (
 	_ "embed"
 
-	"github.com/kanthorlabs/common/persistence/sqlx/config"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/validator"
 )
 
@@ -46,7 +46,7 @@ func (conf *Definitions) Validate() error {
 }
 
 type Privilege struct {
-	Sqlx config.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
+	Sqlx sqlxconfig.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
 }
 
 func (conf *Privilege) Validate() error {

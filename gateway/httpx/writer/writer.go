@@ -8,7 +8,7 @@ import (
 
 // E is shortcut of error data type
 type E struct {
-	Error string `json:"error"`
+	Error string `json:"error" example:"oops, something went wrong"`
 }
 
 // M is shortcut of generic data type

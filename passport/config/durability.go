@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/kanthorlabs/common/persistence/sqlx/config"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 )
 
 type Durability struct {
-	Sqlx config.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
+	Sqlx sqlxconfig.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
 }
 
 func (conf *Durability) Validate() error {

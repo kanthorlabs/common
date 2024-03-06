@@ -3,7 +3,7 @@ package config
 import (
 	"testing"
 
-	sqlx "github.com/kanthorlabs/common/persistence/sqlx/config"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 )
@@ -14,13 +14,13 @@ var testconf = &Config{
 		Uri: "base64://ewogICJhZG1pbmlzdHJhdG9yIjogWwogICAgewogICAgICAiYWN0aW9uIjogIioiLAogICAgICAib2JqZWN0IjogIioiCiAgICB9CiAgXQp9Cg==",
 	},
 	Privilege: Privilege{
-		Sqlx: sqlx.Config{
+		Sqlx: sqlxconfig.Config{
 			Uri: testdata.SqliteUri,
-			Connection: sqlx.Connection{
-				MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-				MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-				MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-				MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+			Connection: sqlxconfig.Connection{
+				MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+				MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+				MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+				MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 			},
 		},
 	},

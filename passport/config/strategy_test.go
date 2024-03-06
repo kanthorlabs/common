@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	sqlx "github.com/kanthorlabs/common/persistence/sqlx/config"
+	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 )
@@ -15,13 +15,13 @@ func TestStrategy(t *testing.T) {
 			Engine: EngineDurability,
 			Name:   uuid.NewString(),
 			Durability: Durability{
-				Sqlx: sqlx.Config{
+				Sqlx: sqlxconfig.Config{
 					Uri: testdata.SqliteUri,
-					Connection: sqlx.Connection{
-						MaxLifetime:  sqlx.DefaultConnMaxLifetime,
-						MaxIdletime:  sqlx.DefaultConnMaxIdletime,
-						MaxIdleCount: sqlx.DefaultConnMaxIdleCount,
-						MaxOpenCount: sqlx.DefaultConnMaxOpenCount,
+					Connection: sqlxconfig.Connection{
+						MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
+						MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
+						MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
+						MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 					},
 				},
 			},
