@@ -39,7 +39,7 @@ func TestRBAC_New(t *testing.T) {
 
 	t.Run("KO - definition error", func(st *testing.T) {
 		definitions := map[string][]entities.Permission{
-			"administrator": {{Action: "*"}},
+			"owner": {{Action: "*"}},
 		}
 
 		_, err = RBAC(context.Background(), definitions)
@@ -60,7 +60,7 @@ func TestRBAC_Evaluate(t *testing.T) {
 			Action: "DELETE",
 			Object: "/api/application/:id",
 		}
-		err := evaluate(permission, rdata.Input["administrator"].Privileges)
+		err := evaluate(context.Background(), permission, rdata.Input["owner"].Privileges)
 		require.NoError(st, err)
 	})
 
@@ -69,7 +69,7 @@ func TestRBAC_Evaluate(t *testing.T) {
 			Action: "DELETE",
 			Object: "/api/application/:id",
 		}
-		err := evaluate(permission, rdata.Input["readonly"].Privileges)
+		err := evaluate(context.Background(), permission, rdata.Input["readonly"].Privileges)
 		require.ErrorContains(st, err, "GATEKEEPER.REGO.RBAC.NOT_ALLOW")
 	})
 }

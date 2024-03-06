@@ -179,7 +179,7 @@ func (instance *opa) Enforce(ctx context.Context, evaluation *entities.Evaluatio
 		return errors.New("GATEKEEPER.ENFORCE.PRIVILEGE_EMPTY.ERROR")
 	}
 
-	return instance.evaluate(permission, privileges)
+	return instance.evaluate(ctx, permission, privileges)
 }
 
 func (instance *opa) Users(ctx context.Context, tenant string) ([]entities.User, error) {

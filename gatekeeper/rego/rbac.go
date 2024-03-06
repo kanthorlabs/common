@@ -36,12 +36,12 @@ func RBAC(ctx context.Context, definitions map[string][]entities.Permission) (Ev
 		return nil, fmt.Errorf("%s: %w", ErrRBAC.Error(), err)
 	}
 
-	return func(permission *entities.Permission, privileges []entities.Privilege) error {
+	return func(ectx context.Context, permission *entities.Permission, privileges []entities.Privilege) error {
 		input := map[string]any{
 			"permission": permission,
 			"privileges": privileges,
 		}
-		results, err := query.Eval(ctx, rego.EvalInput(input))
+		results, err := query.Eval(ectx, rego.EvalInput(input))
 		if err != nil {
 			return fmt.Errorf("%s: %w", ErrRBAC.Error(), err)
 		}

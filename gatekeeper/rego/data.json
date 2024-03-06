@@ -1,7 +1,7 @@
 {
   "data": {
     "definitions": {
-      "administrator": [
+      "owner": [
         {
           "action": "*",
           "object": "*"
@@ -46,13 +46,13 @@
     }
   },
   "input": {
-    "administrator": {
+    "owner": {
       "privileges": [
         {
           "id": "f1265844-9e90-4baa-8f8e-8e9cc9ebe677",
-          "tenant": "*",
-          "username": "administrator",
-          "role": "administrator",
+          "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
+          "username": "owner",
+          "role": "owner",
           "metadata": {},
           "created_at": 0,
           "updated_at": 0
@@ -63,7 +63,7 @@
       "privileges": [
         {
           "id": "c34a80ae-7f64-4011-824e-595195539585",
-          "tenant": "*",
+          "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
           "username": "readonly",
           "role": "readonly",
           "metadata": {},
@@ -76,7 +76,7 @@
       "privileges": [
         {
           "id": "5f8a5fc8-b254-4897-8f45-67e030ad2cbe",
-          "tenant": "*",
+          "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
           "username": "own",
           "role": "own",
           "metadata": {},
@@ -89,7 +89,7 @@
       "privileges": [
         {
           "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
-          "tenant": "*",
+          "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
           "username": "multiple",
           "role": "application_read",
           "metadata": {},
@@ -98,7 +98,7 @@
         },
         {
           "id": "27e2354c-d5e4-4e5f-9b82-d8391d4741f9",
-          "tenant": "*",
+          "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
           "username": "multiple",
           "role": "application_delete",
           "metadata": {},

@@ -4,7 +4,7 @@ import rego.v1
 
 test_any_ok if {
 	allow with data.permissions as data.data.definitions
-		with input.privileges as data.input.administrator.privileges
+		with input.privileges as data.input.owner.privileges
 		with input.permission as {"action": "GET", "object": "/api/application"}
 }
 

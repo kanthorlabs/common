@@ -1,5 +1,9 @@
 package rego
 
-import "github.com/kanthorlabs/common/gatekeeper/entities"
+import (
+	"context"
 
-type Evaluate func(permission *entities.Permission, privileges []entities.Privilege) error
+	"github.com/kanthorlabs/common/gatekeeper/entities"
+)
+
+type Evaluate func(ectx context.Context, permission *entities.Permission, privileges []entities.Privilege) error
