@@ -3,6 +3,7 @@ package safe
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
@@ -13,7 +14,7 @@ import (
 )
 
 type Value struct {
-	Metadata *Metadata `json:"metadata" yaml:"metadata"`
+	Metadata *Metadata `json:"metadata" yaml:"metadata" mapstructure:"metadata"`
 }
 
 func TestMetadata_Parsing(t *testing.T) {
@@ -144,4 +145,33 @@ func TestMetadata_Scan(t *testing.T) {
 	src.Set(uuid.NewString(), true)
 	require.NoError(t, metadata.Scan(src.String()))
 	require.Equal(t, src.kv, metadata.kv)
+}
+
+func TestMetadata_MetadataMapstructureHook(t *testing.T) {
+	hook := MetadataMapstructureHook()
+	t.Run("OK", func(st *testing.T) {
+		data := map[string]interface{}{"bool": true, "number": 1}
+		from := reflect.ValueOf(data)
+		to := reflect.ValueOf(&Metadata{})
+
+		metdata, err := hook(from.Type(), to.Type(), data)
+		require.NoError(st, err)
+
+		for k, v := range data {
+			value, exist := metdata.(*Metadata).Get(k)
+			require.True(st, exist)
+			require.Equal(st, v, value)
+		}
+	})
+
+	t.Run("OK - not metadata pointer", func(st *testing.T) {
+		data := map[string]interface{}{"bool": true, "number": 1}
+		from := reflect.ValueOf(data)
+		to := reflect.ValueOf(Metadata{})
+
+		metdata, err := hook(from.Type(), to.Type(), data)
+		require.NoError(st, err)
+
+		require.Equal(st, data, metdata)
+	})
 }

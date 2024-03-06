@@ -6,9 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/project"
+	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func TestNewFile(t *testing.T) {
@@ -48,14 +49,19 @@ func TestNewFile(t *testing.T) {
 }
 
 func TestFile_Unmarshal(t *testing.T) {
-	data, err := yaml.Marshal(configs{
-		Counter: testdata.Fake.IntBetween(1, 100),
-		Blood:   testdata.Fake.Blood().Name(),
-	})
+	orignal := configs{
+		Counter:  testdata.Fake.IntBetween(1, 100),
+		Blood:    testdata.Fake.Blood().Name(),
+		Metadata: &safe.Metadata{},
+	}
+	orignal.Metadata.Set("bool", testdata.Fake.Bool())
+	orignal.Metadata.Set("number", testdata.Fake.Int64Between(1, 100))
+
+	data, err := yaml.Marshal(orignal)
 	require.NoError(t, err)
 
 	t.Run("OK - $KANTHOR_HOME", func(st *testing.T) {
-		home := "/tmp/" + uuid.NewString()
+		home := "/tmp/kanthor-" + uuid.NewString()
 		require.NoError(st, os.Mkdir(home, 0755))
 
 		st.Setenv("KANTHOR_HOME", home)
@@ -66,8 +72,16 @@ func TestFile_Unmarshal(t *testing.T) {
 
 		var conf configs
 		require.NoError(st, provider.Unmarshal(&conf))
-		require.Equal(st, conf.Counter, conf.Counter)
-		require.Equal(st, conf.Blood, conf.Blood)
+		require.Equal(st, orignal.Counter, conf.Counter)
+		require.Equal(st, orignal.Blood, conf.Blood)
+
+		ob, _ := orignal.Metadata.Get("bool")
+		b, _ := conf.Metadata.Get("bool")
+		require.Equal(st, ob, b)
+
+		on, _ := orignal.Metadata.Get("number")
+		n, _ := conf.Metadata.Get("number")
+		require.Equal(st, on, int64(n.(int)))
 	})
 
 	t.Run("OK - $HOME", func(st *testing.T) {
@@ -83,8 +97,8 @@ func TestFile_Unmarshal(t *testing.T) {
 
 		var conf configs
 		require.NoError(st, provider.Unmarshal(&conf))
-		require.Equal(st, conf.Counter, conf.Counter)
-		require.Equal(st, conf.Blood, conf.Blood)
+		require.Equal(st, orignal.Counter, conf.Counter)
+		require.Equal(st, orignal.Blood, conf.Blood)
 	})
 
 	t.Run("OK - current directory", func(st *testing.T) {
@@ -95,8 +109,8 @@ func TestFile_Unmarshal(t *testing.T) {
 
 		var conf configs
 		require.NoError(st, provider.Unmarshal(&conf))
-		require.Equal(st, conf.Counter, conf.Counter)
-		require.Equal(st, conf.Blood, conf.Blood)
+		require.Equal(st, orignal.Counter, conf.Counter)
+		require.Equal(st, orignal.Blood, conf.Blood)
 	})
 }
 

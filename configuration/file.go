@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/utils"
 	"github.com/spf13/viper"
 )
@@ -60,7 +61,10 @@ type file struct {
 }
 
 func (provider *file) Unmarshal(dest any) error {
-	return provider.viper.Unmarshal(dest)
+	return provider.viper.Unmarshal(
+		dest,
+		viper.DecodeHook(safe.MetadataMapstructureHook()),
+	)
 }
 
 func (provider *file) Sources() []Source {

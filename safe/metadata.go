@@ -3,8 +3,10 @@ package safe
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"reflect"
 	"sync"
 
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -100,4 +102,18 @@ func (meta *Metadata) MarshalYAML() (interface{}, error) {
 
 func (meta *Metadata) UnmarshalYAML(value *yaml.Node) error {
 	return value.Decode(&meta.kv)
+}
+
+func MetadataMapstructureHook() mapstructure.DecodeHookFuncType {
+	return func(from, to reflect.Type, data interface{}) (interface{}, error) {
+		if from.Kind() == reflect.Map && to.String() == "*safe.Metadata" {
+			var metdata Metadata
+			for k, v := range data.(map[string]interface{}) {
+				metdata.Set(k, v)
+			}
+			return &metdata, nil
+		}
+
+		return data, nil
+	}
 }
