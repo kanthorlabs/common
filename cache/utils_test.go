@@ -2,7 +2,11 @@ package cache
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
+	"fmt"
+	"io"
+	"strings"
 	"testing"
 	"time"
 
@@ -29,6 +33,31 @@ func TestKey(t *testing.T) {
 
 		require.Empty(st, k)
 		require.ErrorIs(st, err, ErrKeyEmpty)
+	})
+}
+
+func TestEncodeKey(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		count := testdata.Fake.IntBetween(10, 100)
+		keys := make([]string, count)
+		for i := 0; i < count; i++ {
+			keys[i] = uuid.NewString()
+		}
+
+		h := sha256.New()
+		io.WriteString(h, strings.Join(keys, "/"))
+		expected := fmt.Sprintf("%x", h.Sum(nil))
+
+		require.Equal(st, expected, EncodeKey(keys...))
+	})
+
+	t.Run("OK - empty keys should return value", func(st *testing.T) {
+		keys := make([]string, 0)
+		h := sha256.New()
+		io.WriteString(h, strings.Join(keys, "/"))
+		expected := fmt.Sprintf("%x", h.Sum(nil))
+
+		require.Equal(st, expected, EncodeKey(keys...))
 	})
 }
 

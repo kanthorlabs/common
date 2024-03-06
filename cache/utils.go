@@ -2,7 +2,11 @@ package cache
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
+	"fmt"
+	"io"
+	"strings"
 	"time"
 )
 
@@ -11,6 +15,13 @@ func Key(k string) (string, error) {
 		return "", ErrKeyEmpty
 	}
 	return "cache/" + k, nil
+}
+
+func EncodeKey(keys ...string) string {
+	key := strings.Join(keys, "/")
+	h := sha256.New()
+	io.WriteString(h, key)
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // GetOrSet is a helper function that allow you get existing entry from the cache or set it if it does not exist yet
