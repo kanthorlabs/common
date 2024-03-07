@@ -12,6 +12,8 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 )
 
+type ContextKey string
+
 type Gateway interface {
 	patterns.Runnable
 	UseHttpx(handler httpx.Httpx) error
