@@ -43,7 +43,7 @@ func (instance *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	client, err := NewGorm(instance.conf, instance.logger)
+	client, err := Gorm(instance.conf, instance.logger)
 	if err != nil {
 		return fmt.Errorf("SQLX.CONNECT.ERROR: %w", err)
 	}
@@ -109,10 +109,6 @@ func (instance *sql) Disconnect(ctx context.Context) error {
 	instance.client = nil
 
 	return returning
-}
-
-func (instance *sql) Engine() string {
-	return config.Engine
 }
 
 func (instance *sql) Client() any {

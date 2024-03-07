@@ -11,10 +11,11 @@ import (
 )
 
 func TestDatastore_New(t *testing.T) {
+	sqlxconf := sqlxconfig.Default(testdata.SqliteUri)
 	t.Run("OK", func(st *testing.T) {
 		conf := &config.Config{
 			Engine: config.EngineSqlx,
-			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
+			Sqlx:   *sqlxconf,
 		}
 		_, err := New(conf, testify.Logger())
 		require.NoError(st, err)

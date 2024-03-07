@@ -109,11 +109,6 @@ func TestSqlx_Disconnect(t *testing.T) {
 	})
 }
 
-func TestSqlx_Engine(t *testing.T) {
-	instance := start(t)
-	require.Equal(t, config.Engine, instance.Engine())
-}
-
 func TestSqlx_Client(t *testing.T) {
 	instance := start(t)
 

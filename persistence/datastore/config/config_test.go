@@ -9,10 +9,11 @@ import (
 )
 
 func TestConfig(t *testing.T) {
+	sqlxconf := sqlxconfig.Default(testdata.SqliteUri)
 	t.Run("OK", func(st *testing.T) {
 		conf := Config{
 			Engine: EngineSqlx,
-			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
+			Sqlx:   *sqlxconf,
 		}
 		require.NoError(st, conf.Validate())
 	})
@@ -25,7 +26,7 @@ func TestConfig(t *testing.T) {
 	t.Run("KO - sqlx configuration error", func(st *testing.T) {
 		conf := Config{
 			Engine: EngineSqlx,
-			Sqlx:   &sqlxconfig.Config{},
+			Sqlx:   sqlxconfig.Config{},
 		}
 		require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.URI")
 	})

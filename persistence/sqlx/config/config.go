@@ -3,7 +3,6 @@ package config
 import "github.com/kanthorlabs/common/validator"
 
 var (
-	Engine       = "sqlx"
 	TypePostgres = "postgres"
 	TypeSqlite   = "file"
 
@@ -14,9 +13,9 @@ var (
 )
 
 type Config struct {
-	Uri            string     `json:"uri" yaml:"uri" mapstructure:"uri"`
-	SkipDefaultTxn bool       `json:"skip_default_txn" yaml:"skip_default_txn" mapstructure:"skip_default_txn"`
-	Connection     Connection `json:"connection" yaml:"connection" mapstructure:"connection"`
+	Uri                    string     `json:"uri" yaml:"uri" mapstructure:"uri"`
+	SkipDefaultTransaction bool       `json:"skip_default_transaction" yaml:"skip_default_transaction" mapstructure:"skip_default_transaction"`
+	Connection             Connection `json:"connection" yaml:"connection" mapstructure:"connection"`
 }
 
 func (conf *Config) Validate() error {

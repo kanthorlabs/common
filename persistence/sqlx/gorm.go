@@ -1,7 +1,6 @@
 package sqlx
 
 import (
-	"net/url"
 	"strings"
 	"time"
 
@@ -12,21 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewGorm(conf *config.Config, logger logging.Logger) (*gorm.DB, error) {
+func Gorm(conf *config.Config, logger logging.Logger) (*gorm.DB, error) {
 	options := &gorm.Config{
-		Logger: NewLogger(logger),
-	}
-
-	if u, err := url.ParseRequestURI(conf.Uri); err == nil {
-		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
-		// you can disable it during initialization if it is not required,
-		// you will gain about 30%+ performance improvement after that
-		options.SkipDefaultTransaction = u.Query().Get("skip_default_transaction") != ""
-		// remove skip_default_transaction because it's not a valid uri parameter
-		q := u.Query()
-		q.Del("skip_default_transaction")
-		u.RawQuery = q.Encode()
-		conf.Uri = u.String()
+		Logger:                 NewLogger(logger),
+		SkipDefaultTransaction: conf.SkipDefaultTransaction,
 	}
 
 	var orm *gorm.DB

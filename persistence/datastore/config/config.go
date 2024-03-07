@@ -8,8 +8,8 @@ import (
 var EngineSqlx = "sqlx"
 
 type Config struct {
-	Engine string             `json:"engine" yaml:"engine" mapstructure:"engine"`
-	Sqlx   *sqlxconfig.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
+	Engine string            `json:"engine" yaml:"engine" mapstructure:"engine"`
+	Sqlx   sqlxconfig.Config `json:"sqlx" yaml:"sqlx" mapstructure:"sqlx"`
 }
 
 func (conf *Config) Validate() error {

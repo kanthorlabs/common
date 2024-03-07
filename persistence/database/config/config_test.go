@@ -9,23 +9,15 @@ import (
 )
 
 func TestConfig(t *testing.T) {
+	sqlxconf := sqlxconfig.Default(testdata.SqliteUri)
 	t.Run("OK", func(st *testing.T) {
-		conf := Config{
-			Engine: sqlxconfig.Engine,
-			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
-		}
+		conf := Config{Sqlx: *sqlxconf}
 		require.NoError(st, conf.Validate())
-	})
-
-	t.Run("KO - engine unknown error", func(st *testing.T) {
-		conf := Config{}
-		require.ErrorContains(st, conf.Validate(), "DATABASE.CONFIG")
 	})
 
 	t.Run("KO - sqlx configuration error", func(st *testing.T) {
 		conf := Config{
-			Engine: sqlxconfig.Engine,
-			Sqlx:   &sqlxconfig.Config{},
+			Sqlx: sqlxconfig.Config{},
 		}
 		require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.URI")
 	})

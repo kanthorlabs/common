@@ -11,17 +11,15 @@ import (
 )
 
 func TestDatabase_New(t *testing.T) {
+	sqlxconf := sqlxconfig.Default(testdata.SqliteUri)
 	t.Run("OK", func(st *testing.T) {
-		conf := &config.Config{
-			Engine: sqlxconfig.Engine,
-			Sqlx:   sqlxconfig.Default(testdata.SqliteUri),
-		}
+		conf := &config.Config{Sqlx: *sqlxconf}
 		_, err := New(conf, testify.Logger())
 		require.NoError(st, err)
 	})
 
 	t.Run("KO - configuration error", func(st *testing.T) {
 		_, err := New(&config.Config{}, testify.Logger())
-		require.ErrorContains(st, err, "DATABASE.CONFIG")
+		require.ErrorContains(st, err, "SQLX.CONFIG")
 	})
 }
