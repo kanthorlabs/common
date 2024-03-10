@@ -2,18 +2,28 @@
 set -e
 
 COVERAGE_EXPECTED=${COVERAGE_EXPECTED:-"90.0"}
-COVERAGE_FILE=${COVERAGE_FILE:-"cover.out"}
+COVEROUT_FILE=${COVEROUT_FILE:-"cover.out"}
+COVERAGE_FILE=${COVERAGE_FILE:-"coverage.out"}
 
-if test -f $COVERAGE_FILE; then
-  go tool cover -func $COVERAGE_FILE | grep total | awk '{print substr($3, 1, length($3)-1)}' > coverage.out
+COVERAGE_OLD=$(cat $COVERAGE_FILE)
 
-  COVERAGE_ACUTAL=$(cat coverage.out)
+if test -f $COVEROUT_FILE; then
+  go tool cover -func $COVEROUT_FILE | grep total | awk '{print substr($3, 1, length($3)-1)}' > $COVERAGE_FILE
 
+  COVERAGE_ACUTAL=$(cat $COVERAGE_FILE)
   if [ $(echo "${COVERAGE_ACUTAL} < ${COVERAGE_EXPECTED}" | bc) -eq 1 ]; 
   then
     echo "actual:$COVERAGE_ACUTAL < expected:$COVERAGE_EXPECTED"
     exit 1
   fi
+
+  # warn if coverage is decreased
+  if [ $(echo "${COVERAGE_ACUTAL} < ${COVERAGE_OLD}" | bc) -eq 1 ]; 
+  then
+    echo "WARN: new:$COVERAGE_ACUTAL < old:$COVERAGE_OLD"
+  fi
+  
+  
 else
-  echo "$COVERAGE_FILE is not found"
+  echo "$COVEROUT_FILE is not found"
 fi

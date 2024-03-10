@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kanthorlabs/common/utils"
+	"github.com/kanthorlabs/common/validator"
 	"gorm.io/gorm"
 )
 
@@ -32,6 +33,20 @@ func (query *PagingQuery) Clone() *PagingQuery {
 		Page:   query.Page,
 		Ids:    query.Ids,
 	}
+}
+
+func (query *PagingQuery) Validate() error {
+	return validator.Validate(
+		validator.StringLenIfNotEmpty("DATABASE.QUERY.SEARCH", query.Search, SearchMinChar, SearchMaxChar),
+		validator.NumberInRange("DATABASE.QUERY.LIMIT", query.Limit, LimitMin, LimitMax),
+		validator.NumberInRange("DATABASE.QUERY.PAGE", query.Page, PageMin, PageMax),
+		// only allow retrieving a maximum of 100 records at a time as limit
+		validator.SliceMaxLength("DATABASE.QUERY.IDS", query.Ids, LimitMax),
+		validator.Slice(query.Ids, func(i int, item *string) error {
+			key := fmt.Sprintf("DATABASE.QUERY.IDS[%d]", i)
+			return validator.StringLen(key, *item, SearchMinChar, SearchMaxChar)()
+		}),
+	)
 }
 
 func (query *PagingQuery) Sqlx(tx *gorm.DB, primaryCol string, searchCols []string) *gorm.DB {

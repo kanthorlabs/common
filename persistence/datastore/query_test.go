@@ -2,10 +2,12 @@ package datastore
 
 import (
 	"testing"
+	"time"
 
 	"github.com/kanthorlabs/common/idx"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
+	"github.com/kanthorlabs/common/validator"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -16,6 +18,58 @@ func TestScanningQuery_Clone(t *testing.T) {
 	clone := original.Clone()
 	clone.Search = testdata.Fake.Address().City()
 	require.NotEqual(t, original.Search, clone.Search)
+}
+
+func TestScanningQuery_Validate(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		query := &ScanningQuery{
+			Size: SizeMin,
+			From: validator.MinDatetime,
+			To:   time.Now(),
+		}
+
+		require.NoError(st, query.Validate())
+	})
+
+	t.Run("KO - search error", func(st *testing.T) {
+		query := &ScanningQuery{
+			Size: SizeMin,
+			From: validator.MinDatetime,
+			To:   time.Now(),
+		}
+		query.Search = testdata.Fake.Lorem().Sentence(SearchMaxChar + 1)
+
+		require.ErrorContains(st, query.Validate(), "DATASTORE.QUERY.SEARCH")
+	})
+
+	t.Run("KO - size error", func(st *testing.T) {
+		query := &ScanningQuery{
+			Size: SizeMin,
+			From: validator.MinDatetime,
+			To:   time.Now(),
+		}
+		query.Size = SizeMax + 1
+
+		require.ErrorContains(st, query.Validate(), "DATASTORE.QUERY.SIZE")
+	})
+
+	t.Run("KO - from error", func(st *testing.T) {
+		query := &ScanningQuery{
+			Size: SizeMin,
+			To:   time.Now(),
+		}
+
+		require.ErrorContains(st, query.Validate(), "DATASTORE.QUERY.FROM")
+	})
+
+	t.Run("KO - to error", func(st *testing.T) {
+		query := &ScanningQuery{
+			Size: SizeMin,
+			From: validator.MinDatetime,
+		}
+
+		require.ErrorContains(st, query.Validate(), "DATASTORE.QUERY.FROM")
+	})
 }
 
 func TestScanningQuery_Sqlx(t *testing.T) {

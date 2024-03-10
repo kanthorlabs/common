@@ -1,9 +1,11 @@
 package database
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/samber/lo"
@@ -16,6 +18,47 @@ func TestPagingQuery_Clone(t *testing.T) {
 	clone := original.Clone()
 	clone.Search = testdata.Fake.Address().City()
 	require.NotEqual(t, original.Search, clone.Search)
+}
+
+func TestPagingQuery_Validate(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		require.NoError(st, query.Validate())
+	})
+
+	t.Run("KO - search error", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		query.Search = testdata.Fake.Lorem().Sentence(SearchMaxChar + 1)
+		require.ErrorContains(st, query.Validate(), "DATABASE.QUERY.SEARCH")
+	})
+
+	t.Run("KO - limit error", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		query.Limit = LimitMax + 1
+		require.ErrorContains(st, query.Validate(), "DATABASE.QUERY.LIMIT")
+	})
+
+	t.Run("KO - page error", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		query.Page = PageMax + 1
+		require.ErrorContains(st, query.Validate(), "DATABASE.QUERY.PAGE")
+	})
+
+	t.Run("KO - ids error", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		query.Ids = append(query.Ids, testdata.Fake.Lorem().Sentence(SearchMaxChar+1))
+		require.ErrorContains(st, query.Validate(), fmt.Sprintf("DATABASE.QUERY.IDS[%d]", len(query.Ids)-1))
+
+		for i := 0; i < LimitMax+1; i++ {
+			query.Ids = append(query.Ids, uuid.NewString())
+		}
+		require.ErrorContains(st, query.Validate(), "DATABASE.QUERY.IDS")
+	})
 }
 
 func TestPagingQuery_Sqlx(t *testing.T) {

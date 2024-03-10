@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/kanthorlabs/common/idx"
+	"github.com/kanthorlabs/common/validator"
 	"gorm.io/gorm"
 )
 
@@ -36,6 +37,15 @@ func (query *ScanningQuery) Clone() *ScanningQuery {
 		From:   query.From,
 		To:     query.To,
 	}
+}
+
+func (query *ScanningQuery) Validate() error {
+	return validator.Validate(
+		validator.StringLenIfNotEmpty("DATASTORE.QUERY.SEARCH", query.Search, SearchMinChar, SearchMaxChar),
+		validator.StringLenIfNotEmpty("DATASTORE.QUERY.CURSOR", query.Cursor, SearchMinChar, SearchMaxChar),
+		validator.NumberInRange("DATASTORE.QUERY.SIZE", query.Size, SizeMin, SizeMax),
+		validator.DatetimeBefore("DATASTORE.QUERY.FROM", query.From, query.To),
+	)
 }
 
 func (query *ScanningQuery) Sqlx(tx *gorm.DB, condition *ScanningCondition) *gorm.DB {
