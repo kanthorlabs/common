@@ -2,6 +2,8 @@ package strategies
 
 import (
 	"context"
+	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -17,16 +19,7 @@ import (
 
 func TestDurability_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		conf := &config.Durability{Sqlx: sqlxconfig.Config{
-			Uri: testdata.SqliteUri,
-			Connection: sqlxconfig.Connection{
-				MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-				MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-				MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-				MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-			},
-		}}
-		_, err := NewDurability(conf, testify.Logger())
+		_, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 	})
 
@@ -61,7 +54,6 @@ func TestDurability_ParseCredentials(t *testing.T) {
 }
 
 func TestDurability_Connect(t *testing.T) {
-
 	t.Run("OK", func(st *testing.T) {
 		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
@@ -79,18 +71,8 @@ func TestDurability_Connect(t *testing.T) {
 }
 
 func TestDurability_Readiness(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlxconfig.Connection{
-			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-		},
-	}}
-
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -98,7 +80,7 @@ func TestDurability_Readiness(t *testing.T) {
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -107,7 +89,7 @@ func TestDurability_Readiness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
@@ -115,18 +97,8 @@ func TestDurability_Readiness(t *testing.T) {
 }
 
 func TestDurability_Liveness(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlxconfig.Connection{
-			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-		},
-	}}
-
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -134,7 +106,7 @@ func TestDurability_Liveness(t *testing.T) {
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -143,7 +115,7 @@ func TestDurability_Liveness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
@@ -151,18 +123,8 @@ func TestDurability_Liveness(t *testing.T) {
 }
 
 func TestDurability_Disconnect(t *testing.T) {
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlxconfig.Connection{
-			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-		},
-	}}
-
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -170,7 +132,7 @@ func TestDurability_Disconnect(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewDurability(conf, testify.Logger())
+		c, err := NewDurability(durabilityconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
@@ -180,16 +142,7 @@ func TestDurability_Disconnect(t *testing.T) {
 func TestDurability_Login(t *testing.T) {
 	accounts, passwords := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlxconfig.Connection{
-			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-		},
-	}}
-	strategy, err := NewDurability(conf, testify.Logger())
+	strategy, err := NewDurability(durabilityconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
@@ -266,16 +219,7 @@ func TestDurability_Logout(t *testing.T) {
 func TestDurability_Verify(t *testing.T) {
 	accounts, passwords := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlxconfig.Connection{
-			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-		},
-	}}
-	strategy, err := NewDurability(conf, testify.Logger())
+	strategy, err := NewDurability(durabilityconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
@@ -394,16 +338,7 @@ func TestDurability_Register(t *testing.T) {
 func TestDurability_Deactivate(t *testing.T) {
 	accounts, _ := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
-		Uri: testdata.SqliteUri,
-		Connection: sqlxconfig.Connection{
-			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
-			MaxIdletime:  sqlxconfig.DefaultConnMaxIdletime,
-			MaxIdleCount: sqlxconfig.DefaultConnMaxIdleCount,
-			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
-		},
-	}}
-	strategy, err := NewDurability(conf, testify.Logger())
+	strategy, err := NewDurability(durabilityconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
@@ -440,6 +375,44 @@ func TestDurability_Deactivate(t *testing.T) {
 
 		err = strategy.Deactivate(context.Background(), username, ts-1)
 		require.ErrorIs(st, err, ErrDeactivate)
+	})
+}
+
+func TestDurability_List(t *testing.T) {
+	accounts, _ := setup(t)
+
+	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
+	orm := strategy.(*durability).orm
+	tx := orm.Create(accounts)
+	require.NoError(t, tx.Error)
+
+	t.Run("OK", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)/2-1)
+		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
+		usernames := []string{accounts[i].Username, accounts[j].Username}
+
+		acc, err := strategy.List(context.Background(), usernames)
+		require.NoError(st, err)
+
+		require.Equal(st, len(usernames), len(acc))
+		for i := range acc {
+			require.Empty(st, acc[i].PasswordHash)
+			require.True(st, slices.Contains(usernames, acc[i].Username))
+		}
+	})
+
+	t.Run("KO - validation error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)/2-1)
+		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
+		usernames := []string{accounts[i].Username, accounts[j].Username, ""}
+
+		_, err := strategy.List(context.Background(), usernames)
+		require.ErrorContains(st, err, fmt.Sprintf("usernames[%d]", len(usernames)-1))
 	})
 }
 

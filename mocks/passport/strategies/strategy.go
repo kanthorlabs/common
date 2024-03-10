@@ -68,9 +68,9 @@ func (_c *Strategy_Connect_Call) RunAndReturn(run func(context.Context) error) *
 	return _c
 }
 
-// Deactivate provides a mock function with given fields: ctx, username, ts
-func (_m *Strategy) Deactivate(ctx context.Context, username string, ts int64) error {
-	ret := _m.Called(ctx, username, ts)
+// Deactivate provides a mock function with given fields: ctx, username, at
+func (_m *Strategy) Deactivate(ctx context.Context, username string, at int64) error {
+	ret := _m.Called(ctx, username, at)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Deactivate")
@@ -78,7 +78,7 @@ func (_m *Strategy) Deactivate(ctx context.Context, username string, ts int64) e
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, int64) error); ok {
-		r0 = rf(ctx, username, ts)
+		r0 = rf(ctx, username, at)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -94,12 +94,12 @@ type Strategy_Deactivate_Call struct {
 // Deactivate is a helper method to define mock.On call
 //   - ctx context.Context
 //   - username string
-//   - ts int64
-func (_e *Strategy_Expecter) Deactivate(ctx interface{}, username interface{}, ts interface{}) *Strategy_Deactivate_Call {
-	return &Strategy_Deactivate_Call{Call: _e.mock.On("Deactivate", ctx, username, ts)}
+//   - at int64
+func (_e *Strategy_Expecter) Deactivate(ctx interface{}, username interface{}, at interface{}) *Strategy_Deactivate_Call {
+	return &Strategy_Deactivate_Call{Call: _e.mock.On("Deactivate", ctx, username, at)}
 }
 
-func (_c *Strategy_Deactivate_Call) Run(run func(ctx context.Context, username string, ts int64)) *Strategy_Deactivate_Call {
+func (_c *Strategy_Deactivate_Call) Run(run func(ctx context.Context, username string, at int64)) *Strategy_Deactivate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(int64))
 	})
@@ -158,6 +158,65 @@ func (_c *Strategy_Disconnect_Call) Return(_a0 error) *Strategy_Disconnect_Call 
 }
 
 func (_c *Strategy_Disconnect_Call) RunAndReturn(run func(context.Context) error) *Strategy_Disconnect_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function with given fields: ctx, ids
+func (_m *Strategy) List(ctx context.Context, ids []string) ([]*entities.Account, error) {
+	ret := _m.Called(ctx, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*entities.Account
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string) ([]*entities.Account, error)); ok {
+		return rf(ctx, ids)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, []string) []*entities.Account); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.Account)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, []string) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Strategy_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type Strategy_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ids []string
+func (_e *Strategy_Expecter) List(ctx interface{}, ids interface{}) *Strategy_List_Call {
+	return &Strategy_List_Call{Call: _e.mock.On("List", ctx, ids)}
+}
+
+func (_c *Strategy_List_Call) Run(run func(ctx context.Context, ids []string)) *Strategy_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]string))
+	})
+	return _c
+}
+
+func (_c *Strategy_List_Call) Return(_a0 []*entities.Account, _a1 error) *Strategy_List_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Strategy_List_Call) RunAndReturn(run func(context.Context, []string) ([]*entities.Account, error)) *Strategy_List_Call {
 	_c.Call.Return(run)
 	return _c
 }

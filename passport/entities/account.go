@@ -34,11 +34,12 @@ func (acc *Account) Validate() error {
 
 func (acc *Account) Censor() *Account {
 	censored := &Account{
-		Username:  acc.Username,
-		Name:      acc.Name,
-		Metadata:  &safe.Metadata{},
-		CreatedAt: acc.CreatedAt,
-		UpdatedAt: acc.UpdatedAt,
+		Username:      acc.Username,
+		Name:          acc.Name,
+		Metadata:      &safe.Metadata{},
+		CreatedAt:     acc.CreatedAt,
+		UpdatedAt:     acc.UpdatedAt,
+		DeactivatedAt: acc.DeactivatedAt,
 	}
 	censored.Metadata.Merge(acc.Metadata)
 

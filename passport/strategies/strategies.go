@@ -15,4 +15,7 @@ type Strategy interface {
 	Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error)
 	Register(ctx context.Context, acc *entities.Account) error
 	Deactivate(ctx context.Context, username string, at int64) error
+
+	// Management APIs
+	List(ctx context.Context, ids []string) ([]*entities.Account, error)
 }

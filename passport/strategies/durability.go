@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx"
+	"github.com/kanthorlabs/common/validator"
 	"gorm.io/gorm"
 )
 
@@ -159,4 +161,33 @@ func (instance *durability) Deactivate(ctx context.Context, username string, at 
 
 		return nil
 	})
+}
+
+func (instance *durability) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
+	err := validator.Validate(
+		validator.SliceRequired("usernames", usernames),
+		validator.Slice(usernames, func(i int, item *string) error {
+			key := fmt.Sprintf("usernames[%d]", i)
+			return validator.StringRequired(key, *item)()
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var docs []entities.Account
+	err = instance.orm.WithContext(ctx).
+		Where("username IN ?", usernames).
+		Find(&docs).
+		Error
+	if err != nil {
+		return nil, ErrList
+	}
+
+	accounts := make([]*entities.Account, len(docs))
+	for i := range docs {
+		accounts[i] = docs[i].Censor()
+	}
+
+	return accounts, nil
 }

@@ -3,6 +3,7 @@ package strategies
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/kanthorlabs/common/cipher/password"
@@ -10,6 +11,7 @@ import (
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
 	"github.com/kanthorlabs/common/patterns"
+	"github.com/kanthorlabs/common/validator"
 )
 
 // NewAsk creates a new ask strategy instance what allows to authenticate users based on a username and password.
@@ -124,4 +126,26 @@ func (instance *ask) Register(ctx context.Context, acc *entities.Account) error 
 
 func (instance *ask) Deactivate(ctx context.Context, username string, ts int64) error {
 	return errors.New("PASSPORT.ASK.DEACTIVATE.UNIMPLEMENT.ERROR")
+}
+
+func (instance *ask) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
+	err := validator.Validate(
+		validator.SliceRequired("usernames", usernames),
+		validator.Slice(usernames, func(i int, item *string) error {
+			key := fmt.Sprintf("usernames[%d]", i)
+			return validator.StringRequired(key, *item)()
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var accounts []*entities.Account
+	for i := range usernames {
+		if acc, has := instance.accounts[usernames[i]]; has {
+			accounts = append(accounts, acc.Censor())
+		}
+	}
+
+	return accounts, nil
 }
