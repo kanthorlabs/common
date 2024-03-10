@@ -429,6 +429,18 @@ func TestDurability_Deactivate(t *testing.T) {
 		err := strategy.Deactivate(context.Background(), username, ts)
 		require.ErrorIs(st, err, ErrAccountNotFound)
 	})
+
+	t.Run("KO - deactivate timestamp error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		username := accounts[i].Username
+		ts := time.Now().UnixMilli()
+
+		err := strategy.Deactivate(context.Background(), username, ts)
+		require.NoError(st, err)
+
+		err = strategy.Deactivate(context.Background(), username, ts-1)
+		require.ErrorIs(st, err, ErrDeactivate)
+	})
 }
 
 var durabilityconf = &config.Durability{Sqlx: sqlxconfig.Config{

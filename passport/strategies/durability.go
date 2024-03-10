@@ -148,6 +148,11 @@ func (instance *durability) Deactivate(ctx context.Context, username string, at 
 			return ErrAccountNotFound
 		}
 
+		// the expired time should be greater than the current one
+		if at < acc.DeactivatedAt {
+			return ErrDeactivate
+		}
+
 		if tx.Model(acc).Update("deactivated_at", at).Error != nil {
 			return ErrDeactivate
 		}
