@@ -129,9 +129,8 @@ func (instance *opa) Grant(ctx context.Context, evaluation *entities.Evaluation)
 		CreatedAt: time.Now().UnixMilli(),
 		UpdatedAt: time.Now().UnixMilli(),
 	}
-	tx := instance.orm.WithContext(ctx).Create(privilege)
 
-	return tx.Error
+	return instance.orm.WithContext(ctx).Create(privilege).Error
 }
 
 func (instance *opa) Revoke(ctx context.Context, evaluation *entities.Evaluation) error {
@@ -166,13 +165,14 @@ func (instance *opa) Enforce(ctx context.Context, evaluation *entities.Evaluatio
 	}
 
 	var privileges []entities.Privilege
-	tx := instance.orm.WithContext(ctx).
+	err := instance.orm.WithContext(ctx).
 		Model(&entities.Privilege{}).
 		Where("tenant = ? AND username = ?", evaluation.Tenant, evaluation.Username).
-		Find(&privileges)
+		Find(&privileges).
+		Error
 
-	if tx.Error != nil {
-		return tx.Error
+	if err != nil {
+		return errors.New("GATEKEEPER.ENFORCE.PRIVILEGE_LOOKUP.ERROR")
 	}
 
 	if len(privileges) == 0 {
@@ -184,14 +184,14 @@ func (instance *opa) Enforce(ctx context.Context, evaluation *entities.Evaluatio
 
 func (instance *opa) Users(ctx context.Context, tenant string) ([]entities.User, error) {
 	var privileges []entities.Privilege
-
-	tx := instance.orm.WithContext(ctx).
+	err := instance.orm.WithContext(ctx).
 		Model(&entities.Privilege{}).
 		Where("tenant = ?", tenant).
-		Find(&privileges)
+		Find(&privileges).
+		Error
 
-	if tx.Error != nil {
-		return nil, tx.Error
+	if err != nil {
+		return nil, errors.New("GATEKEEPER.USERS.LOOKUP.ERROR")
 	}
 
 	maps := map[string][]string{}
@@ -217,13 +217,14 @@ func (instance *opa) Users(ctx context.Context, tenant string) ([]entities.User,
 
 func (instance *opa) Tenants(ctx context.Context, username string) ([]entities.Tenant, error) {
 	var privileges []entities.Privilege
-	tx := instance.orm.WithContext(ctx).
+	err := instance.orm.WithContext(ctx).
 		Model(&entities.Privilege{}).
 		Where("username = ?", username).
-		Find(&privileges)
+		Find(&privileges).
+		Error
 
-	if tx.Error != nil {
-		return nil, tx.Error
+	if err != nil {
+		return nil, errors.New("GATEKEEPER.TENANTS.LOOKUP.ERROR")
 	}
 
 	maps := map[string][]string{}

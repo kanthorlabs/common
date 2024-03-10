@@ -175,7 +175,7 @@ func instance(t *testing.T) (Passport, *config.Config) {
 
 func ask() config.Strategy {
 	pass := testdata.Fake.Internet().Password()
-	hash, _ := password.HashString(pass)
+	hash, _ := password.Hash(pass)
 	account := entities.Account{
 		Username:     uuid.NewString(),
 		PasswordHash: hash,

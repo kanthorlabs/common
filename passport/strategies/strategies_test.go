@@ -19,7 +19,7 @@ func setup(t *testing.T) ([]entities.Account, []string) {
 
 	for i := 0; i < count; i++ {
 		passwords[i] = uuid.NewString()
-		hash, err := password.HashString(passwords[i])
+		hash, err := password.Hash(passwords[i])
 		require.NoError(t, err)
 		accounts[i] = entities.Account{
 			Username:     uuid.NewString(),

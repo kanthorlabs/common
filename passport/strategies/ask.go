@@ -103,7 +103,7 @@ func (instance *ask) Login(ctx context.Context, credentials *entities.Credential
 		return nil, ErrLogin
 	}
 
-	if err := password.CompareString(credentials.Password, acc.PasswordHash); err != nil {
+	if err := password.Compare(credentials.Password, acc.PasswordHash); err != nil {
 		return nil, ErrLogin
 	}
 

@@ -11,15 +11,15 @@ import (
 func TestPassword(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		pass := faker.New().Internet().Password()
-		hash, err := HashString(pass)
+		hash, err := Hash(pass)
 		require.NoError(st, err)
 
-		require.NoError(st, CompareString(pass, hash))
+		require.NoError(st, Compare(pass, hash))
 
 	})
 
 	t.Run("KO", func(st *testing.T) {
-		_, err := HashString(testdata.Fake.Lorem().Sentence(100))
+		_, err := Hash(testdata.Fake.Lorem().Sentence(100))
 		require.NotNil(t, err)
 	})
 }

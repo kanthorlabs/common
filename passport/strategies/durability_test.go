@@ -370,7 +370,7 @@ func TestDurability_Register(t *testing.T) {
 
 	t.Run("OK", func(st *testing.T) {
 		pass := uuid.NewString()
-		hash, err := password.HashString(pass)
+		hash, err := password.Hash(pass)
 		require.NoError(st, err)
 
 		acc := &entities.Account{

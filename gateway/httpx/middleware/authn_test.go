@@ -28,7 +28,7 @@ import (
 var (
 	user        = uuid.NewString()
 	pass        = uuid.NewString()
-	hash, _     = password.HashString(pass)
+	hash, _     = password.Hash(pass)
 	basic       = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
 	credentials = &ppentities.Credentials{Username: user, Password: pass}
 	account     = &ppentities.Account{

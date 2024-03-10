@@ -118,7 +118,7 @@ func (instance *durability) Login(ctx context.Context, credentials *entities.Cre
 		return nil, ErrAccountDeactivated
 	}
 
-	if err := password.CompareString(credentials.Password, acc.PasswordHash); err != nil {
+	if err := password.Compare(credentials.Password, acc.PasswordHash); err != nil {
 		return nil, ErrLogin
 	}
 
