@@ -3,43 +3,58 @@
     "definitions": {
       "owner": [
         {
+          "scope": "*",
           "action": "*",
           "object": "*"
         }
       ],
       "readonly": [
         {
+          "scope": "*",
           "action": "GET",
           "object": "*"
         },
         {
+          "scope": "*",
           "action": "HEAD",
           "object": "*"
         }
       ],
       "own": [
         {
+          "scope": "*",
           "action": "*",
           "object": "/api/account/me"
         },
         {
+          "scope": "*",
           "action": "*",
           "object": "/api/account/password"
         }
       ],
       "application_read": [
         {
+          "scope": "*",
           "action": "GET",
           "object": "/api/application"
         },
         {
+          "scope": "*",
           "action": "GET",
           "object": "/api/application/:id"
         }
       ],
       "application_delete": [
         {
+          "scope": "*",
           "action": "DELETE",
+          "object": "/api/application/:id"
+        }
+      ],
+      "scope": [
+        {
+          "scope": "internal",
+          "action": "PUT",
           "object": "/api/application/:id"
         }
       ]
@@ -101,6 +116,19 @@
           "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
           "username": "multiple",
           "role": "application_delete",
+          "metadata": {},
+          "created_at": 0,
+          "updated_at": 0
+        }
+      ]
+    },
+    "scope": {
+      "privileges": [
+        {
+          "id": "f1265844-9e90-4baa-8f8e-8e9cc9ebe677",
+          "tenant": "53a28b91-8518-4b0d-ae38-087df89b664a",
+          "username": "scope",
+          "role": "scope",
           "metadata": {},
           "created_at": 0,
           "updated_at": 0

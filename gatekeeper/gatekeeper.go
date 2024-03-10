@@ -15,6 +15,8 @@ func New(conf *config.Config, logger logging.Logger) (Gatekeeper, error) {
 }
 
 // Gatekeeper is an implementation of multi-tenant RBAC
+// For listing methods such as Users and Tenants, we assume that there is not too many data to be returned
+// so we don't implement the pagination for now
 type Gatekeeper interface {
 	patterns.Connectable
 	Grant(ctx context.Context, evaluation *entities.Evaluation) error

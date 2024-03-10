@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -19,6 +19,10 @@ var (
 )
 
 func Authz(authz gatekeeper.Gatekeeper, scope string) Middleware {
+	if scope == "" {
+		panic(errors.New("GATEWAY.AUTHZ.SCOPE_EMPTY.ERROR"))
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -34,18 +38,20 @@ func Authz(authz gatekeeper.Gatekeeper, scope string) Middleware {
 				return
 			}
 
+			evaluation := &gkentities.Evaluation{
+				Tenant:   tenant,
+				Username: acc.Username,
+			}
+
 			chictx := chi.RouteContext(r.Context())
-			urlpattern := object(scope, chictx.RoutePattern(), chictx.RoutePath)
+			urlpattern := object(chictx.RoutePattern(), chictx.RoutePath)
 			if urlpattern == "" {
 				writer.ErrUnauthorized(w, writer.ErrorString("GATEWAY.AUTHZ.OBJECT_EMPTY.ERROR"))
 				return
 			}
 
-			evaluation := &gkentities.Evaluation{
-				Tenant:   tenant,
-				Username: acc.Username,
-			}
 			permission := &gkentities.Permission{
+				Scope:  scope,
 				Action: r.Method,
 				Object: urlpattern,
 			}
@@ -73,14 +79,8 @@ func parseTenant(acc *ppentities.Account, r *http.Request) string {
 	return r.Header.Get(HeaderAuthzTenant)
 }
 
-func object(scope, pattern, end string) string {
+func object(pattern, end string) string {
 	// the pattern usually ends with "/*" which is not a valid pattern to evaluate
 	// so we need to replace it with a valid pattern
-	urlpath := strings.Replace(pattern, "/*", "", -1) + end
-
-	if scope == "" {
-		return urlpath
-	}
-
-	return fmt.Sprintf("%s::%s", scope, urlpath)
+	return strings.Replace(pattern, "/*", "", -1) + end
 }

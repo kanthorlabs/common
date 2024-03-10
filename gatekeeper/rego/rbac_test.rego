@@ -43,3 +43,15 @@ test_specific_matching_ko if {
 		with input.privileges as data.input.multiple.privileges
 		with input.permission as {"action": "PUT", "object": "/api/application/:id"}
 }
+
+test_specific_scope_ok if {
+	allow with data.permissions as data.data.definitions
+		with input.privileges as data.input.scope.privileges
+		with input.permission as {"scope": "internal", "action": "PUT", "object": "/api/application/:id"}
+}
+
+test_specific_scope_ko if {
+	not allow with data.permissions as data.data.definitions
+		with input.privileges as data.input.scope.privileges
+		with input.permission as {"scope": "external", "action": "PUT", "object": "/api/application/:id"}
+}

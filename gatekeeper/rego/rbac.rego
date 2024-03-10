@@ -15,8 +15,17 @@ allow if {
 	some permission in data.permissions[privilege.role]
 
 	# matching
+	pass_scope(permission.scope)
 	pass_action(permission.action)
 	pass_object(permission.object)
+}
+
+pass_scope(scope) if {
+	scope == any
+}
+
+pass_scope(scope) if {
+	scope == input.permission.scope
 }
 
 pass_action(action) if {

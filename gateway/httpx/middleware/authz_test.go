@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -35,6 +34,7 @@ func TestAuthz(t *testing.T) {
 	}
 	path := "/api/workspace/{id}/extra"
 	permission := &gkentities.Permission{
+		Scope:  testdata.Fake.RandomStringWithLength(10),
 		Action: http.MethodGet,
 		Object: path,
 	}
@@ -42,7 +42,7 @@ func TestAuthz(t *testing.T) {
 	s.Route("/api", func(sr chi.Router) {
 		sr.Route("/workspace", func(ssr chi.Router) {
 			ssr.Route("/{id}", func(sssr chi.Router) {
-				sssr.Use(Authz(authz, ""))
+				sssr.Use(Authz(authz, permission.Scope))
 
 				sssr.Get("/extra", func(w http.ResponseWriter, r *http.Request) {
 					writer.Ok(w, writer.M{})
@@ -174,7 +174,7 @@ func TestAuthz(t *testing.T) {
 		s := chi.NewRouter()
 		authz := gatekeeper.NewGatekeeper(t)
 		// top level will not work because we cannot detect the mattching pattern
-		s.Use(Authz(authz, ""))
+		s.Use(Authz(authz, testdata.Fake.RandomStringWithLength(10)))
 		s.Get("/undetectable", func(w http.ResponseWriter, r *http.Request) {
 			writer.Ok(w, writer.M{})
 		})
@@ -198,54 +198,14 @@ func TestAuthz(t *testing.T) {
 	})
 }
 
-func TestAuthz_Scope(t *testing.T) {
+func TestAuthz_Panic(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			require.ErrorContains(t, r.(error), "GATEWAY.AUTHZ.SCOPE_EMPTY.ERROR")
+		}
+	}()
+
 	s := chi.NewRouter()
-
 	authz := gatekeeper.NewGatekeeper(t)
-	tenantId := uuid.NewString()
-	evaluation := &gkentities.Evaluation{
-		Tenant:   tenantId,
-		Username: account.Username,
-	}
-	path := "/api/workspace/{id}/extra"
-	scope := testdata.Fake.RandomStringWithLength(10)
-	permission := &gkentities.Permission{
-		Action: http.MethodGet,
-		Object: fmt.Sprintf("%s::%s", scope, path),
-	}
-
-	s.Route("/api", func(sr chi.Router) {
-		sr.Route("/workspace", func(ssr chi.Router) {
-			ssr.Route("/{id}", func(sssr chi.Router) {
-				sssr.Use(Authz(authz, scope))
-
-				sssr.Get("/extra", func(w http.ResponseWriter, r *http.Request) {
-					writer.Ok(w, writer.M{})
-				})
-			})
-		})
-
-	})
-
-	t.Run("OK", func(st *testing.T) {
-		req, err := http.NewRequest(
-			http.MethodGet,
-			strings.Replace(path, "{id}", uuid.NewString(), -1),
-			nil,
-		)
-		require.NoError(st, err)
-
-		req = req.WithContext(context.WithValue(req.Context(), passport.CtxAccount, account))
-		req.Header.Set(HeaderAuthzTenant, tenantId)
-
-		authz.EXPECT().
-			Enforce(mock.Anything, evaluation, permission).
-			Return(nil).
-			Once()
-
-		res := httptest.NewRecorder()
-		s.ServeHTTP(res, req)
-
-		require.Equal(st, http.StatusOK, res.Code)
-	})
+	s.Use(Authz(authz, ""))
 }

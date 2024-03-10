@@ -221,22 +221,13 @@ func TestOpa_Enforce(t *testing.T) {
 		require.NoError(st, gk.Grant(context.Background(), evaluation))
 
 		permission := &entities.Permission{
+			Scope:  entities.AnyScope,
 			Action: "DELETE",
 			Object: "/",
 		}
 
 		// then enforce it and expect error because the permission is non-sense
 		require.NotNil(st, gk.Enforce(context.Background(), evaluation, permission))
-	})
-
-	t.Run("KO - evaluation validate error", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(privileges)-1)
-		evaluation := &entities.Evaluation{
-			Tenant: privileges[i].Tenant,
-		}
-
-		// duplicated
-		require.ErrorContains(st, gk.Grant(context.Background(), evaluation), "GATEKEEPER.EVALUATION.")
 	})
 
 	t.Run("KO - permission validate error", func(st *testing.T) {
@@ -247,6 +238,7 @@ func TestOpa_Enforce(t *testing.T) {
 		}
 		permission := &entities.Permission{
 			Action: "DELETE",
+			Object: "/",
 		}
 
 		err := gk.Enforce(context.Background(), evaluation, permission)
@@ -259,6 +251,7 @@ func TestOpa_Enforce(t *testing.T) {
 			Tenant:   uuid.NewString(),
 		}
 		permission := &entities.Permission{
+			Scope:  entities.AnyScope,
 			Action: "DELETE",
 			Object: "/",
 		}

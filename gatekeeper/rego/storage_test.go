@@ -10,7 +10,11 @@ import (
 func TestMemory(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		_, err := Memory(map[string][]entities.Permission{
-			"administrator": {{Action: "*", Object: "*"}},
+			"administrator": {{
+				Scope:  entities.AnyScope,
+				Action: entities.AnyAction,
+				Object: entities.AnyObject,
+			}},
 		})
 		require.NoError(t, err)
 	})
@@ -22,8 +26,8 @@ func TestMemory(t *testing.T) {
 
 	t.Run("KO - definition error", func(st *testing.T) {
 		_, err := Memory(map[string][]entities.Permission{
-			"administrator": {{Action: "*"}},
+			"administrator": {{Scope: entities.AnyScope}},
 		})
-		require.ErrorContains(t, err, "GATEKEEPER.PERMISSION.")
+		require.ErrorContains(t, err, "GATEKEEPER.PERMISSION.ACTION")
 	})
 }
