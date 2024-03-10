@@ -21,8 +21,8 @@ type ScanningCondition struct {
 }
 
 type ScanningQuery struct {
-	Cursor string
 	Search string
+	Cursor string
 	Size   int
 	From   time.Time
 	To     time.Time
@@ -30,8 +30,8 @@ type ScanningQuery struct {
 
 func (query *ScanningQuery) Clone() *ScanningQuery {
 	return &ScanningQuery{
-		Cursor: query.Cursor,
 		Search: query.Search,
+		Cursor: query.Cursor,
 		Size:   query.Size,
 		From:   query.From,
 		To:     query.To,

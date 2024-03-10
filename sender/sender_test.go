@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -103,5 +105,14 @@ func httpserver() *httptest.Server {
 	r.Put("/200", handler(http.StatusOK))
 	r.Patch("/200", handler(http.StatusOK))
 	r.Post("/500", handler(http.StatusInternalServerError))
+	r.Post("/delay", func(w http.ResponseWriter, r *http.Request) {
+		ms, err := strconv.Atoi(r.URL.Query().Get("ms"))
+		if err != nil {
+			panic(err)
+		}
+
+		time.Sleep(time.Millisecond * time.Duration(ms))
+		handler(http.StatusOK)(w, r)
+	})
 	return httptest.NewServer(r)
 }

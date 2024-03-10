@@ -72,4 +72,22 @@ func TestHttp(t *testing.T) {
 		_, err := send(context.Background(), req)
 		require.ErrorContains(t, err, "SENDER.REQUEST")
 	})
+
+	t.Run("KO - timeout", func(st *testing.T) {
+		server := httpserver()
+		defer server.Close()
+
+		id := uuid.NewString()
+		req := &entities.Request{
+			Method: http.MethodPost,
+			Uri:    fmt.Sprintf("%s/delay?ms=%d", server.URL, testconf.Timeout),
+			Body:   []byte(fmt.Sprintf(`{"id":"%s"}`, id)),
+		}
+		res, err := send(context.Background(), req)
+		require.NoError(t, err)
+
+		require.Equal(st, -1, res.Status)
+		require.Empty(st, res.Headers)
+		require.Empty(st, res.Body)
+	})
 }

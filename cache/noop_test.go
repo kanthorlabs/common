@@ -12,7 +12,7 @@ import (
 )
 
 func TestNoop(t *testing.T) {
-	cache := &noop{}
+	cache := NewNoop()
 	ctx := context.Background()
 	key := uuid.NewString()
 	entry := testdata.NewUser(clock.New())

@@ -56,8 +56,13 @@ func Http(conf *config.Config, logger logging.Logger) (Send, error) {
 			res, err = req.SetBody(r.Body).Patch(r.Uri)
 		}
 
+		// catch the error and return the response
 		if err != nil {
-			return nil, err
+			return &entities.Response{
+				Status:  -1,
+				Headers: make(http.Header),
+				Uri:     r.Uri,
+			}, nil
 		}
 
 		return &entities.Response{
