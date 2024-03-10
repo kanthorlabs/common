@@ -196,8 +196,7 @@ func TestDurability_Login(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	orm := strategy.(*durability).orm
-	tx := orm.Create(accounts)
-	require.NoError(t, tx.Error)
+	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -313,6 +312,27 @@ func TestDurability_Verify(t *testing.T) {
 		}
 		_, err := strategy.Verify(context.Background(), credentials)
 		require.ErrorIs(st, err, ErrLogin)
+	})
+
+	t.Run("KO - deactivated error", func(st *testing.T) {
+		// setup another batch to test deactivated account
+		acc, pass := setup(t)
+		require.NoError(st, orm.Create(acc).Error)
+
+		i := testdata.Fake.IntBetween(0, len(pass)-1)
+		credentials := &entities.Credentials{
+			Username: acc[i].Username,
+			Password: pass[i],
+		}
+		err := orm.
+			Model(&entities.Account{}).
+			Where("username = ?", credentials.Username).
+			Update("deactivated_at", time.Now().Add(-time.Hour).UnixMilli()).
+			Error
+		require.NoError(st, err)
+
+		_, err = strategy.Verify(context.Background(), credentials)
+		require.ErrorIs(st, err, ErrAccountDeactivated)
 	})
 
 	t.Run("KO - password not match", func(st *testing.T) {
