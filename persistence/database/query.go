@@ -52,6 +52,8 @@ func (query *PagingQuery) Validate() error {
 func (query *PagingQuery) Sqlx(tx *gorm.DB, primaryCol string, searchCols []string) *gorm.DB {
 	tx = query.sqlx(tx, primaryCol, searchCols)
 
+	// if ids are provided, it was used to filter the records in the method .sqlx
+	// otherwise we need to apply the limit and offset here
 	if len(query.Ids) == 0 {
 		offset := utils.Max((query.Page-1)*query.Limit, 0)
 		tx = tx.Limit(query.Limit).Offset(offset)
