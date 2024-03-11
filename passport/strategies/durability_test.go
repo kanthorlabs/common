@@ -12,6 +12,7 @@ import (
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
 	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
+	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -201,8 +202,7 @@ func TestDurability_Logout(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	orm := strategy.(*durability).orm
-	tx := orm.Create(accounts)
-	require.NoError(t, tx.Error)
+	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
@@ -226,8 +226,7 @@ func TestDurability_Verify(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	orm := strategy.(*durability).orm
-	tx := orm.Create(accounts)
-	require.NoError(t, tx.Error)
+	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
@@ -309,8 +308,7 @@ func TestDurability_Register(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	orm := strategy.(*durability).orm
-	tx := orm.Create(accounts)
-	require.NoError(t, tx.Error)
+	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
 		pass := uuid.NewString()
@@ -345,8 +343,7 @@ func TestDurability_Deactivate(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	orm := strategy.(*durability).orm
-	tx := orm.Create(accounts)
-	require.NoError(t, tx.Error)
+	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
@@ -388,8 +385,7 @@ func TestDurability_List(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	orm := strategy.(*durability).orm
-	tx := orm.Create(accounts)
-	require.NoError(t, tx.Error)
+	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)/2-1)
@@ -413,6 +409,54 @@ func TestDurability_List(t *testing.T) {
 
 		_, err := strategy.List(context.Background(), usernames)
 		require.ErrorContains(st, err, fmt.Sprintf("usernames[%d]", len(usernames)-1))
+	})
+}
+
+func TestDurability_Update(t *testing.T) {
+	accounts, _ := setup(t)
+
+	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
+	orm := strategy.(*durability).orm
+	require.NoError(t, orm.Create(accounts).Error)
+
+	t.Run("OK", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		accounts[i].Name = testdata.Fake.Internet().User()
+
+		require.NoError(st, strategy.Update(context.Background(), &accounts[i]))
+
+		accounts[i].Metadata = &safe.Metadata{}
+		accounts[i].Metadata.Set("external_id", uuid.NewString())
+
+		require.NoError(st, strategy.Update(context.Background(), &accounts[i]))
+	})
+
+	t.Run("KO - user not found", func(st *testing.T) {
+		err := strategy.Update(context.Background(), &entities.Account{Username: uuid.NewString()})
+		require.ErrorIs(st, err, ErrAccountNotFound)
+	})
+
+	t.Run("KO - deactivated error", func(st *testing.T) {
+		hash, err := password.Hash(uuid.NewString())
+		require.NoError(t, err)
+
+		account := &entities.Account{
+			Username:      uuid.NewString(),
+			PasswordHash:  hash,
+			Name:          testdata.Fake.Internet().User(),
+			CreatedAt:     time.Now().UnixMilli(),
+			UpdatedAt:     time.Now().UnixMilli(),
+			DeactivatedAt: time.Now().Add(-time.Hour).UnixMilli(),
+		}
+		require.NoError(t, orm.Create(account).Error)
+
+		err = strategy.Update(context.Background(), account)
+		require.ErrorIs(st, err, ErrDeactivate)
 	})
 }
 

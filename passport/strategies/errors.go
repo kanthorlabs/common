@@ -15,4 +15,5 @@ var (
 	ErrAccountDeactivated = errors.New("PASSPORT.STRATEGY.ACCOUNT.DEACTIVATED.ERROR")
 	ErrDeactivate         = errors.New("PASSPORT.STRATEGY.DEACTIVATE.ERROR")
 	ErrList               = errors.New("PASSPORT.STRATEGY.LIST.ERROR")
+	ErrUpdate             = errors.New("PASSPORT.STRATEGY.UPDATE.ERROR")
 )

@@ -17,5 +17,6 @@ type Strategy interface {
 	Deactivate(ctx context.Context, username string, at int64) error
 
 	// Management APIs
-	List(ctx context.Context, ids []string) ([]*entities.Account, error)
+	List(ctx context.Context, usernames []string) ([]*entities.Account, error)
+	Update(ctx context.Context, account *entities.Account) error
 }

@@ -149,3 +149,7 @@ func (instance *ask) List(ctx context.Context, usernames []string) ([]*entities.
 
 	return accounts, nil
 }
+
+func (instance *ask) Update(ctx context.Context, account *entities.Account) error {
+	return errors.New("PASSPORT.ASK.UPDATE.UNIMPLEMENT.ERROR")
+}

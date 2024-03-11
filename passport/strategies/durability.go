@@ -13,6 +13,7 @@ import (
 	"github.com/kanthorlabs/common/patterns"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx"
+	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/validator"
 	"gorm.io/gorm"
 )
@@ -190,4 +191,36 @@ func (instance *durability) List(ctx context.Context, usernames []string) ([]*en
 	}
 
 	return accounts, nil
+}
+
+func (instance *durability) Update(ctx context.Context, account *entities.Account) error {
+	return instance.orm.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		acc := &entities.Account{Username: account.Username}
+		if acc.Metadata == nil {
+			acc.Metadata = &safe.Metadata{}
+		}
+
+		if tx.First(&acc).Error != nil {
+			return ErrAccountNotFound
+		}
+
+		if acc.DeactivatedAt > 0 && acc.DeactivatedAt < time.Now().UnixMilli() {
+			return ErrDeactivate
+		}
+
+		updates := map[string]any{}
+		if account.Name != "" {
+			updates["name"] = account.Name
+		}
+		if account.Metadata != nil {
+			account.Metadata.Merge(acc.Metadata)
+			updates["metadata"] = account.Metadata
+		}
+
+		if tx.Model(acc).Updates(updates).Error != nil {
+			return ErrUpdate
+		}
+
+		return nil
+	})
 }

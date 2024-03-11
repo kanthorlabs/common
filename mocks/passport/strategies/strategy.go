@@ -162,9 +162,9 @@ func (_c *Strategy_Disconnect_Call) RunAndReturn(run func(context.Context) error
 	return _c
 }
 
-// List provides a mock function with given fields: ctx, ids
-func (_m *Strategy) List(ctx context.Context, ids []string) ([]*entities.Account, error) {
-	ret := _m.Called(ctx, ids)
+// List provides a mock function with given fields: ctx, usernames
+func (_m *Strategy) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
+	ret := _m.Called(ctx, usernames)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -173,10 +173,10 @@ func (_m *Strategy) List(ctx context.Context, ids []string) ([]*entities.Account
 	var r0 []*entities.Account
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) ([]*entities.Account, error)); ok {
-		return rf(ctx, ids)
+		return rf(ctx, usernames)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, []string) []*entities.Account); ok {
-		r0 = rf(ctx, ids)
+		r0 = rf(ctx, usernames)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*entities.Account)
@@ -184,7 +184,7 @@ func (_m *Strategy) List(ctx context.Context, ids []string) ([]*entities.Account
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, []string) error); ok {
-		r1 = rf(ctx, ids)
+		r1 = rf(ctx, usernames)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -199,12 +199,12 @@ type Strategy_List_Call struct {
 
 // List is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ids []string
-func (_e *Strategy_Expecter) List(ctx interface{}, ids interface{}) *Strategy_List_Call {
-	return &Strategy_List_Call{Call: _e.mock.On("List", ctx, ids)}
+//   - usernames []string
+func (_e *Strategy_Expecter) List(ctx interface{}, usernames interface{}) *Strategy_List_Call {
+	return &Strategy_List_Call{Call: _e.mock.On("List", ctx, usernames)}
 }
 
-func (_c *Strategy_List_Call) Run(run func(ctx context.Context, ids []string)) *Strategy_List_Call {
+func (_c *Strategy_List_Call) Run(run func(ctx context.Context, usernames []string)) *Strategy_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].([]string))
 	})
@@ -519,6 +519,53 @@ func (_c *Strategy_Register_Call) Return(_a0 error) *Strategy_Register_Call {
 }
 
 func (_c *Strategy_Register_Call) RunAndReturn(run func(context.Context, *entities.Account) error) *Strategy_Register_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function with given fields: ctx, account
+func (_m *Strategy) Update(ctx context.Context, account *entities.Account) error {
+	ret := _m.Called(ctx, account)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *entities.Account) error); ok {
+		r0 = rf(ctx, account)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Strategy_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type Strategy_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - account *entities.Account
+func (_e *Strategy_Expecter) Update(ctx interface{}, account interface{}) *Strategy_Update_Call {
+	return &Strategy_Update_Call{Call: _e.mock.On("Update", ctx, account)}
+}
+
+func (_c *Strategy_Update_Call) Run(run func(ctx context.Context, account *entities.Account)) *Strategy_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*entities.Account))
+	})
+	return _c
+}
+
+func (_c *Strategy_Update_Call) Return(_a0 error) *Strategy_Update_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Strategy_Update_Call) RunAndReturn(run func(context.Context, *entities.Account) error) *Strategy_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
