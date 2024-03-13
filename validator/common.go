@@ -12,3 +12,12 @@ func PointerNotNil[T any](prop string, value *T) Fn {
 		return nil
 	}
 }
+
+func Custom(prop string, v Validator) Fn {
+	return func() error {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("%s: %w", prop, err)
+		}
+		return nil
+	}
+}
