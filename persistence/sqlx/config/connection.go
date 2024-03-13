@@ -13,7 +13,7 @@ func (conf *Connection) Validate() error {
 	return validator.Validate(
 		validator.NumberInRange("SQLX.CONFIG.CONNECTION.MAX_LIFETIME", conf.MaxLifetime, DefaultConnMaxLifetime, 3600000),
 		validator.NumberInRange("SQLX.CONFIG.CONNECTION.MAX_IDLETIME", conf.MaxIdletime, DefaultConnMaxIdletime, 3600000),
-		validator.NumberGreaterThanOrEqual("SQLX.CONFIG.CONNECTION.MAX_IDLE_COUNT", conf.MaxIdleCount, DefaultConnMaxIdleCount),
-		validator.NumberGreaterThanOrEqual("SQLX.CONFIG.CONNECTION.MAX_OPEN_COUNT", conf.MaxOpenCount, DefaultConnMaxOpenCount),
+		validator.NumberGreaterThan("SQLX.CONFIG.CONNECTION.MAX_IDLE_COUNT", conf.MaxIdleCount, 0),
+		validator.NumberGreaterThan("SQLX.CONFIG.CONNECTION.MAX_OPEN_COUNT", conf.MaxOpenCount, 0),
 	)
 }
