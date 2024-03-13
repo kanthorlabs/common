@@ -1,7 +1,7 @@
 package sqlx
 
 import (
-	"strings"
+	"net/url"
 	"time"
 
 	"github.com/kanthorlabs/common/logging"
@@ -12,6 +12,10 @@ import (
 )
 
 func Gorm(conf *config.Config, logger logging.Logger) (*gorm.DB, error) {
+	if err := conf.Validate(); err != nil {
+		return nil, err
+	}
+
 	options := &gorm.Config{
 		Logger:                 NewLogger(logger),
 		SkipDefaultTransaction: conf.SkipDefaultTransaction,
@@ -20,10 +24,14 @@ func Gorm(conf *config.Config, logger logging.Logger) (*gorm.DB, error) {
 	var orm *gorm.DB
 	var err error
 
-	if strings.HasPrefix(conf.Uri, "postgres") {
+	// conf.Uri was validated
+	u, _ := url.Parse(conf.Uri)
+
+	if u.Scheme == config.TypePostgres {
 		orm, err = gorm.Open(postgres.Open(conf.Uri), options)
 	} else {
-		orm, err = gorm.Open(sqlite.Open(conf.Uri), options)
+		// if the URI is empty, a new temporary file is created to hold the database of Sqlite3
+		orm, err = gorm.Open(sqlite.Open(u.RawPath), options)
 	}
 	if err != nil {
 		return nil, err

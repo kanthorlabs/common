@@ -2,6 +2,7 @@ package testify
 
 import (
 	"log"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -15,7 +16,10 @@ import (
 )
 
 func GormStart(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(testdata.SqliteUri), &gorm.Config{
+	u, err := url.Parse(testdata.SqliteUri)
+	require.NoError(t, err)
+
+	db, err := gorm.Open(sqlite.Open(u.RawPath), &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 			logger.Config{

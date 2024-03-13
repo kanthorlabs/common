@@ -4,7 +4,7 @@ import "github.com/kanthorlabs/common/validator"
 
 var (
 	TypePostgres = "postgres"
-	TypeSqlite   = "file"
+	TypeSqlite   = "sqlite3"
 
 	DefaultConnMaxLifetime  int64 = 300000
 	DefaultConnMaxIdletime  int64 = 60000

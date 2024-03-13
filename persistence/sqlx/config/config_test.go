@@ -12,10 +12,6 @@ func TestConfig(t *testing.T) {
 		conf := Default(testdata.PostgresUri)
 		require.NoError(st, conf.Validate())
 	})
-	t.Run("KO", func(st *testing.T) {
-		conf := Default("invalid")
-		require.Error(st, conf.Validate())
-	})
 
 	t.Run("KO - connection error", func(st *testing.T) {
 		conf := Default(testdata.PostgresUri)

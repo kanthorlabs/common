@@ -22,4 +22,10 @@ func TestGorm(t *testing.T) {
 		require.NoError(st, err)
 		require.Equal(st, "sqlite", db.Dialector.Name())
 	})
+
+	t.Run("KO", func(st *testing.T) {
+		conf := config.Default("")
+		_, err := Gorm(conf, testify.Logger())
+		require.ErrorContains(st, err, "SQLX.CONFIG")
+	})
 }
