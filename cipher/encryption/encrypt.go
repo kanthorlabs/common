@@ -15,7 +15,13 @@ import (
 func Encrypt(key, raw string) (string, error) {
 	// generate md5 checksum of the data so we can verify in decryption later
 	checksum := md5.Sum([]byte(raw))
-	data := []byte(raw + hex.EncodeToString(checksum[:]))
+	data := raw + hex.EncodeToString(checksum[:])
+
+	return encrypt(key, string(data))
+}
+
+func encrypt(key, datawithchecksum string) (string, error) {
+	data := []byte(datawithchecksum)
 
 	ciphertext := make([]byte, aes.BlockSize+len(data))
 	// fill random nonce

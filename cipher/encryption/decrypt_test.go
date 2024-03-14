@@ -8,6 +8,7 @@ import (
 	"github.com/jaswdr/faker"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEncryption_Decrypt(t *testing.T) {
@@ -21,6 +22,20 @@ func TestEncryption_Decrypt(t *testing.T) {
 		encrypted := base64.StdEncoding.EncodeToString([]byte(genkey(aes.BlockSize - 1)))
 		_, err := Decrypt(genkey(32), encrypted)
 		assert.ErrorContains(t, err, "ENCRIPTION.DECRYPT.CIPHERTEXT.SIZE")
+	})
+
+	t.Run("KO - key error", func(t *testing.T) {
+		encrypted := base64.StdEncoding.EncodeToString([]byte(genkey(aes.BlockSize)))
+		_, err := Decrypt("", encrypted)
+		assert.ErrorContains(t, err, "ENCRIPTION.DECRYPT.CIPHER_GENERATE")
+	})
+
+	t.Run("KO - checksum error", func(t *testing.T) {
+		encrypted, err := encrypt(genkey(32), "")
+		require.NoError(t, err)
+
+		_, err = Decrypt(genkey(32), encrypted)
+		assert.ErrorContains(t, err, "ENCRIPTION.DECRYPT.CHECKSUM")
 	})
 }
 
