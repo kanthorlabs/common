@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -20,7 +21,7 @@ func Encrypt(key, raw string) (string, error) {
 
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ENCRIPTION.ENCRYPT.CIPHER_GENERATE.ERROR: %v", err)
 	}
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], b)
@@ -40,7 +41,7 @@ func Decrypt(key, encrypted string) (string, error) {
 
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ENCRIPTION.DECRYPT.CIPHER_GENERATE.ERROR: %v", err)
 	}
 
 	iv := ciphertext[:aes.BlockSize]

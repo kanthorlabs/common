@@ -35,7 +35,7 @@ func TestEncryption_Encrypt(t *testing.T) {
 	t.Run("KO - empty key error", func(t *testing.T) {
 		data := faker.New().Lorem().Sentence(256)
 		_, err := Encrypt("", data)
-		assert.Error(t, err)
+		assert.ErrorContains(t, err, "ENCRIPTION.ENCRYPT.CIPHER_GENERATE")
 	})
 }
 
@@ -43,13 +43,13 @@ func TestEncryption_Decrypt(t *testing.T) {
 	t.Run("KO - encrypted base64 decode error", func(t *testing.T) {
 		encrypted := faker.New().Lorem().Sentence(256)
 		_, err := Decrypt("", encrypted)
-		assert.Error(t, err)
+		assert.ErrorContains(t, err, "ENCRIPTION.DECRYPT.DECODE")
 	})
 
 	t.Run("KO - encrypted text size error", func(t *testing.T) {
 		encrypted := base64.StdEncoding.EncodeToString([]byte(genkey(aes.BlockSize - 1)))
 		_, err := Decrypt(genkey(32), encrypted)
-		assert.Error(t, err)
+		assert.ErrorContains(t, err, "ENCRIPTION.DECRYPT.CIPHERTEXT.SIZE")
 	})
 }
 
