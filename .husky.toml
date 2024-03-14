@@ -16,7 +16,7 @@ commit-msg = [
 
 # list staged files do some pre-process and git add
 [lint-staged]
-"*.go" = [
+"!(vendor)*.go" = [
     "gofmt -l -w",
 ]
 
