@@ -49,8 +49,8 @@ func Decrypt(key, encrypted string) (string, error) {
 
 // DecryptAny decrypts the encrypted text using the keys provided
 // The usecase is you want to rotate the key and still be able to decrypt the old encrypted
-// So you will use the first key in the array to encrypt the text
-// and the rest of the keys to decrypt the older data that were signed with
+// So you you rotate the key to obtain the new key, add it into the beginning of the keys slice
+// After that the first key will be used to encrypt the data, and the rest of the keys will be used to decrypt the old data
 func DecryptAny(keys []string, encrypted string) (string, error) {
 	for _, key := range keys {
 		decrypted, err := Decrypt(key, encrypted)
