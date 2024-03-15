@@ -9,7 +9,6 @@ import (
 
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
-	"github.com/kanthorlabs/common/project"
 	"github.com/kanthorlabs/common/streaming/config"
 	"github.com/kanthorlabs/common/streaming/entities"
 	"github.com/kanthorlabs/common/utils"
@@ -103,17 +102,17 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 		return err
 	}
 
-	subject := project.Subject(topic)
-	consumer, err := subscriber.consumer(ctx, subscriber.name, subject)
+	consumer, err := subscriber.consumer(ctx, subscriber.name, topic)
 	if err != nil {
 		return err
 	}
 
+	subject := consumer.CachedInfo().Config.FilterSubject
 	subscriber.logger.Infow(
 		"initialized consumer",
 		"consumer_name", consumer.CachedInfo().Name,
 		"consumer_created_at", consumer.CachedInfo().Created.Format(time.RFC3339),
-		"subject", consumer.CachedInfo().Config.FilterSubject,
+		"subject", subject,
 	)
 
 	expires := time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout)

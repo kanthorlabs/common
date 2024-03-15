@@ -289,14 +289,14 @@ func TestNats(t *testing.T) {
 		subscriber, err := stream.Subscriber(name)
 		require.NoError(st, err)
 
-		topic := strings.ReplaceAll(uuid.NewString(), "-", "") + "." + strings.ReplaceAll(uuid.NewString(), "-", "")
+		topic := topicname()
 		count := testdata.Fake.IntBetween(conf.Subscriber.Concurrency+1, conf.Subscriber.Concurrency*2-1)
 		items := fakeitems(count)
 		datac := make(chan *testdata.User, count)
 
 		require.NoError(st, subscriber.Connect(ctx))
 		defer subscriber.Disconnect(ctx)
-		err = subscriber.Sub(ctx, topic, func(ctx context.Context, events map[string]*entities.Event) map[string]error {
+		err = subscriber.Sub(ctx, project.Subject(topic), func(ctx context.Context, events map[string]*entities.Event) map[string]error {
 			returning := map[string]error{}
 			for id, event := range events {
 				var user testdata.User

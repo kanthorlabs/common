@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	mockjetstream "github.com/kanthorlabs/common/mocks/jetstream"
-	"github.com/kanthorlabs/common/project"
 	"github.com/kanthorlabs/common/streaming/entities"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
@@ -348,7 +347,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 func consumerconf(subscriber *NatsSubscriber, topic string) jetstream.ConsumerConfig {
 	return jetstream.ConsumerConfig{
 		Name:            subscriber.name,
-		FilterSubject:   fmt.Sprintf("%s.>", project.Subject(topic)),
+		FilterSubject:   fmt.Sprintf("%s.>", topic),
 		MaxDeliver:      subscriber.conf.Subscriber.MaxRetry + 1,
 		AckWait:         time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout),
 		MaxRequestBatch: subscriber.conf.Subscriber.Concurrency,
