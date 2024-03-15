@@ -168,6 +168,11 @@ func (streaming *nats) Disconnect(ctx context.Context) error {
 		streaming.publishers = nil
 	}
 	if len(streaming.subscribers) > 0 {
+		for _, subscriber := range streaming.subscribers {
+			if err := subscriber.Disconnect(ctx); err != nil {
+				retruning = errors.Join(retruning, err)
+			}
+		}
 		streaming.subscribers = nil
 	}
 	if err := streaming.conn.Drain(); err != nil {
