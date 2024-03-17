@@ -8,7 +8,6 @@ import (
 
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
-	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx/config"
 	"gorm.io/gorm"
 )
@@ -18,14 +17,14 @@ var (
 	LivenessQuery  = "SELECT 1 as liveness"
 )
 
-func New(conf *config.Config, logger logging.Logger) (persistence.Persistence, error) {
+func New(conf *config.Config, logger logging.Logger) (*SqlX, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
-	return &sql{conf: conf, logger: logger}, nil
+	return &SqlX{conf: conf, logger: logger}, nil
 }
 
-type sql struct {
+type SqlX struct {
 	conf   *config.Config
 	logger logging.Logger
 
@@ -35,7 +34,7 @@ type sql struct {
 	status int
 }
 
-func (instance *sql) Connect(ctx context.Context) error {
+func (instance *SqlX) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -54,7 +53,7 @@ func (instance *sql) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *sql) Readiness() error {
+func (instance *SqlX) Readiness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -71,7 +70,7 @@ func (instance *sql) Readiness() error {
 	return nil
 }
 
-func (instance *sql) Liveness() error {
+func (instance *SqlX) Liveness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -88,7 +87,7 @@ func (instance *sql) Liveness() error {
 	return nil
 }
 
-func (instance *sql) Disconnect(ctx context.Context) error {
+func (instance *SqlX) Disconnect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -111,6 +110,6 @@ func (instance *sql) Disconnect(ctx context.Context) error {
 	return returning
 }
 
-func (instance *sql) Client() any {
+func (instance *SqlX) Client() any {
 	return instance.client
 }

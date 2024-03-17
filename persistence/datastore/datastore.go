@@ -17,9 +17,23 @@ func New(conf *config.Config, logger logging.Logger) (Datastore, error) {
 		return nil, err
 	}
 
-	return sqlx.New(&conf.Sqlx, logger.With("database", "sqlx"))
+	sql, err := sqlx.New(&conf.Sqlx, logger.With("datastore", conf.Engine))
+	if err != nil {
+		return nil, err
+	}
+	return &sqlds{sql, conf.Engine}, nil
 }
 
 type Datastore interface {
 	persistence.Persistence
+	Engine() string
+}
+
+type sqlds struct {
+	*sqlx.SqlX
+	engine string
+}
+
+func (instance sqlds) Engine() string {
+	return instance.engine
 }
