@@ -200,6 +200,7 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic stri
 	return subscriber.js.CreateOrUpdateConsumer(ctx, subscriber.conf.Name, jetstream.ConsumerConfig{
 		// common config
 		Name:          name,
+		Durable:       name,
 		FilterSubject: fmt.Sprintf("%s.>", topic),
 
 		// advance config

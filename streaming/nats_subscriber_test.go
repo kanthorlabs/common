@@ -347,6 +347,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 func consumerconf(subscriber *NatsSubscriber, topic string) jetstream.ConsumerConfig {
 	return jetstream.ConsumerConfig{
 		Name:            subscriber.name,
+		Durable:         subscriber.name,
 		FilterSubject:   fmt.Sprintf("%s.>", topic),
 		MaxDeliver:      subscriber.conf.Subscriber.MaxRetry + 1,
 		AckWait:         time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout),
