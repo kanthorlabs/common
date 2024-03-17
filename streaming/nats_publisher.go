@@ -2,7 +2,6 @@ package streaming
 
 import (
 	"context"
-	"errors"
 
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/safe"
@@ -35,7 +34,7 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*enti
 		event := events[id]
 
 		if err := event.Validate(); err != nil {
-			publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_VALIDATION.ERROR", "event", event.String(), "error", err.Error())
+			publisher.logger.Errorw(ErrPubEventValidation.Error(), "event", event.String(), "error", err.Error())
 			returning.Set(rid, err)
 			continue
 		}
@@ -48,15 +47,14 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*enti
 			// we will let jetstream handle the context timeout by themself
 			ack, err := publisher.js.PublishMsg(subctx, msg)
 			if err != nil {
-				publisher.logger.Errorw("STREAMING.PUBLISHER.EVENT_PUBLISH.ERROR", "event", event.String())
+				publisher.logger.Errorw(ErrPubEventPublish.Error(), "event", event.String(), "error", err.Error())
 				returning.Set(rid, err)
 				return nil
 			}
 
 			if ack.Duplicate {
-				duperr := errors.New("STREAMING.PUBLISHER.EVENT_DUPLICATED.ERROR")
-				publisher.logger.Errorw(duperr.Error(), "event", event.String())
-				returning.Set(rid, duperr)
+				publisher.logger.Errorw(ErrPubEventDuplicated.Error(), "event", event.String())
+				returning.Set(rid, ErrPubEventDuplicated)
 				return nil
 			}
 
