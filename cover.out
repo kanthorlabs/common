@@ -9,7 +9,7 @@ github.com/kanthorlabs/common/cipher/encryption/decrypt.go:24.16,26.3 1 1
 github.com/kanthorlabs/common/cipher/encryption/decrypt.go:28.2,35.26 5 1
 github.com/kanthorlabs/common/cipher/encryption/decrypt.go:35.26,37.3 1 1
 github.com/kanthorlabs/common/cipher/encryption/decrypt.go:40.2,43.56 4 1
-github.com/kanthorlabs/common/cipher/encryption/decrypt.go:43.56,45.3 1 0
+github.com/kanthorlabs/common/cipher/encryption/decrypt.go:43.56,45.3 1 1
 github.com/kanthorlabs/common/cipher/encryption/decrypt.go:47.2,47.26 1 1
 github.com/kanthorlabs/common/cipher/encryption/decrypt.go:54.66,55.27 1 1
 github.com/kanthorlabs/common/cipher/encryption/decrypt.go:55.27,57.17 2 1
@@ -1031,11 +1031,11 @@ github.com/kanthorlabs/common/safe/metadata.go:137.3,137.19 1 1
 github.com/kanthorlabs/common/safe/slice.go:10.41,15.2 3 1
 github.com/kanthorlabs/common/safe/slice.go:17.33,19.2 1 1
 github.com/kanthorlabs/common/safe/slice.go:21.32,23.2 1 1
-github.com/kanthorlabs/common/sender/config/config.go:14.38,19.16 2 1
-github.com/kanthorlabs/common/sender/config/config.go:19.16,21.3 1 1
-github.com/kanthorlabs/common/sender/config/config.go:23.2,23.46 1 1
-github.com/kanthorlabs/common/sender/config/config.go:23.46,25.3 1 1
-github.com/kanthorlabs/common/sender/config/config.go:27.2,27.12 1 1
+github.com/kanthorlabs/common/sender/config/config.go:13.38,17.16 2 1
+github.com/kanthorlabs/common/sender/config/config.go:17.16,19.3 1 1
+github.com/kanthorlabs/common/sender/config/config.go:21.2,21.46 1 1
+github.com/kanthorlabs/common/sender/config/config.go:21.46,23.3 1 1
+github.com/kanthorlabs/common/sender/config/config.go:25.2,25.12 1 1
 github.com/kanthorlabs/common/sender/config/retry.go:10.37,15.2 1 1
 github.com/kanthorlabs/common/sender/entities/request.go:16.38,21.2 1 1
 github.com/kanthorlabs/common/sender/http.go:14.69,15.40 1 1
@@ -1056,8 +1056,8 @@ github.com/kanthorlabs/common/sender/http.go:52.33,54.4 1 1
 github.com/kanthorlabs/common/sender/http.go:55.3,55.35 1 1
 github.com/kanthorlabs/common/sender/http.go:55.35,57.4 1 1
 github.com/kanthorlabs/common/sender/http.go:60.3,60.17 1 1
-github.com/kanthorlabs/common/sender/http.go:60.17,66.4 1 1
-github.com/kanthorlabs/common/sender/http.go:68.3,75.9 1 1
+github.com/kanthorlabs/common/sender/http.go:60.17,67.4 1 1
+github.com/kanthorlabs/common/sender/http.go:69.3,76.9 1 1
 github.com/kanthorlabs/common/sender/sender.go:20.68,22.16 2 1
 github.com/kanthorlabs/common/sender/sender.go:22.16,24.3 1 1
 github.com/kanthorlabs/common/sender/sender.go:26.2,26.84 1 1

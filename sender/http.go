@@ -62,6 +62,7 @@ func Http(conf *config.Config, logger logging.Logger) (Send, error) {
 				Status:  -1,
 				Headers: make(http.Header),
 				Uri:     r.Uri,
+				Body:    []byte(err.Error()),
 			}, nil
 		}
 

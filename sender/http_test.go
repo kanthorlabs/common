@@ -88,6 +88,6 @@ func TestHttp(t *testing.T) {
 
 		require.Equal(st, -1, res.Status)
 		require.Empty(st, res.Headers)
-		require.Empty(st, res.Body)
+		require.NotEmpty(st, res.Body)
 	})
 }

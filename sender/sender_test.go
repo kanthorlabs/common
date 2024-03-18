@@ -20,7 +20,6 @@ import (
 )
 
 var testconf = &config.Config{
-	Addr:    ":8080",
 	Timeout: 5000,
 	Headers: map[string]string{"client": "go-test"},
 	Retry: config.Retry{
