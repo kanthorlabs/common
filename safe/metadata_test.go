@@ -175,3 +175,19 @@ func TestMetadata_MetadataMapstructureHook(t *testing.T) {
 		require.Equal(st, data, metdata)
 	})
 }
+
+func TestMetadata_ToHttpHeader(t *testing.T) {
+	metadata := Metadata{}
+	metadata.Set("string", uuid.NewString())
+	metadata.Set("bool", true)
+	metadata.Set("int", testdata.Fake.Int())
+	metadata.Set("float", testdata.Fake.Float32(2, 1, 100))
+	metadata.Set("map", map[string]any{"ignore": true})
+
+	headers := metadata.ToHttpHeader()
+	require.Contains(t, headers, "String")
+	require.Contains(t, headers, "Bool")
+	require.Contains(t, headers, "Int")
+	require.Contains(t, headers, "Float")
+	require.NotContains(t, headers, "Map")
+}
