@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/mitchellh/mapstructure"
@@ -104,6 +105,12 @@ func (meta *Metadata) MarshalYAML() (interface{}, error) {
 
 func (meta *Metadata) UnmarshalYAML(value *yaml.Node) error {
 	return value.Decode(&meta.kv)
+}
+
+func (meta *Metadata) FromHttpHeader(headers http.Header) {
+	for k, v := range headers {
+		meta.Set(strings.ToLower(k), v[0])
+	}
 }
 
 func (meta *Metadata) ToHttpHeader() http.Header {

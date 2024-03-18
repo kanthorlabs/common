@@ -3,6 +3,7 @@ package safe
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"reflect"
 	"testing"
 
@@ -174,6 +175,21 @@ func TestMetadata_MetadataMapstructureHook(t *testing.T) {
 
 		require.Equal(st, data, metdata)
 	})
+}
+
+func TestMetadata_FromHttpHeader(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("String", uuid.NewString())
+	headers.Set("Bool", "true")
+	headers.Set("Int", fmt.Sprintf("%d", testdata.Fake.Int()))
+	headers.Set("Float", fmt.Sprintf("%f", testdata.Fake.Float32(2, 1, 100)))
+
+	metadata := Metadata{}
+	metadata.FromHttpHeader(headers)
+	require.Contains(t, metadata.kv, "string")
+	require.Contains(t, metadata.kv, "bool")
+	require.Contains(t, metadata.kv, "int")
+	require.Contains(t, metadata.kv, "float")
 }
 
 func TestMetadata_ToHttpHeader(t *testing.T) {
