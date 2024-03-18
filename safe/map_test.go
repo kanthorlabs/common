@@ -31,6 +31,9 @@ func TestMap(t *testing.T) {
 	require.Equal(t, counter, len(m.Data()))
 	require.Equal(t, counter, len(m.Keys()))
 
+	m.Merge(nil)
+	require.Equal(t, counter, m.Count())
+
 	m.Merge(map[string]error{"new": testdata.ErrGeneric})
 	require.Equal(t, counter+1, m.Count())
 }

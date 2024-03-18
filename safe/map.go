@@ -61,7 +61,9 @@ func (sm *Map[T]) Keys() []string {
 }
 
 func (sm *Map[T]) Merge(values map[string]T) {
-	for k, v := range values {
-		sm.Set(k, v)
+	if len(values) > 0 {
+		for k, v := range values {
+			sm.Set(k, v)
+		}
 	}
 }
