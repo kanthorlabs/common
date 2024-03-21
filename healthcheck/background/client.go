@@ -33,7 +33,7 @@ func (client *client) Readiness() (err error) {
 			return
 		}
 
-		_, err = client.read("readiness")
+		_, err = client.read(Readiness)
 		if err != nil {
 			continue
 		}
@@ -57,7 +57,7 @@ func (client *client) Liveness() (err error) {
 			return
 		}
 
-		diff, err = client.read("liveness")
+		diff, err = client.read(Liveness)
 		if err != nil {
 			continue
 		}
