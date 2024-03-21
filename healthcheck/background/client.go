@@ -22,57 +22,32 @@ type client struct {
 	conf *config.Config
 }
 
-func (client *client) Readiness() (err error) {
-	ticker := time.NewTicker(time.Millisecond * time.Duration(client.conf.Readiness.Timeout))
-	defer ticker.Stop()
-
-	var count int
-	for range ticker.C {
-		count++
-		if count >= client.conf.Readiness.MaxTry {
-			return
-		}
-
-		_, err = client.read(Readiness)
-		if err != nil {
-			continue
-		}
-
-		err = nil
-		return
+func (client *client) Readiness() error {
+	diff, err := client.read(Readiness)
+	if err != nil {
+		return err
 	}
 
-	return
+	delta := int64(client.conf.Liveness.Interval)
+	if diff > delta {
+		return fmt.Errorf("HEALTHCHECK.BACKGROUND.CLIENT.READINESS.TIMEOUT.ERROR: diff(%d) > delta(:%d)", diff, delta)
+	}
+
+	return nil
 }
 
-func (client *client) Liveness() (err error) {
-	ticker := time.NewTicker(time.Millisecond * time.Duration(client.conf.Liveness.Timeout))
-	defer ticker.Stop()
-
-	var diff, delta int64
-	var count int
-	for range ticker.C {
-		count++
-		if count >= client.conf.Liveness.MaxTry {
-			return
-		}
-
-		diff, err = client.read(Liveness)
-		if err != nil {
-			continue
-		}
-
-		delta = int64(client.conf.Liveness.Timeout * client.conf.Liveness.MaxTry)
-		if diff > delta {
-			err = fmt.Errorf("HEALTHCHECK.BACKGROUND.CLIENT.LIVENESS.TIMEOUT.ERROR: diff(%d) > delta(:%d)", diff, delta)
-			continue
-		}
-
-		err = nil
-		return
+func (client *client) Liveness() error {
+	diff, err := client.read(Liveness)
+	if err != nil {
+		return err
 	}
 
-	return
+	delta := int64(client.conf.Liveness.Interval)
+	if diff > delta {
+		return fmt.Errorf("HEALTHCHECK.BACKGROUND.CLIENT.LIVENESS.TIMEOUT.ERROR: diff(%d) > delta(:%d)", diff, delta)
+	}
+
+	return nil
 }
 
 func (client *client) read(name string) (int64, error) {

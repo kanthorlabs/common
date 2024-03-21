@@ -14,24 +14,21 @@ type Config struct {
 }
 
 type Check struct {
-	Timeout int `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	MaxTry  int `json:"max_try" yaml:"max_try" mapstructure:"max_try"`
+	Interval int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 }
 
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.StringRequired("HEALTHCHECK.CONFIG.DEST", conf.Dest),
-		validator.NumberGreaterThanOrEqual("HEALTHCHECK.CONFIG.READINESS.TIMEOUT", conf.Readiness.Timeout, 0),
-		validator.NumberGreaterThanOrEqual("HEALTHCHECK.CONFIG.READINESS.MAX_TRY", conf.Readiness.MaxTry, 0),
-		validator.NumberGreaterThanOrEqual("HEALTHCHECK.CONFIG.LIVENESS.TIMEOUT", conf.Liveness.Timeout, 0),
-		validator.NumberGreaterThanOrEqual("HEALTHCHECK.CONFIG.LIVENESS.MAX_TRY", conf.Liveness.MaxTry, 0),
+		validator.NumberGreaterThanOrEqual("HEALTHCHECK.CONFIG.READINESS.INTERVAL", conf.Readiness.Interval, 1000),
+		validator.NumberGreaterThanOrEqual("HEALTHCHECK.CONFIG.LIVENESS.INTERVAL", conf.Liveness.Interval, 1000),
 	)
 }
 
-func Default(name string, t int) *Config {
+func Default(name string, t int64) *Config {
 	return &Config{
 		Dest:      path.Join(os.TempDir(), name),
-		Readiness: Check{Timeout: t, MaxTry: 3},
-		Liveness:  Check{Timeout: t, MaxTry: 3},
+		Readiness: Check{Interval: t},
+		Liveness:  Check{Interval: t},
 	}
 }

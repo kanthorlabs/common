@@ -51,7 +51,7 @@ func (server *server) Readiness(check func() error) error {
 }
 
 func (server *server) Liveness(check func() error) error {
-	ticker := time.NewTicker(time.Millisecond * time.Duration(server.conf.Liveness.Timeout))
+	ticker := time.NewTicker(time.Millisecond * time.Duration(server.conf.Liveness.Interval))
 	defer ticker.Stop()
 
 	for {

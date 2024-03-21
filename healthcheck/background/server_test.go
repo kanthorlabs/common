@@ -12,7 +12,7 @@ import (
 func TestServer_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		name := testdata.Fake.UUID().V4()
-		conf := config.Default(name, 100)
+		conf := config.Default(name, 1000)
 		_, err := NewServer(conf)
 		require.NoError(t, err)
 	})
@@ -25,8 +25,8 @@ func TestServer_New(t *testing.T) {
 func TestServer_Readiness(t *testing.T) {
 	server, _ := NewServer(&config.Config{
 		Dest:      "/",
-		Readiness: config.Check{Timeout: 100, MaxTry: 3},
-		Liveness:  config.Check{Timeout: 100, MaxTry: 3},
+		Readiness: config.Check{Interval: 1000},
+		Liveness:  config.Check{Interval: 1000},
 	})
 	_ = server.Connect(context.Background())
 	defer func() {
@@ -47,8 +47,8 @@ func TestServer_Readiness(t *testing.T) {
 func TestServer_Liveness(t *testing.T) {
 	server, _ := NewServer(&config.Config{
 		Dest:      "/",
-		Readiness: config.Check{Timeout: 100, MaxTry: 3},
-		Liveness:  config.Check{Timeout: 100, MaxTry: 3},
+		Readiness: config.Check{Interval: 1000},
+		Liveness:  config.Check{Interval: 1000},
 	})
 	_ = server.Connect(context.Background())
 	defer func() {
