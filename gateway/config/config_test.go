@@ -17,6 +17,7 @@ func TestConfig(t *testing.T) {
 				MaxAge: 86400000,
 			}}
 		require.NoError(st, conf.Validate())
+		require.False(st, conf.Idempotency.Disabled)
 	})
 
 	t.Run("KO", func(st *testing.T) {

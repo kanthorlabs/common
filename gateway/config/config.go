@@ -5,9 +5,10 @@ import (
 )
 
 type Config struct {
-	Addr    string `json:"addr" yaml:"addr" mapstructure:"addr"`
-	Timeout int64  `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Cors    Cors   `json:"cors" yaml:"cors" mapstructure:"cors"`
+	Addr        string      `json:"addr" yaml:"addr" mapstructure:"addr"`
+	Timeout     int64       `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Cors        Cors        `json:"cors" yaml:"cors" mapstructure:"cors"`
+	Idempotency Idempotency `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
 }
 
 func (conf *Config) Validate() error {
@@ -39,4 +40,8 @@ func (conf *Cors) Validate() error {
 	return validator.Validate(
 		validator.NumberInRange("GATEWAY.CONFIG.CORS.MAX_AGE", conf.MaxAge, 1000, 86400000),
 	)
+}
+
+type Idempotency struct {
+	Disabled bool `json:"disabled" yaml:"disabled" mapstructure:"disabled"`
 }
