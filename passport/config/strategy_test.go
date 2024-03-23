@@ -12,9 +12,9 @@ import (
 func TestStrategy(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		conf := &Strategy{
-			Engine: EngineDurability,
+			Engine: EngineInternal,
 			Name:   uuid.NewString(),
-			Durability: Durability{
+			Internal: Internal{
 				Sqlx: sqlxconfig.Config{
 					Uri: testdata.SqliteUri,
 					Connection: sqlxconfig.Connection{
@@ -39,8 +39,8 @@ func TestStrategy(t *testing.T) {
 		require.ErrorContains(st, conf.Validate(), "PASSPORT.STRATEGY.ASK.CONFIG")
 	})
 
-	t.Run("KO - Durability error", func(st *testing.T) {
-		conf := &Strategy{Engine: EngineDurability, Name: uuid.NewString()}
+	t.Run("KO - Internal error", func(st *testing.T) {
+		conf := &Strategy{Engine: EngineInternal, Name: uuid.NewString()}
 		require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG.")
 	})
 }

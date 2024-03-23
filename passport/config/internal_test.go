@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDurability(t *testing.T) {
+func TestInternal(t *testing.T) {
 	t.Run("KO - sqlx error", func(st *testing.T) {
-		conf := &Durability{}
+		conf := &Internal{}
 		require.ErrorContains(st, conf.Validate(), "SQLX.CONFIG")
 	})
 }

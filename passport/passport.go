@@ -40,9 +40,9 @@ func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 			instances[name] = strategy
 		}
 
-		if engine == config.EngineDurability {
-			strategy, err := strategies.NewDurability(
-				&conf.Strategies[i].Durability,
+		if engine == config.EngineInternal {
+			strategy, err := strategies.NewInternal(
+				&conf.Strategies[i].Internal,
 				logger.With("strategy_engine", engine, "strategy_name", name),
 			)
 			if err != nil {

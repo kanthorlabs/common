@@ -51,10 +51,10 @@ func TestPassport_New(t *testing.T) {
 		require.ErrorContains(st, err, "PASSPORT.STRATEGY.ASK.DUPLICATED_ACCOUNT")
 	})
 
-	t.Run("KO - Durability configuration error", func(st *testing.T) {
+	t.Run("KO - Internal configuration error", func(st *testing.T) {
 		conf := &config.Config{Strategies: make([]config.Strategy, 1)}
-		conf.Strategies[0] = durability()
-		conf.Strategies[0].Durability = config.Durability{}
+		conf.Strategies[0] = internal()
+		conf.Strategies[0].Internal = config.Internal{}
 
 		_, err := New(conf, testify.Logger())
 		require.ErrorContains(st, err, "SQLX.CONFIG.")
@@ -164,7 +164,7 @@ func TestPassport_Strategy(t *testing.T) {
 
 func instance(t *testing.T) (Passport, *config.Config) {
 	conf := &config.Config{Strategies: make([]config.Strategy, 0)}
-	conf.Strategies = append(conf.Strategies, durability())
+	conf.Strategies = append(conf.Strategies, internal())
 	conf.Strategies = append(conf.Strategies, ask())
 
 	pp, err := New(conf, testify.Logger())
@@ -214,11 +214,11 @@ func askname(conf *config.Config) string {
 	panic("no ask strategy was configured")
 }
 
-func durability() config.Strategy {
+func internal() config.Strategy {
 	return config.Strategy{
-		Engine: config.EngineDurability,
+		Engine: config.EngineInternal,
 		Name:   uuid.NewString(),
-		Durability: config.Durability{
+		Internal: config.Internal{
 			Sqlx: sqlxconfig.Config{
 				Uri: testdata.SqliteUri,
 				Connection: sqlxconfig.Connection{

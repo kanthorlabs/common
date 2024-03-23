@@ -5,22 +5,22 @@ import (
 )
 
 var (
-	EngineAsk        = "ask"
-	EngineDurability = "durability"
+	EngineAsk      = "ask"
+	EngineInternal = "internal"
 )
 
 type Strategy struct {
 	Name   string `json:"name" yaml:"name" mapstructure:"name"`
 	Engine string `json:"engine" yaml:"engine" mapstructure:"engine"`
 
-	Ask        Ask        `json:"ask" yaml:"ask" mapstructure:"ask"`
-	Durability Durability `json:"durability" yaml:"durability" mapstructure:"durability"`
+	Ask      Ask      `json:"ask" yaml:"ask" mapstructure:"ask"`
+	Internal Internal `json:"internal" yaml:"internal" mapstructure:"internal"`
 }
 
 func (conf *Strategy) Validate() error {
 	err := validator.Validate(
 		validator.StringRequired("PASSPORT.STRATEGY.CONFIG.NAME", conf.Name),
-		validator.StringOneOf("PASSPORT.STRATEGY.CONFIG.ENGINE", conf.Engine, []string{EngineAsk, EngineDurability}),
+		validator.StringOneOf("PASSPORT.STRATEGY.CONFIG.ENGINE", conf.Engine, []string{EngineAsk, EngineInternal}),
 	)
 	if err != nil {
 		return err
@@ -32,8 +32,8 @@ func (conf *Strategy) Validate() error {
 		}
 	}
 
-	if conf.Engine == EngineDurability {
-		if err := conf.Durability.Validate(); err != nil {
+	if conf.Engine == EngineInternal {
+		if err := conf.Internal.Validate(); err != nil {
 			return err
 		}
 	}

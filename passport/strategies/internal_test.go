@@ -18,27 +18,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDurability_New(t *testing.T) {
+func TestInternal_New(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		_, err := NewDurability(durabilityconf, testify.Logger())
+		_, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 	})
 
 	t.Run("KO - configuration error", func(st *testing.T) {
-		_, err := NewDurability(&config.Durability{}, testify.Logger())
+		_, err := NewInternal(&config.Internal{}, testify.Logger())
 		require.ErrorContains(st, err, "SQLX.CONFIG")
 	})
 
 	t.Run("KO - sqlx error", func(st *testing.T) {
-		conf := &config.Durability{Sqlx: sqlxconfig.Config{}}
-		_, err := NewDurability(conf, testify.Logger())
+		conf := &config.Internal{Sqlx: sqlxconfig.Config{}}
+		_, err := NewInternal(conf, testify.Logger())
 		require.ErrorContains(st, err, "SQLX.CONFIG")
 	})
 }
 
-func TestDurability_ParseCredentials(t *testing.T) {
+func TestInternal_ParseCredentials(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		_, err = c.ParseCredentials(context.Background(), "basic "+testdata.Fake.Internet().Password())
@@ -46,7 +46,7 @@ func TestDurability_ParseCredentials(t *testing.T) {
 	})
 
 	t.Run("KO - unknown scheme error", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		_, err = c.ParseCredentials(context.Background(), "")
@@ -54,16 +54,16 @@ func TestDurability_ParseCredentials(t *testing.T) {
 	})
 }
 
-func TestDurability_Connect(t *testing.T) {
+func TestInternal_Connect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -71,9 +71,9 @@ func TestDurability_Connect(t *testing.T) {
 	})
 }
 
-func TestDurability_Readiness(t *testing.T) {
+func TestInternal_Readiness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -81,7 +81,7 @@ func TestDurability_Readiness(t *testing.T) {
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -90,16 +90,16 @@ func TestDurability_Readiness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
 	})
 }
 
-func TestDurability_Liveness(t *testing.T) {
+func TestInternal_Liveness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -107,7 +107,7 @@ func TestDurability_Liveness(t *testing.T) {
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -116,16 +116,16 @@ func TestDurability_Liveness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
 	})
 }
 
-func TestDurability_Disconnect(t *testing.T) {
+func TestInternal_Disconnect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.NoError(st, c.Connect(context.Background()))
@@ -133,23 +133,23 @@ func TestDurability_Disconnect(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewDurability(durabilityconf, testify.Logger())
+		c, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
 		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
 	})
 }
 
-func TestDurability_Login(t *testing.T) {
+func TestInternal_Login(t *testing.T) {
 	accounts, passwords := setup(t)
 
-	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	strategy, err := NewInternal(internalconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -192,16 +192,16 @@ func TestDurability_Login(t *testing.T) {
 	})
 }
 
-func TestDurability_Logout(t *testing.T) {
+func TestInternal_Logout(t *testing.T) {
 	accounts, _ := setup(t)
 
-	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	strategy, err := NewInternal(internalconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -216,16 +216,16 @@ func TestDurability_Logout(t *testing.T) {
 	})
 }
 
-func TestDurability_Verify(t *testing.T) {
+func TestInternal_Verify(t *testing.T) {
 	accounts, passwords := setup(t)
 
-	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	strategy, err := NewInternal(internalconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -289,10 +289,10 @@ func TestDurability_Verify(t *testing.T) {
 	})
 }
 
-func TestDurability_Register(t *testing.T) {
+func TestInternal_Register(t *testing.T) {
 	accounts, _ := setup(t)
 
-	conf := &config.Durability{Sqlx: sqlxconfig.Config{
+	conf := &config.Internal{Sqlx: sqlxconfig.Config{
 		Uri: testdata.SqliteUri,
 		Connection: sqlxconfig.Connection{
 			MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,
@@ -301,13 +301,13 @@ func TestDurability_Register(t *testing.T) {
 			MaxOpenCount: sqlxconfig.DefaultConnMaxOpenCount,
 		},
 	}}
-	strategy, err := NewDurability(conf, testify.Logger())
+	strategy, err := NewInternal(conf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -333,16 +333,16 @@ func TestDurability_Register(t *testing.T) {
 	})
 }
 
-func TestDurability_Deactivate(t *testing.T) {
+func TestInternal_Deactivate(t *testing.T) {
 	accounts, _ := setup(t)
 
-	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	strategy, err := NewInternal(internalconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -375,16 +375,16 @@ func TestDurability_Deactivate(t *testing.T) {
 	})
 }
 
-func TestDurability_List(t *testing.T) {
+func TestInternal_List(t *testing.T) {
 	accounts, _ := setup(t)
 
-	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	strategy, err := NewInternal(internalconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -412,16 +412,16 @@ func TestDurability_List(t *testing.T) {
 	})
 }
 
-func TestDurability_Update(t *testing.T) {
+func TestInternal_Update(t *testing.T) {
 	accounts, _ := setup(t)
 
-	strategy, err := NewDurability(durabilityconf, testify.Logger())
+	strategy, err := NewInternal(internalconf, testify.Logger())
 	require.NoError(t, err)
 
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	orm := strategy.(*durability).orm
+	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
@@ -460,7 +460,7 @@ func TestDurability_Update(t *testing.T) {
 	})
 }
 
-var durabilityconf = &config.Durability{Sqlx: sqlxconfig.Config{
+var internalconf = &config.Internal{Sqlx: sqlxconfig.Config{
 	Uri: testdata.SqliteUri,
 	Connection: sqlxconfig.Connection{
 		MaxLifetime:  sqlxconfig.DefaultConnMaxLifetime,

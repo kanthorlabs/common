@@ -18,9 +18,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// NewDurability creates a new durability strategy instance what allows to authenticate users based on a username and password.
+// NewInternal creates a new internal strategy instance what allows to authenticate users based on a username and password.
 // The storage is based on a SQL database.
-func NewDurability(conf *config.Durability, logger logging.Logger) (Strategy, error) {
+func NewInternal(conf *config.Internal, logger logging.Logger) (Strategy, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
@@ -30,11 +30,11 @@ func NewDurability(conf *config.Durability, logger logging.Logger) (Strategy, er
 		return nil, err
 	}
 
-	return &durability{conf: conf, logger: logger, sequel: sequel}, nil
+	return &internal{conf: conf, logger: logger, sequel: sequel}, nil
 }
 
-type durability struct {
-	conf   *config.Durability
+type internal struct {
+	conf   *config.Internal
 	logger logging.Logger
 	sequel persistence.Persistence
 
@@ -43,7 +43,7 @@ type durability struct {
 	orm    *gorm.DB
 }
 
-func (instance *durability) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
+func (instance *internal) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
 	if IsBasicScheme(raw) {
 		return ParseBasicCredentials(raw)
 	}
@@ -51,7 +51,7 @@ func (instance *durability) ParseCredentials(ctx context.Context, raw string) (*
 	return nil, ErrCredentialsScheme
 }
 
-func (instance *durability) Connect(ctx context.Context) error {
+func (instance *internal) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -72,7 +72,7 @@ func (instance *durability) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *durability) Readiness() error {
+func (instance *internal) Readiness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -83,7 +83,7 @@ func (instance *durability) Readiness() error {
 	return instance.sequel.Readiness()
 }
 
-func (instance *durability) Liveness() error {
+func (instance *internal) Liveness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -94,7 +94,7 @@ func (instance *durability) Liveness() error {
 	return instance.sequel.Liveness()
 }
 
-func (instance *durability) Disconnect(ctx context.Context) error {
+func (instance *internal) Disconnect(ctx context.Context) error {
 	if instance.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -103,7 +103,7 @@ func (instance *durability) Disconnect(ctx context.Context) error {
 	return instance.sequel.Disconnect(ctx)
 }
 
-func (instance *durability) Login(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
+func (instance *internal) Login(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
 	if err := entities.ValidateCredentialsOnLogin(credentials); err != nil {
 		return nil, err
 	}
@@ -128,22 +128,22 @@ func (instance *durability) Login(ctx context.Context, credentials *entities.Cre
 	return acc.Censor(), nil
 }
 
-func (instance *durability) Logout(ctx context.Context, credentials *entities.Credentials) error {
+func (instance *internal) Logout(ctx context.Context, credentials *entities.Credentials) error {
 	return nil
 }
 
-func (instance *durability) Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
+func (instance *internal) Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
 	return instance.Login(ctx, credentials)
 }
 
-func (instance *durability) Register(ctx context.Context, acc *entities.Account) error {
+func (instance *internal) Register(ctx context.Context, acc *entities.Account) error {
 	if instance.orm.WithContext(ctx).Create(acc).Error != nil {
 		return ErrRegister
 	}
 	return nil
 }
 
-func (instance *durability) Deactivate(ctx context.Context, username string, at int64) error {
+func (instance *internal) Deactivate(ctx context.Context, username string, at int64) error {
 	return instance.orm.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		acc := &entities.Account{Username: username}
 
@@ -164,7 +164,7 @@ func (instance *durability) Deactivate(ctx context.Context, username string, at 
 	})
 }
 
-func (instance *durability) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
+func (instance *internal) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
 	err := validator.Validate(
 		validator.SliceRequired("usernames", usernames),
 		validator.Slice(usernames, func(i int, item *string) error {
@@ -193,7 +193,7 @@ func (instance *durability) List(ctx context.Context, usernames []string) ([]*en
 	return accounts, nil
 }
 
-func (instance *durability) Update(ctx context.Context, account *entities.Account) error {
+func (instance *internal) Update(ctx context.Context, account *entities.Account) error {
 	return instance.orm.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		acc := &entities.Account{Username: account.Username}
 		if acc.Metadata == nil {
