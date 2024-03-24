@@ -67,7 +67,16 @@ func TestPagingQuery_Sqlx(t *testing.T) {
 
 	records, ids := testify.GormInsert(t, db, testdata.Fake.IntBetween(10, 100))
 
-	t.Run("with ids", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		var rows []*testdata.User
+		tx := query.Sqlx(db.Model(&testdata.User{}), "id", []string{"username"}).Find(&rows)
+		require.NoError(st, tx.Error)
+		require.Equal(st, query.Limit, len(rows))
+	})
+
+	t.Run("OK - with ids", func(st *testing.T) {
 		query := DefaultPagingQuery.Clone()
 		// searching is subset of ids
 		searching := ids[:testdata.Fake.IntBetween(1, len(ids)-1)]
@@ -83,7 +92,7 @@ func TestPagingQuery_Sqlx(t *testing.T) {
 		}
 	})
 
-	t.Run("with search keyword", func(st *testing.T) {
+	t.Run("OK - with search keyword", func(st *testing.T) {
 		query := DefaultPagingQuery.Clone()
 		record := records[lo.Sample(ids)]
 		query.Search = record.Username[:strings.Index(record.Username, "/")]
@@ -103,7 +112,16 @@ func TestPagingQuery_SqlxCount(t *testing.T) {
 
 	records, ids := testify.GormInsert(t, db, testdata.Fake.IntBetween(10, 100))
 
-	t.Run("with ids", func(st *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		query := DefaultPagingQuery.Clone()
+
+		var count int64
+		tx := query.SqlxCount(db.Model(&testdata.User{}), "id", []string{"username"}).Count(&count)
+		require.NoError(st, tx.Error)
+		require.Equal(st, int64(len(records)), count)
+	})
+
+	t.Run("OK - with ids", func(st *testing.T) {
 		query := DefaultPagingQuery.Clone()
 		// searching is subset of ids
 		searching := ids[:testdata.Fake.IntBetween(1, len(ids)-1)]
@@ -115,7 +133,7 @@ func TestPagingQuery_SqlxCount(t *testing.T) {
 		require.Equal(st, int64(len(query.Ids)), count)
 	})
 
-	t.Run("with search keyword", func(st *testing.T) {
+	t.Run("OK - with search keyword", func(st *testing.T) {
 		query := DefaultPagingQuery.Clone()
 		record := records[lo.Sample(ids)]
 		query.Search = record.Username[:strings.Index(record.Username, "/")]

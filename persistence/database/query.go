@@ -71,8 +71,10 @@ func (query *PagingQuery) sqlx(tx *gorm.DB, primaryCol string, searchCols []stri
 		return tx.Where(fmt.Sprintf("%s IN ?", primaryCol), query.Ids)
 	}
 
-	for i := range searchCols {
-		tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, searchCols[i]), query.Search+"%")
+	if query.Search != "" {
+		for i := range searchCols {
+			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, searchCols[i]), query.Search+"%")
+		}
 	}
 
 	return tx
