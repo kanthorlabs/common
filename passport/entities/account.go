@@ -13,8 +13,8 @@ type Account struct {
 	Name         string         `json:"name" yaml:"name" mapstructure:"name"`
 	Metadata     *safe.Metadata `json:"metadata" yaml:"metadata" mapstructure:"metadata"`
 
-	CreatedAt     int64 `json:"created_at" yaml:"created_at" mapstructure:"created_at"`
-	UpdatedAt     int64 `json:"updated_at" yaml:"updated_at" mapstructure:"updated_at"`
+	CreatedAt     int64 `json:"created_at" yaml:"created_at" mapstructure:"created_at" gorm:"autoCreateTime:milli"`
+	UpdatedAt     int64 `json:"updated_at" yaml:"updated_at" mapstructure:"updated_at" gorm:"autoUpdateTime:milli"`
 	DeactivatedAt int64 `json:"deactivated_at" yaml:"deactivated_at" mapstructure:"deactivated_at"`
 }
 

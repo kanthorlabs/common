@@ -12,8 +12,8 @@ type Privilege struct {
 	Role     string         `json:"role" yaml:"role" gorm:"primaryKey"`
 	Metadata *safe.Metadata `json:"metadata" yaml:"metadata"`
 
-	CreatedAt int64 `json:"created_at" yaml:"created_at"`
-	UpdatedAt int64 `json:"updated_at" yaml:"updated_at"`
+	CreatedAt int64 `json:"created_at" yaml:"created_at" gorm:"autoCreateTime:milli"`
+	UpdatedAt int64 `json:"updated_at" yaml:"updated_at" gorm:"autoUpdateTime:milli"`
 }
 
 func (privilege *Privilege) TableName() string {
