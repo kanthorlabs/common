@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/kanthorlabs/common/project"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,12 +28,13 @@ func Test_IsBasicScheme(t *testing.T) {
 	})
 }
 
-func Test_ParseBasicCredentials(t *testing.T) {
+func Test_ParseBasicCredentials_Standard(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		credentials, err := ParseBasicCredentials(SchemeBasic + basic)
 		require.NoError(st, err)
 		require.Equal(st, user, credentials.Username)
 		require.Equal(st, pass, credentials.Password)
+		require.Empty(st, credentials.Region)
 	})
 
 	t.Run("KO - not basic scheme error", func(st *testing.T) {
@@ -51,8 +53,24 @@ func Test_ParseBasicCredentials(t *testing.T) {
 	})
 }
 
+func Test_ParseBasicCredentials_Regional(t *testing.T) {
+	t.Run("OK", func(st *testing.T) {
+		credentials, err := ParseBasicCredentials(SchemeBasic + basicregion)
+		require.NoError(st, err)
+		require.Equal(st, user, credentials.Username)
+		require.Equal(st, pass, credentials.Password)
+		require.Equal(st, project.Region(), credentials.Region)
+	})
+
+	t.Run("KO - not matching user:pass pattern error", func(st *testing.T) {
+		_, err := ParseBasicCredentials(SchemeBasic + base64.StdEncoding.EncodeToString([]byte(project.Region()+RegionDivider+user)))
+		require.ErrorIs(st, err, ErrParseCredentials)
+	})
+}
+
 var (
-	user  = uuid.NewString()
-	pass  = uuid.NewString()
-	basic = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
+	user        = uuid.NewString()
+	pass        = uuid.NewString()
+	basic       = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
+	basicregion = base64.StdEncoding.EncodeToString([]byte(project.Region() + RegionDivider + user + ":" + pass))
 )
