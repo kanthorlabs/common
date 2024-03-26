@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/project"
+	"github.com/kanthorlabs/common/testdata"
 	"github.com/stretchr/testify/require"
 )
 
@@ -65,7 +66,7 @@ func Test_ParseBasicCredentials_Regional(t *testing.T) {
 }
 
 var (
-	user  = uuid.NewString()
+	user  = testdata.Fake.Internet().Email()
 	pass  = uuid.NewString()
 	basic = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
 )
