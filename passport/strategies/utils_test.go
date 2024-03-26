@@ -54,6 +54,7 @@ func Test_ParseBasicCredentials_Standard(t *testing.T) {
 }
 
 func Test_ParseBasicCredentials_Regional(t *testing.T) {
+	basicregion := CreateRegionalBasicCredentials(user + ":" + pass)
 	t.Run("OK", func(st *testing.T) {
 		credentials, err := ParseBasicCredentials(SchemeBasic + basicregion)
 		require.NoError(st, err)
@@ -69,8 +70,7 @@ func Test_ParseBasicCredentials_Regional(t *testing.T) {
 }
 
 var (
-	user        = uuid.NewString()
-	pass        = uuid.NewString()
-	basic       = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
-	basicregion = base64.StdEncoding.EncodeToString([]byte(project.Region() + RegionDivider + user + ":" + pass))
+	user  = uuid.NewString()
+	pass  = uuid.NewString()
+	basic = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
 )

@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/project"
 )
 
 var (
 	SchemeBasic   = "Basic "
-	RegionDivider = "."
+	RegionDivider = " "
 )
 
 func IsBasicScheme(raw string) bool {
@@ -20,6 +21,10 @@ func IsBasicScheme(raw string) bool {
 		return false
 	}
 	return true
+}
+
+func CreateRegionalBasicCredentials(raw string) string {
+	return base64.StdEncoding.EncodeToString([]byte(project.Region() + RegionDivider + raw))
 }
 
 func ParseBasicCredentials(raw string) (*entities.Credentials, error) {
