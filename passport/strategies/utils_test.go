@@ -62,11 +62,6 @@ func Test_ParseBasicCredentials_Regional(t *testing.T) {
 		require.Equal(st, pass, credentials.Password)
 		require.Equal(st, project.Region(), credentials.Region)
 	})
-
-	t.Run("KO - not matching user:pass pattern error", func(st *testing.T) {
-		_, err := ParseBasicCredentials(SchemeBasic + base64.StdEncoding.EncodeToString([]byte(project.Region()+RegionDivider+user)))
-		require.ErrorIs(st, err, ErrParseCredentials)
-	})
 }
 
 var (

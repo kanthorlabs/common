@@ -24,7 +24,7 @@ func IsBasicScheme(raw string) bool {
 }
 
 func CreateRegionalBasicCredentials(raw string) string {
-	return base64.StdEncoding.EncodeToString([]byte(project.Region() + RegionDivider + raw))
+	return base64.StdEncoding.EncodeToString([]byte(raw + RegionDivider + project.Region()))
 }
 
 func ParseBasicCredentials(raw string) (*entities.Credentials, error) {
@@ -38,26 +38,15 @@ func ParseBasicCredentials(raw string) (*entities.Credentials, error) {
 	}
 	cs := string(c)
 
-	if i := strings.Index(cs, RegionDivider); i >= 0 {
-		region := cs[:i]
-		credentials := cs[i+len(RegionDivider):]
-
-		username, password, ok := strings.Cut(credentials, ":")
-		if !ok {
-			return nil, ErrParseCredentials
-		}
-
-		return &entities.Credentials{
-			Username: username,
-			Password: password,
-			Region:   region,
-		}, nil
-	}
-
-	username, password, ok := strings.Cut(cs, ":")
+	credentials, region, _ := strings.Cut(cs, RegionDivider)
+	username, password, ok := strings.Cut(credentials, ":")
 	if !ok {
 		return nil, ErrParseCredentials
 	}
 
-	return &entities.Credentials{Username: username, Password: password}, nil
+	return &entities.Credentials{
+		Username: username,
+		Password: password,
+		Region:   region,
+	}, nil
 }

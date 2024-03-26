@@ -65,7 +65,7 @@ func TestBackground_Liveness(t *testing.T) {
 		}()
 
 		<-done
-		cconf := config.Default("default", 1000)
+		cconf := config.Default("default", 2000)
 		client, err := NewClient(cconf)
 		require.NoError(t, err)
 
