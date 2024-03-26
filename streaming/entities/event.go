@@ -20,7 +20,7 @@ type Event struct {
 
 func (e *Event) Validate() error {
 	return validator.Validate(
-		validator.StringAlphaNumericUnderscoreDot("STREAMING.EVENT.SUBJECT", e.Subject),
+		validator.StringAlphaNumericUnderscoreHyphenDot("STREAMING.EVENT.SUBJECT", e.Subject),
 		validator.StringRequired("STREAMING.EVENT.ID", e.Id),
 		validator.SliceRequired("STREAMING.EVENT.DATA", e.Data),
 	)

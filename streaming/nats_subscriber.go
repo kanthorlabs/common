@@ -97,7 +97,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 		return ErrSubNotConnected
 	}
 
-	err := validator.StringAlphaNumericUnderscoreDot("STREAMING.SUBSCRIBER.TOPIC", topic)()
+	err := validator.StringAlphaNumericUnderscoreHyphenDot("STREAMING.SUBSCRIBER.TOPIC", topic)()
 	if err != nil {
 		return err
 	}

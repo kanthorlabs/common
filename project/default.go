@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	DefaultRegion    = "sg"
+	DefaultRegion    = "ap-southeast-1"
 	DefaultNamespace = "kanthor"
 	DefaultTier      = "default"
 )

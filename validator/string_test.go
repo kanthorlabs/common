@@ -122,12 +122,12 @@ func TestStringAlphaNumericUnderscore(t *testing.T) {
 	})
 }
 
-func TestStringAlphaNumericUnderscoreDot(t *testing.T) {
+func TestStringAlphaNumericUnderscoreHyphenDot(t *testing.T) {
 	name := strings.ReplaceAll(uuid.NewString(), "-", "")
 	t.Run("OK", func(st *testing.T) {
-		require.NoError(st, StringAlphaNumericUnderscoreDot("name", name+"_"+name+"."+name)())
+		require.NoError(st, StringAlphaNumericUnderscoreHyphenDot("name", name+"_"+name+"."+name+"-"+name)())
 	})
 	t.Run("KO", func(st *testing.T) {
-		require.ErrorContains(st, StringAlphaNumericUnderscoreDot("name", name+"_"+name+"."+name+"#"+name)(), "is not matched")
+		require.ErrorContains(st, StringAlphaNumericUnderscoreHyphenDot("name", name+"_"+name+"."+name+"#"+name)(), "is not matched")
 	})
 }

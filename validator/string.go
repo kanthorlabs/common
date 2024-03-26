@@ -120,8 +120,8 @@ func StringAlphaNumericUnderscore(prop, value string) Fn {
 	}
 }
 
-func StringAlphaNumericUnderscoreDot(prop, value string) Fn {
-	pattern := "^[0-9a-zA-z_.]+$"
+func StringAlphaNumericUnderscoreHyphenDot(prop, value string) Fn {
+	pattern := "^[0-9a-zA-z_.-]+$"
 	r := regexp.MustCompile(pattern)
 	return func() error {
 		if !r.MatchString(value) {
