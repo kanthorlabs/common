@@ -10,6 +10,7 @@ import (
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/passport/utils"
 	"github.com/kanthorlabs/common/patterns"
 	"github.com/kanthorlabs/common/validator"
 )
@@ -43,8 +44,14 @@ type ask struct {
 }
 
 func (instance *ask) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
-	if IsBasicScheme(raw) {
-		return ParseBasicCredentials(raw)
+	if utils.IsBasicScheme(raw) {
+		creds, err := utils.ParseBasicCredentials(raw)
+		if err != nil {
+			instance.logger.Error(err.Error())
+			return nil, ErrParseCredentials
+		}
+
+		return creds, nil
 	}
 
 	return nil, ErrCredentialsScheme

@@ -56,6 +56,18 @@ func TestAsk_ParseCredentials(t *testing.T) {
 		strategy, err := NewAsk(conf, testify.Logger())
 		require.NoError(st, err)
 
+		creds, err := strategy.ParseCredentials(context.Background(), "basic "+basic)
+		require.NoError(st, err)
+		require.Equal(st, user, creds.Username)
+		require.Equal(st, pass, creds.Password)
+		require.Empty(st, creds.Region)
+	})
+
+	t.Run("KO - parse error", func(st *testing.T) {
+		conf := &config.Ask{Accounts: accounts}
+		strategy, err := NewAsk(conf, testify.Logger())
+		require.NoError(st, err)
+
 		_, err = strategy.ParseCredentials(context.Background(), "basic "+testdata.Fake.Internet().Password())
 		require.ErrorIs(st, err, ErrParseCredentials)
 	})

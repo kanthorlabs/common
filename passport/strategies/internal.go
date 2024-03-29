@@ -10,6 +10,7 @@ import (
 	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/passport/utils"
 	"github.com/kanthorlabs/common/patterns"
 	"github.com/kanthorlabs/common/persistence"
 	"github.com/kanthorlabs/common/persistence/sqlx"
@@ -44,8 +45,14 @@ type internal struct {
 }
 
 func (instance *internal) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
-	if IsBasicScheme(raw) {
-		return ParseBasicCredentials(raw)
+	if utils.IsBasicScheme(raw) {
+		creds, err := utils.ParseBasicCredentials(raw)
+		if err != nil {
+			instance.logger.Error(err.Error())
+			return nil, ErrParseCredentials
+		}
+
+		return creds, nil
 	}
 
 	return nil, ErrCredentialsScheme

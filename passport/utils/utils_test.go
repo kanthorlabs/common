@@ -1,4 +1,4 @@
-package strategies
+package utils
 
 import (
 	"encoding/base64"
@@ -40,17 +40,17 @@ func Test_ParseBasicCredentials_Standard(t *testing.T) {
 
 	t.Run("KO - not basic scheme error", func(st *testing.T) {
 		_, err := ParseBasicCredentials("Bearer ")
-		require.ErrorIs(st, err, ErrParseCredentials)
+		require.ErrorContains(st, err, "PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS.SCHEME_UNKNOWN.ERROR")
 	})
 
 	t.Run("KO - base64 error", func(st *testing.T) {
 		_, err := ParseBasicCredentials(SchemeBasic + "invalid")
-		require.ErrorIs(st, err, ErrParseCredentials)
+		require.ErrorContains(st, err, "PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS.DECODE.ERROR")
 	})
 
 	t.Run("KO - not matching user:pass pattern error", func(st *testing.T) {
 		_, err := ParseBasicCredentials(SchemeBasic + base64.StdEncoding.EncodeToString([]byte(user)))
-		require.ErrorIs(st, err, ErrParseCredentials)
+		require.ErrorContains(st, err, "PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS.PARSE.ERROR")
 	})
 }
 

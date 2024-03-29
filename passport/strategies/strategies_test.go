@@ -1,6 +1,7 @@
 package strategies
 
 import (
+	"encoding/base64"
 	"testing"
 	"time"
 
@@ -32,3 +33,9 @@ func setup(t *testing.T) ([]entities.Account, []string) {
 
 	return accounts, passwords
 }
+
+var (
+	user  = testdata.Fake.Internet().Email()
+	pass  = uuid.NewString()
+	basic = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
+)

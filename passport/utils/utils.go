@@ -1,7 +1,8 @@
-package strategies
+package utils
 
 import (
 	"encoding/base64"
+	"errors"
 	"strings"
 
 	"github.com/kanthorlabs/common/passport/entities"
@@ -29,19 +30,19 @@ func CreateRegionalBasicCredentials(raw string) string {
 
 func ParseBasicCredentials(raw string) (*entities.Credentials, error) {
 	if !IsBasicScheme(raw) {
-		return nil, ErrParseCredentials
+		return nil, errors.New("PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS.SCHEME_UNKNOWN.ERROR")
 	}
 
 	c, err := base64.StdEncoding.DecodeString(raw[len(SchemeBasic):])
 	if err != nil {
-		return nil, ErrParseCredentials
+		return nil, errors.New("PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS.DECODE.ERROR")
 	}
 	cs := string(c)
 
 	credentials, region, _ := strings.Cut(cs, RegionDivider)
 	username, password, ok := strings.Cut(credentials, ":")
 	if !ok {
-		return nil, ErrParseCredentials
+		return nil, errors.New("PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS.PARSE.ERROR")
 	}
 
 	return &entities.Credentials{
