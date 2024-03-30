@@ -186,6 +186,7 @@ func (instance *internal) List(ctx context.Context, usernames []string) ([]*enti
 	var docs []entities.Account
 	err = instance.orm.WithContext(ctx).
 		Where("username IN ?", usernames).
+		Order("username DESC").
 		Find(&docs).
 		Error
 	if err != nil {
