@@ -38,3 +38,13 @@ func NewUser(watch clock.Clock) User {
 		Updated:  now.UnixMilli(),
 	}
 }
+
+type BrokenReader struct{}
+
+func (reader *BrokenReader) Read(p []byte) (n int, err error) {
+	return 0, ErrGeneric
+}
+
+func (reader *BrokenReader) Close() error {
+	return ErrGeneric
+}
