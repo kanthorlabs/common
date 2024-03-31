@@ -23,6 +23,17 @@ func TestNew(t *testing.T) {
 		require.NotNil(st, wh)
 	})
 
+	t.Run("OK - custom key namespace", func(st *testing.T) {
+		ns := testdata.Fake.RandomStringWithLength(5)
+		keys := []string{
+			idx.Build(ns, utils.RandomString(128)),
+		}
+
+		wh, err := New(keys, KeyNamespace(ns))
+		require.NoError(st, err)
+		require.NotNil(st, wh)
+	})
+
 	t.Run("KO - no keys error", func(st *testing.T) {
 		_, err := New([]string{})
 		require.ErrorContains(st, err, "must not be empty")
@@ -31,7 +42,7 @@ func TestNew(t *testing.T) {
 	t.Run("KO - too many keys error", func(st *testing.T) {
 		keys := make([]string, MaxKeys+1)
 		for i := range keys {
-			keys[i] = idx.Build(IdNsEpSec, utils.RandomString(128))
+			keys[i] = idx.Build(DefaultKeyNs, utils.RandomString(128))
 		}
 		_, err := New(keys)
 		require.ErrorContains(st, err, "is exceeded maximum capacity")
@@ -124,7 +135,7 @@ func TestVerify(t *testing.T) {
 		req.Header.Set(HeaderId, id)
 		req.Header.Set(HeaderTimestamp, ts)
 
-		key := idx.Build(IdNsEpSec, utils.RandomString(128))
+		key := idx.Build(DefaultKeyNs, utils.RandomString(128))
 		signature := signature.Sign(key, fmt.Sprintf("%s.%s.%s", id, ts, body))
 		req.Header.Set(HeaderSignature, signature)
 
@@ -193,7 +204,7 @@ func TestVerifySignature(t *testing.T) {
 	})
 
 	t.Run("KO", func(st *testing.T) {
-		key := idx.Build(IdNsEpSec, utils.RandomString(128))
+		key := idx.Build(DefaultKeyNs, utils.RandomString(128))
 		expected := signature.Sign(key, fmt.Sprintf("%s.%s.%s", id, ts, body))
 
 		err := wh.VerifySignature(id, ts, body, expected)
@@ -203,8 +214,8 @@ func TestVerifySignature(t *testing.T) {
 
 var (
 	keys = []string{
-		idx.Build(IdNsEpSec, utils.RandomString(128)),
-		idx.Build(IdNsEpSec, utils.RandomString(128)),
-		idx.Build(IdNsEpSec, utils.RandomString(128)),
+		idx.Build(DefaultKeyNs, utils.RandomString(128)),
+		idx.Build(DefaultKeyNs, utils.RandomString(128)),
+		idx.Build(DefaultKeyNs, utils.RandomString(128)),
 	}
 )

@@ -3,13 +3,25 @@ package webhook
 import "time"
 
 var (
-	IdNsEpSec                = "epsec"
+	DefaultKeyNs             = "epsec"
 	HeaderId                 = "Webhook-Id"
 	HeaderTimestamp          = "Webhook-Timestamp"
 	HeaderSignature          = "Webhook-Signature"
 	DefaultToleranceDuration = time.Minute * 5
 	MaxKeys                  = 10
 )
+
+type Options struct {
+	KeyNamespace string
+}
+
+type Option func(option *Options)
+
+func KeyNamespace(ns string) Option {
+	return func(option *Options) {
+		option.KeyNamespace = ns
+	}
+}
 
 type VerifyOptions struct {
 	TimestampToleranceIgnore   bool

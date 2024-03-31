@@ -12,12 +12,19 @@ import (
 	"github.com/kanthorlabs/common/validator"
 )
 
-func New(keys []string) (Webhook, error) {
+func New(keys []string, withOptions ...Option) (Webhook, error) {
+	options := &Options{
+		KeyNamespace: DefaultKeyNs,
+	}
+	for i := range withOptions {
+		withOptions[i](options)
+	}
+
 	err := validator.Validate(
 		validator.SliceRequired("keys", keys),
 		validator.SliceMaxLength("keys", keys, MaxKeys),
 		validator.Slice(keys, func(i int, item *string) error {
-			return validator.StringStartsWith(fmt.Sprintf("keys[%d]", i), *item, IdNsEpSec)()
+			return validator.StringStartsWith(fmt.Sprintf("keys[%d]", i), *item, options.KeyNamespace)()
 		}),
 	)
 	if err != nil {
