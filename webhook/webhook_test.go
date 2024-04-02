@@ -169,15 +169,15 @@ func TestVerifyTimestamp(t *testing.T) {
 	})
 
 	t.Run("OK - too old error", func(st *testing.T) {
-		ts := fmt.Sprintf("%d", time.Now().Add(-DefaultToleranceDuration-time.Hour).UnixMilli())
-		options := &VerifyOptions{TimestampToleranceDuration: DefaultToleranceDuration}
+		ts := fmt.Sprintf("%d", time.Now().Add(-ToleranceDurationDefault-time.Hour).UnixMilli())
+		options := &VerifyOptions{TimestampToleranceDuration: ToleranceDurationDefault}
 		err = wh.VerifyTimestamp(ts, options)
 		require.ErrorIs(st, err, ErrMessageTimestampTooOld)
 	})
 
 	t.Run("OK - too new error", func(st *testing.T) {
-		ts := fmt.Sprintf("%d", time.Now().Add(DefaultToleranceDuration+time.Hour).UnixMilli())
-		options := &VerifyOptions{TimestampToleranceDuration: DefaultToleranceDuration}
+		ts := fmt.Sprintf("%d", time.Now().Add(ToleranceDurationDefault+time.Hour).UnixMilli())
+		options := &VerifyOptions{TimestampToleranceDuration: ToleranceDurationDefault}
 		err = wh.VerifyTimestamp(ts, options)
 		require.ErrorIs(st, err, ErrMessageTimestampTooNew)
 	})

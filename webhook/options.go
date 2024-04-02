@@ -7,7 +7,8 @@ var (
 	HeaderId                 = "Webhook-Id"
 	HeaderTimestamp          = "Webhook-Timestamp"
 	HeaderSignature          = "Webhook-Signature"
-	DefaultToleranceDuration = time.Minute * 5
+	ToleranceDurationDefault = time.Minute * 5
+	ToleranceDurationMin     = time.Minute
 	MaxKeys                  = 10
 )
 
@@ -32,6 +33,9 @@ type VerifyOption func(option *VerifyOptions)
 
 func TimestampToleranceDuration(duration time.Duration) VerifyOption {
 	return func(option *VerifyOptions) {
+		if duration < ToleranceDurationMin {
+			panic(ErrTimestampToleranceDurationTooSmall)
+		}
 		option.TimestampToleranceDuration = duration
 	}
 }

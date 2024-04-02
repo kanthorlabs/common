@@ -55,7 +55,7 @@ func (wh *webhook) Sign(id, ts, body string) []string {
 
 func (wh *webhook) Verify(req *http.Request, withOptions ...VerifyOption) error {
 	options := &VerifyOptions{
-		TimestampToleranceDuration: DefaultToleranceDuration,
+		TimestampToleranceDuration: ToleranceDurationDefault,
 	}
 	for i := range withOptions {
 		withOptions[i](options)
