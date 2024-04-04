@@ -25,4 +25,5 @@ func TestOptions(t *testing.T) {
 			require.ErrorIs(t, r.(error), ErrTimestampToleranceDurationTooSmall)
 		}
 	}()
+	TimestampToleranceDuration(ToleranceDurationMin - 1)(options)
 }
