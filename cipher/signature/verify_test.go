@@ -20,12 +20,12 @@ func TestVerify(t *testing.T) {
 	})
 
 	t.Run("KO - missmatch version", func(st *testing.T) {
-		sign := "v0="
+		sign := "v0" + VersionSignatureDivider
 		require.ErrorContains(st, Verify(key, data, sign), "SIGNATURE.VERIFY.NOT_MATCH.")
 	})
 
 	t.Run("KO - missmatch signature", func(st *testing.T) {
-		sign := "v1=" + testdata.Fake.Lorem().Sentence(1)
+		sign := "v1" + VersionSignatureDivider + testdata.Fake.Lorem().Sentence(1)
 		require.ErrorContains(st, Verify(key, data, sign), "SIGNATURE.VERIFY.NOT_MATCH.")
 	})
 }

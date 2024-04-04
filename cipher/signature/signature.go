@@ -1,7 +1,7 @@
 package signature
 
-var SignaturesDivider = ","
-var VersionSignatureDivider = "="
+var SignaturesDivider = " "
+var VersionSignatureDivider = ","
 
 type Signature interface {
 	Sign(key, data string) string
