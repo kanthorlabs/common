@@ -99,7 +99,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("OK - ignore timestamp check", func(st *testing.T) {
 		id := idx.New("msg")
-		ts := fmt.Sprintf("%d", time.Now().UnixMilli())
+		ts := fmt.Sprintf("%d", time.Now().Add(-ToleranceDurationDefault*2).UnixMilli())
 
 		req := httptest.NewRequest(http.MethodPost, "/webhook/demo", io.NopCloser(strings.NewReader(body)))
 		req.Header.Set(HeaderId, id)
@@ -110,6 +110,21 @@ func TestVerify(t *testing.T) {
 		req.Header.Set(HeaderSignature, signature)
 
 		require.NoError(st, wh.Verify(req, TimestampToleranceIgnore()))
+	})
+
+	t.Run("OK - with longer timestamp check", func(st *testing.T) {
+		id := idx.New("msg")
+		ts := fmt.Sprintf("%d", time.Now().Add(-ToleranceDurationDefault*3).UnixMilli())
+
+		req := httptest.NewRequest(http.MethodPost, "/webhook/demo", io.NopCloser(strings.NewReader(body)))
+		req.Header.Set(HeaderId, id)
+		req.Header.Set(HeaderTimestamp, ts)
+
+		key := testdata.Fake.RandomStringElement(keys)
+		signature := signature.Sign(key, fmt.Sprintf("%s.%s.%s", id, ts, body))
+		req.Header.Set(HeaderSignature, signature)
+
+		require.NoError(st, wh.Verify(req, TimestampToleranceDuration(ToleranceDurationDefault*3)))
 	})
 
 	t.Run("KO - read body error", func(st *testing.T) {
