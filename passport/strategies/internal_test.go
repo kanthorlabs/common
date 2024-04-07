@@ -11,6 +11,7 @@ import (
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/passport/utils"
 	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
@@ -33,35 +34,6 @@ func TestInternal_New(t *testing.T) {
 		conf := &config.Internal{Sqlx: sqlxconfig.Config{}}
 		_, err := NewInternal(conf, testify.Logger())
 		require.ErrorContains(st, err, "SQLX.CONFIG")
-	})
-}
-
-func TestInternal_ParseCredentials(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
-		require.NoError(st, err)
-
-		creds, err := c.ParseCredentials(context.Background(), "basic "+basic)
-		require.NoError(st, err)
-		require.Equal(st, user, creds.Username)
-		require.Equal(st, pass, creds.Password)
-		require.Empty(st, creds.Region)
-	})
-
-	t.Run("KO - parse error", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
-		require.NoError(st, err)
-
-		_, err = c.ParseCredentials(context.Background(), "basic "+testdata.Fake.Internet().Password())
-		require.ErrorIs(st, err, ErrParseCredentials)
-	})
-
-	t.Run("KO - unknown scheme error", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
-		require.NoError(st, err)
-
-		_, err = c.ParseCredentials(context.Background(), "")
-		require.ErrorIs(st, err, ErrCredentialsScheme)
 	})
 }
 
@@ -151,155 +123,6 @@ func TestInternal_Disconnect(t *testing.T) {
 	})
 }
 
-func TestInternal_Login(t *testing.T) {
-	accounts, passwords := setup(t)
-
-	strategy, err := NewInternal(internalconf, testify.Logger())
-	require.NoError(t, err)
-
-	strategy.Connect(context.Background())
-	defer strategy.Disconnect(context.Background())
-
-	orm := strategy.(*internal).orm
-	require.NoError(t, orm.Create(accounts).Error)
-
-	t.Run("OK", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: passwords[i],
-		}
-		acc, err := strategy.Login(context.Background(), credentials)
-		require.NoError(st, err)
-		require.Equal(st, credentials.Username, acc.Username)
-		require.Empty(st, acc.PasswordHash)
-	})
-
-	t.Run("KO - credentials error", func(st *testing.T) {
-		_, err := strategy.Login(context.Background(), nil)
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
-
-		_, err = strategy.Login(context.Background(), &entities.Credentials{})
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
-	})
-
-	t.Run("KO - user not found", func(st *testing.T) {
-		credentials := &entities.Credentials{
-			Username: uuid.NewString(),
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err := strategy.Login(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrLogin)
-	})
-
-	t.Run("KO - password not match", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err := strategy.Login(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrLogin)
-	})
-}
-
-func TestInternal_Logout(t *testing.T) {
-	accounts, _ := setup(t)
-
-	strategy, err := NewInternal(internalconf, testify.Logger())
-	require.NoError(t, err)
-
-	strategy.Connect(context.Background())
-	defer strategy.Disconnect(context.Background())
-
-	orm := strategy.(*internal).orm
-	require.NoError(t, orm.Create(accounts).Error)
-
-	t.Run("OK", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(accounts)-1)
-		username := accounts[i].Username
-		credentials := &entities.Credentials{
-			Username: username,
-		}
-
-		err := strategy.Logout(context.Background(), credentials)
-		require.NoError(st, err)
-	})
-}
-
-func TestInternal_Verify(t *testing.T) {
-	accounts, passwords := setup(t)
-
-	strategy, err := NewInternal(internalconf, testify.Logger())
-	require.NoError(t, err)
-
-	strategy.Connect(context.Background())
-	defer strategy.Disconnect(context.Background())
-
-	orm := strategy.(*internal).orm
-	require.NoError(t, orm.Create(accounts).Error)
-
-	t.Run("OK", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: passwords[i],
-		}
-		acc, err := strategy.Verify(context.Background(), credentials)
-		require.NoError(st, err)
-		require.Equal(st, credentials.Username, acc.Username)
-		require.Empty(st, acc.PasswordHash)
-	})
-
-	t.Run("KO - credentials error", func(st *testing.T) {
-		_, err := strategy.Verify(context.Background(), nil)
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
-
-		_, err = strategy.Verify(context.Background(), &entities.Credentials{})
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
-	})
-
-	t.Run("KO - user not found", func(st *testing.T) {
-		credentials := &entities.Credentials{
-			Username: uuid.NewString(),
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err := strategy.Verify(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrLogin)
-	})
-
-	t.Run("KO - deactivated error", func(st *testing.T) {
-		// setup another batch to test deactivated account
-		acc, pass := setup(t)
-		require.NoError(st, orm.Create(acc).Error)
-
-		i := testdata.Fake.IntBetween(0, len(pass)-1)
-		credentials := &entities.Credentials{
-			Username: acc[i].Username,
-			Password: pass[i],
-		}
-		err := orm.
-			Model(&entities.Account{}).
-			Where("username = ?", credentials.Username).
-			Update("deactivated_at", time.Now().Add(-time.Hour).UnixMilli()).
-			Error
-		require.NoError(st, err)
-
-		_, err = strategy.Verify(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrAccountDeactivated)
-	})
-
-	t.Run("KO - password not match", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err := strategy.Verify(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrLogin)
-	})
-}
-
 func TestInternal_Register(t *testing.T) {
 	accounts, _ := setup(t)
 
@@ -326,7 +149,7 @@ func TestInternal_Register(t *testing.T) {
 		hash, err := password.Hash(pass)
 		require.NoError(st, err)
 
-		acc := &entities.Account{
+		acc := entities.Account{
 			Username:     uuid.NewString(),
 			PasswordHash: hash,
 			Name:         testdata.Fake.Internet().User(),
@@ -337,10 +160,134 @@ func TestInternal_Register(t *testing.T) {
 		require.NoError(st, strategy.Register(context.Background(), acc))
 	})
 
-	t.Run("KO", func(st *testing.T) {
+	t.Run("KO - already exist error", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
-		err := strategy.Register(context.Background(), &accounts[i])
+		err := strategy.Register(context.Background(), accounts[i])
 		require.ErrorIs(st, err, ErrRegister)
+	})
+}
+
+func TestInternal_Login(t *testing.T) {
+	accounts, passwords := setup(t)
+
+	strategy, err := NewInternal(internalconf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
+	orm := strategy.(*internal).orm
+	require.NoError(t, orm.Create(accounts).Error)
+
+	t.Run("KO - unimplement error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		credentials := entities.Credentials{
+			Username: accounts[i].Username,
+			Password: passwords[i],
+		}
+		_, err := strategy.Login(context.Background(), credentials)
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
+	})
+}
+
+func TestInternal_Logout(t *testing.T) {
+	accounts, _ := setup(t)
+
+	strategy, err := NewInternal(internalconf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
+	orm := strategy.(*internal).orm
+	require.NoError(t, orm.Create(accounts).Error)
+
+	t.Run("KO - unimplement error", func(st *testing.T) {
+		err := strategy.Logout(context.Background(), entities.Tokens{})
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
+	})
+}
+
+func TestInternal_Verify(t *testing.T) {
+	accounts, passwords := setup(t)
+
+	strategy, err := NewInternal(internalconf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
+	orm := strategy.(*internal).orm
+	require.NoError(t, orm.Create(accounts).Error)
+
+	t.Run("OK", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		user := accounts[i].Username
+		pass := passwords[i]
+
+		basic := utils.CreateRegionalBasicCredentials(user + ":" + pass)
+		tokens := entities.Tokens{Access: utils.SchemeBasic + basic}
+		acc, err := strategy.Verify(context.Background(), tokens)
+		require.NoError(st, err)
+		require.Equal(st, acc.Username, acc.Username)
+		require.Empty(st, acc.PasswordHash)
+	})
+
+	t.Run("KO - parse token error", func(st *testing.T) {
+		_, err = strategy.Verify(context.Background(), entities.Tokens{})
+		require.ErrorContains(st, err, "PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS")
+	})
+
+	t.Run("KO - credentials validation error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		basic := utils.CreateRegionalBasicCredentials(accounts[i].Username + ":")
+		tokens := entities.Tokens{Access: utils.SchemeBasic + basic}
+
+		_, err = strategy.Verify(context.Background(), tokens)
+		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
+	})
+
+	t.Run("KO - user not found", func(st *testing.T) {
+		basic := utils.CreateRegionalBasicCredentials(
+			uuid.NewString() + ":" + testdata.Fake.Internet().Password(),
+		)
+		tokens := entities.Tokens{Access: utils.SchemeBasic + basic}
+
+		_, err = strategy.Verify(context.Background(), tokens)
+		require.ErrorIs(st, err, ErrLogin)
+	})
+
+	t.Run("KO - not active error", func(st *testing.T) {
+		// setup another batch to test deactivated account
+		newaccounts, newpasswords := setup(t)
+		require.NoError(st, orm.Create(newaccounts).Error)
+
+		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		user := newaccounts[i].Username
+		pass := newpasswords[i]
+
+		err := orm.
+			Model(&entities.Account{}).
+			Where("username = ?", user).
+			Update("deactivated_at", time.Now().Add(-time.Hour).UnixMilli()).
+			Error
+		require.NoError(st, err)
+
+		basic := utils.CreateRegionalBasicCredentials(user + ":" + pass)
+		tokens := entities.Tokens{Access: utils.SchemeBasic + basic}
+		_, err = strategy.Verify(context.Background(), tokens)
+		require.ErrorIs(st, err, ErrAccountDeactivated)
+	})
+
+	t.Run("KO - password not match", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		user := accounts[i].Username
+		pass := passwords[i]
+
+		basic := utils.CreateRegionalBasicCredentials(user + ":" + pass + uuid.NewString())
+		tokens := entities.Tokens{Access: utils.SchemeBasic + basic}
+		_, err := strategy.Verify(context.Background(), tokens)
+		require.ErrorIs(st, err, ErrLogin)
 	})
 }
 
@@ -439,24 +386,24 @@ func TestInternal_Update(t *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
 		accounts[i].Name = testdata.Fake.Internet().User()
 
-		require.NoError(st, strategy.Update(context.Background(), &accounts[i]))
+		require.NoError(st, strategy.Update(context.Background(), accounts[i]))
 
 		accounts[i].Metadata = &safe.Metadata{}
 		accounts[i].Metadata.Set("external_id", uuid.NewString())
 
-		require.NoError(st, strategy.Update(context.Background(), &accounts[i]))
+		require.NoError(st, strategy.Update(context.Background(), accounts[i]))
 	})
 
 	t.Run("KO - user not found", func(st *testing.T) {
-		err := strategy.Update(context.Background(), &entities.Account{Username: uuid.NewString()})
+		err := strategy.Update(context.Background(), entities.Account{Username: uuid.NewString()})
 		require.ErrorIs(st, err, ErrAccountNotFound)
 	})
 
-	t.Run("KO - deactivated error", func(st *testing.T) {
+	t.Run("KO - not active error", func(st *testing.T) {
 		hash, err := password.Hash(uuid.NewString())
 		require.NoError(t, err)
 
-		account := &entities.Account{
+		account := entities.Account{
 			Username:      uuid.NewString(),
 			PasswordHash:  hash,
 			Name:          testdata.Fake.Internet().User(),

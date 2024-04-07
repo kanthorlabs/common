@@ -10,6 +10,7 @@ import (
 	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/passport/utils"
 	sqlxconfig "github.com/kanthorlabs/common/persistence/sqlx/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
@@ -138,16 +139,16 @@ func TestPassport_Strategy(t *testing.T) {
 
 		strategy, err := pp.Strategy(askname(conf))
 		require.NoError(st, err)
-		acc := askacc(conf)
+		account := askacc(conf)
 
-		pass, _ := passwords.Load(acc.Username)
-		credentials := &entities.Credentials{
-			Username: acc.Username,
-			Password: pass.(string),
+		pass, _ := passwords.Load(account.Username)
+		tokens := entities.Tokens{
+			Access: utils.SchemeBasic + utils.CreateRegionalBasicCredentials(account.Username+":"+pass.(string)),
 		}
-		account, err := strategy.Login(context.Background(), credentials)
+		acc, err := strategy.Verify(context.Background(), tokens)
 		require.NoError(st, err)
-		require.Equal(st, credentials.Username, account.Username)
+		require.Equal(st, account.Username, acc.Username)
+		require.Empty(st, acc.PasswordHash)
 	})
 
 	t.Run("KO - strategy not found", func(st *testing.T) {

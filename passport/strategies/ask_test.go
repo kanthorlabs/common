@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
+	"github.com/kanthorlabs/common/passport/utils"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -45,40 +46,6 @@ func TestAsk_New(t *testing.T) {
 		conf.Accounts = append(conf.Accounts, conf.Accounts[0])
 		_, err := NewAsk(conf, testify.Logger())
 		require.ErrorContains(st, err, "PASSPORT.STRATEGY.ASK.DUPLICATED_ACCOUNT")
-	})
-}
-
-func TestAsk_ParseCredentials(t *testing.T) {
-	accounts, _ := setup(t)
-
-	t.Run("OK", func(st *testing.T) {
-		conf := &config.Ask{Accounts: accounts}
-		strategy, err := NewAsk(conf, testify.Logger())
-		require.NoError(st, err)
-
-		creds, err := strategy.ParseCredentials(context.Background(), "basic "+basic)
-		require.NoError(st, err)
-		require.Equal(st, user, creds.Username)
-		require.Equal(st, pass, creds.Password)
-		require.Empty(st, creds.Region)
-	})
-
-	t.Run("KO - parse error", func(st *testing.T) {
-		conf := &config.Ask{Accounts: accounts}
-		strategy, err := NewAsk(conf, testify.Logger())
-		require.NoError(st, err)
-
-		_, err = strategy.ParseCredentials(context.Background(), "basic "+testdata.Fake.Internet().Password())
-		require.ErrorIs(st, err, ErrParseCredentials)
-	})
-
-	t.Run("KO - unknown scheme error", func(st *testing.T) {
-		conf := &config.Ask{Accounts: accounts}
-		strategy, err := NewAsk(conf, testify.Logger())
-		require.NoError(st, err)
-
-		_, err = strategy.ParseCredentials(context.Background(), "")
-		require.ErrorIs(st, err, ErrCredentialsScheme)
 	})
 }
 
@@ -184,7 +151,19 @@ func TestAsk_Disconnect(t *testing.T) {
 
 		require.ErrorIs(st, strategy.Disconnect(context.Background()), ErrNotConnected)
 	})
+}
 
+func TestAsk_Register(t *testing.T) {
+	accounts, _ := setup(t)
+
+	conf := &config.Ask{Accounts: accounts}
+	strategy, err := NewAsk(conf, testify.Logger())
+	require.NoError(t, err)
+
+	t.Run("KO - unimplement error", func(st *testing.T) {
+		err = strategy.Register(context.Background(), accounts[0])
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
+	})
 }
 
 func TestAsk_Login(t *testing.T) {
@@ -194,44 +173,27 @@ func TestAsk_Login(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run("OK", func(st *testing.T) {
+	t.Run("KO - unimplement error", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
+		credentials := entities.Credentials{
 			Username: accounts[i].Username,
 			Password: passwords[i],
 		}
-		acc, err := strategy.Login(context.Background(), credentials)
-		require.NoError(st, err)
-		require.Equal(st, credentials.Username, acc.Username)
-		require.Empty(st, acc.PasswordHash)
+		_, err := strategy.Login(context.Background(), credentials)
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
+}
 
-	t.Run("KO - credentials error", func(st *testing.T) {
+func TestAsk_Logout(t *testing.T) {
+	accounts, _ := setup(t)
 
-		_, err = strategy.Login(context.Background(), nil)
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
+	conf := &config.Ask{Accounts: accounts}
+	strategy, err := NewAsk(conf, testify.Logger())
+	require.NoError(t, err)
 
-		_, err = strategy.Login(context.Background(), &entities.Credentials{})
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
-	})
-
-	t.Run("KO - user not found", func(st *testing.T) {
-		credentials := &entities.Credentials{
-			Username: uuid.NewString(),
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err = strategy.Login(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrLogin)
-	})
-
-	t.Run("KO - password not match", func(st *testing.T) {
-		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err = strategy.Login(context.Background(), credentials)
-		require.ErrorIs(st, err, ErrLogin)
+	t.Run("KO - unimplement error", func(st *testing.T) {
+		err := strategy.Logout(context.Background(), entities.Tokens{})
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }
 
@@ -243,72 +205,55 @@ func TestAsk_Verify(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("OK", func(st *testing.T) {
-
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: passwords[i],
+		user := accounts[i].Username
+		pass := passwords[i]
+
+		tokens := entities.Tokens{
+			Access: utils.SchemeBasic + utils.CreateRegionalBasicCredentials(user+":"+pass),
 		}
-		acc, err := strategy.Verify(context.Background(), credentials)
+		acc, err := strategy.Verify(context.Background(), tokens)
 		require.NoError(st, err)
-		require.Equal(st, credentials.Username, acc.Username)
+		require.Equal(st, user, acc.Username)
 		require.Empty(st, acc.PasswordHash)
 	})
 
-	t.Run("KO - credentials error", func(st *testing.T) {
-		_, err = strategy.Verify(context.Background(), nil)
-		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
+	t.Run("KO - parse token error", func(st *testing.T) {
+		_, err = strategy.Verify(context.Background(), entities.Tokens{})
+		require.ErrorContains(st, err, "PASSPORT.UTILS.PARSE_BASIC_CREDENTIALS")
+	})
 
-		_, err = strategy.Verify(context.Background(), &entities.Credentials{})
+	t.Run("KO - credentials validation error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		tokens := entities.Tokens{
+			Access: utils.SchemeBasic + utils.CreateRegionalBasicCredentials(":"+passwords[i]),
+		}
+
+		_, err = strategy.Verify(context.Background(), tokens)
 		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
 	})
 
 	t.Run("KO - user not found", func(st *testing.T) {
-		credentials := &entities.Credentials{
-			Username: uuid.NewString(),
-			Password: testdata.Fake.Internet().Password(),
-		}
-		_, err = strategy.Verify(context.Background(), credentials)
+		basic := utils.CreateRegionalBasicCredentials(
+			uuid.NewString() + ":" + testdata.Fake.Internet().Password(),
+		)
+		tokens := entities.Tokens{Access: utils.SchemeBasic + basic}
+
+		_, err = strategy.Verify(context.Background(), tokens)
 		require.ErrorIs(st, err, ErrLogin)
 	})
 
 	t.Run("KO - password not match", func(st *testing.T) {
-		conf := &config.Ask{Accounts: accounts}
-		c, err := NewAsk(conf, testify.Logger())
-		require.NoError(st, err)
-
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
-		credentials := &entities.Credentials{
-			Username: accounts[i].Username,
-			Password: testdata.Fake.Internet().Password(),
+		user := accounts[i].Username
+		pass := passwords[i]
+
+		basic := utils.CreateRegionalBasicCredentials(user + ":" + pass + uuid.NewString())
+		tokens := entities.Tokens{
+			Access: utils.SchemeBasic + basic,
 		}
-		_, err = c.Verify(context.Background(), credentials)
+		_, err = strategy.Verify(context.Background(), tokens)
 		require.ErrorIs(st, err, ErrLogin)
-	})
-}
-
-func TestAsk_Logout(t *testing.T) {
-	accounts, _ := setup(t)
-
-	conf := &config.Ask{Accounts: accounts}
-	strategy, err := NewAsk(conf, testify.Logger())
-	require.NoError(t, err)
-
-	t.Run("OK", func(st *testing.T) {
-		require.NoError(st, strategy.Logout(context.Background(), &entities.Credentials{}))
-	})
-}
-
-func TestAsk_Register(t *testing.T) {
-	accounts, _ := setup(t)
-
-	conf := &config.Ask{Accounts: accounts}
-	strategy, err := NewAsk(conf, testify.Logger())
-	require.NoError(t, err)
-
-	t.Run("KO - unimplement error", func(st *testing.T) {
-		err = strategy.Register(context.Background(), &accounts[0])
-		require.ErrorContains(st, err, "PASSPORT.ASK.REGISTER.UNIMPLEMENT")
 	})
 }
 
@@ -316,12 +261,12 @@ func TestAsk_Deactivate(t *testing.T) {
 	accounts, _ := setup(t)
 
 	conf := &config.Ask{Accounts: accounts}
-	c, err := NewAsk(conf, testify.Logger())
+	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
 	t.Run("KO - unimplement error", func(st *testing.T) {
-		err = c.Deactivate(context.Background(), accounts[0].Username, time.Now().UnixMilli())
-		require.ErrorContains(st, err, "PASSPORT.ASK.DEACTIVATE.UNIMPLEMENT")
+		err = strategy.Deactivate(context.Background(), accounts[0].Username, time.Now().UnixMilli())
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }
 
@@ -351,5 +296,18 @@ func TestAsk_List(t *testing.T) {
 
 		_, err := strategy.List(context.Background(), usernames)
 		require.ErrorContains(st, err, fmt.Sprintf("usernames[%d]", len(usernames)-1))
+	})
+}
+
+func TestAsk_Update(t *testing.T) {
+	accounts, _ := setup(t)
+
+	conf := &config.Ask{Accounts: accounts}
+	strategy, err := NewAsk(conf, testify.Logger())
+	require.NoError(t, err)
+
+	t.Run("KO - unimplement error", func(st *testing.T) {
+		err := strategy.Update(context.Background(), entities.Account{})
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }

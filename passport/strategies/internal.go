@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -42,20 +43,6 @@ type internal struct {
 	mu     sync.Mutex
 	status int
 	orm    *gorm.DB
-}
-
-func (instance *internal) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
-	if utils.IsBasicScheme(raw) {
-		creds, err := utils.ParseBasicCredentials(raw)
-		if err != nil {
-			instance.logger.Error(err.Error())
-			return nil, ErrParseCredentials
-		}
-
-		return creds, nil
-	}
-
-	return nil, ErrCredentialsScheme
 }
 
 func (instance *internal) Connect(ctx context.Context) error {
@@ -110,13 +97,33 @@ func (instance *internal) Disconnect(ctx context.Context) error {
 	return instance.sequel.Disconnect(ctx)
 }
 
-func (instance *internal) Login(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
-	if err := entities.ValidateCredentialsOnLogin(credentials); err != nil {
+func (instance *internal) Register(ctx context.Context, acc entities.Account) error {
+	if instance.orm.WithContext(ctx).Create(acc).Error != nil {
+		return ErrRegister
+	}
+	return nil
+}
+
+func (instance *internal) Login(ctx context.Context, credentials entities.Credentials) (*entities.Tokens, error) {
+	return nil, errors.New("PASSPORT.ASK.LOGIN.UNIMPLEMENT.ERROR")
+}
+
+func (instance *internal) Logout(ctx context.Context, tokens entities.Tokens) error {
+	return errors.New("PASSPORT.ASK.LOGOUT.UNIMPLEMENT.ERROR")
+}
+
+func (instance *internal) Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error) {
+	credentials, err := utils.ParseBasicCredentials(tokens.Access)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := credentials.Validate(); err != nil {
 		return nil, err
 	}
 
 	var acc entities.Account
-	err := instance.orm.WithContext(ctx).
+	err = instance.orm.WithContext(ctx).
 		Where("username = ?", credentials.Username).
 		First(&acc).
 		Error
@@ -133,21 +140,6 @@ func (instance *internal) Login(ctx context.Context, credentials *entities.Crede
 	}
 
 	return acc.Censor(), nil
-}
-
-func (instance *internal) Logout(ctx context.Context, credentials *entities.Credentials) error {
-	return nil
-}
-
-func (instance *internal) Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
-	return instance.Login(ctx, credentials)
-}
-
-func (instance *internal) Register(ctx context.Context, acc *entities.Account) error {
-	if instance.orm.WithContext(ctx).Create(acc).Error != nil {
-		return ErrRegister
-	}
-	return nil
 }
 
 func (instance *internal) Deactivate(ctx context.Context, username string, at int64) error {
@@ -201,7 +193,7 @@ func (instance *internal) List(ctx context.Context, usernames []string) ([]*enti
 	return accounts, nil
 }
 
-func (instance *internal) Update(ctx context.Context, account *entities.Account) error {
+func (instance *internal) Update(ctx context.Context, account entities.Account) error {
 	return instance.orm.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		acc := &entities.Account{Username: account.Username}
 		if acc.Metadata == nil {

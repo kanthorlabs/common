@@ -18,6 +18,7 @@ import (
 	"github.com/kanthorlabs/common/mocks/passport"
 	"github.com/kanthorlabs/common/mocks/passport/strategies"
 	ppentities "github.com/kanthorlabs/common/passport/entities"
+	pputils "github.com/kanthorlabs/common/passport/utils"
 	"github.com/kanthorlabs/common/safe"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
@@ -26,12 +27,12 @@ import (
 )
 
 var (
-	user        = uuid.NewString()
-	pass        = uuid.NewString()
-	hash, _     = password.Hash(pass)
-	basic       = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
-	credentials = &ppentities.Credentials{Username: user, Password: pass}
-	account     = &ppentities.Account{
+	user    = uuid.NewString()
+	pass    = uuid.NewString()
+	hash, _ = password.Hash(pass)
+	basic   = base64.StdEncoding.EncodeToString([]byte(user + ":" + pass))
+	tokens  = ppentities.Tokens{Access: pputils.SchemeBasic + basic}
+	account = &ppentities.Account{
 		Username:     user,
 		PasswordHash: hash,
 		Metadata:     &safe.Metadata{}}
@@ -54,18 +55,14 @@ func TestAuthn(t *testing.T) {
 
 		setname := uuid.NewString()
 		req.Header.Set(HeaderAuthnStrategy, setname)
-		req.Header.Set(HeaderAuthnCredentials, "basic "+basic)
+		req.Header.Set(HeaderAuthnCredentials, pputils.SchemeBasic+basic)
 
 		authn.EXPECT().
 			Strategy(setname).
 			Return(strategy, nil).
 			Once()
 		strategy.EXPECT().
-			ParseCredentials(mock.Anything, "basic "+basic).
-			Return(credentials, nil).
-			Once()
-		strategy.EXPECT().
-			Verify(mock.Anything, credentials).
+			Verify(mock.Anything, tokens).
 			Return(account, nil).
 			Once()
 
@@ -84,40 +81,10 @@ func TestAuthn(t *testing.T) {
 
 		setname := uuid.NewString()
 		req.Header.Set(HeaderAuthnStrategy, setname)
-		req.Header.Set(HeaderAuthnCredentials, "basic "+basic)
+		req.Header.Set(HeaderAuthnCredentials, pputils.SchemeBasic+basic)
 
 		authn.EXPECT().
 			Strategy(setname).
-			Return(nil, testdata.ErrGeneric).
-			Once()
-
-		res := httptest.NewRecorder()
-		s.ServeHTTP(res, req)
-
-		require.Equal(st, http.StatusUnauthorized, res.Code)
-
-		var body writer.E
-		err = json.Unmarshal(res.Body.Bytes(), &body)
-		require.NoError(st, err)
-
-		require.Contains(st, body.Error, testdata.ErrGeneric.Error())
-	})
-
-	t.Run("KO - parse credentials error", func(st *testing.T) {
-		name := uuid.NewString()
-		s, path, authn, strategy := authentication(st, name)
-
-		req, err := http.NewRequest(http.MethodGet, path, nil)
-		require.NoError(st, err)
-
-		req.Header.Set(HeaderAuthnCredentials, "basic "+basic)
-
-		authn.EXPECT().
-			Strategy(name).
-			Return(strategy, nil).
-			Once()
-		strategy.EXPECT().
-			ParseCredentials(mock.Anything, "basic "+basic).
 			Return(nil, testdata.ErrGeneric).
 			Once()
 
@@ -140,18 +107,14 @@ func TestAuthn(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, path, nil)
 		require.NoError(st, err)
 
-		req.Header.Set(HeaderAuthnCredentials, "basic "+basic)
+		req.Header.Set(HeaderAuthnCredentials, pputils.SchemeBasic+basic)
 
 		authn.EXPECT().
 			Strategy(name).
 			Return(strategy, nil).
 			Once()
 		strategy.EXPECT().
-			ParseCredentials(mock.Anything, "basic "+basic).
-			Return(credentials, nil).
-			Once()
-		strategy.EXPECT().
-			Verify(mock.Anything, credentials).
+			Verify(mock.Anything, tokens).
 			Return(nil, testdata.ErrGeneric).
 			Once()
 
@@ -197,7 +160,7 @@ func TestAuthn_WithCache(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, path, nil)
 	require.NoError(t, err)
 
-	req.Header.Set(HeaderAuthnCredentials, "basic "+basic)
+	req.Header.Set(HeaderAuthnCredentials, pputils.SchemeBasic+basic)
 
 	// strategy.Strategy should not be called here
 	// strategy.ParseCredentials should not be called here
@@ -235,18 +198,14 @@ func verifyauthn(
 	req, err := http.NewRequest(http.MethodGet, path, nil)
 	require.NoError(t, err)
 
-	req.Header.Set(HeaderAuthnCredentials, "basic "+basic)
+	req.Header.Set(HeaderAuthnCredentials, pputils.SchemeBasic+basic)
 
 	authn.EXPECT().
 		Strategy(name).
 		Return(strategy, nil).
 		Once()
 	strategy.EXPECT().
-		ParseCredentials(mock.Anything, "basic "+basic).
-		Return(credentials, nil).
-		Once()
-	strategy.EXPECT().
-		Verify(mock.Anything, credentials).
+		Verify(mock.Anything, tokens).
 		Return(account, nil).
 		Once()
 

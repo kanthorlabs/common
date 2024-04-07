@@ -34,12 +34,12 @@ func Authn(authn passport.Passport, options ...AuthnOption) Middleware {
 			if name == "" {
 				name = conf.Fallback
 			}
-			raw := r.Header.Get(HeaderAuthnCredentials)
+			tokens := ppentities.Tokens{Access: r.Header.Get(HeaderAuthnCredentials)}
 
 			acc, err := cache.GetOrSet(
 				conf.Cache,
 				ctx,
-				cache.EncodeKey(name, raw),
+				cache.EncodeKey(name, tokens.Access),
 				conf.ExpiresIn,
 				func() (*ppentities.Account, error) {
 					strategy, err := authn.Strategy(name)
@@ -47,11 +47,7 @@ func Authn(authn passport.Passport, options ...AuthnOption) Middleware {
 						return nil, err
 					}
 
-					credentials, err := strategy.ParseCredentials(ctx, raw)
-					if err != nil {
-						return nil, err
-					}
-					return strategy.Verify(ctx, credentials)
+					return strategy.Verify(ctx, tokens)
 				},
 			)
 			if err != nil {

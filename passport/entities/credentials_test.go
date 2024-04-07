@@ -6,11 +6,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidateCredentialsOnLogin(t *testing.T) {
-	t.Run("KO - credentials is nil", func(st *testing.T) {
-		require.ErrorContains(st, ValidateCredentialsOnLogin(nil), "PASSPORT.CREDENTIALS")
-	})
+func TestCredentials_validate(t *testing.T) {
 	t.Run("KO - credentials error", func(st *testing.T) {
-		require.ErrorContains(st, ValidateCredentialsOnLogin(&Credentials{}), "PASSPORT.CREDENTIALS.")
+		credentials := &Credentials{}
+		require.ErrorContains(st, credentials.Validate(), "PASSPORT.CREDENTIALS.")
 	})
 }

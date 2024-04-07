@@ -43,20 +43,6 @@ type ask struct {
 	accounts map[string]*entities.Account
 }
 
-func (instance *ask) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
-	if utils.IsBasicScheme(raw) {
-		creds, err := utils.ParseBasicCredentials(raw)
-		if err != nil {
-			instance.logger.Error(err.Error())
-			return nil, ErrParseCredentials
-		}
-
-		return creds, nil
-	}
-
-	return nil, ErrCredentialsScheme
-}
-
 func (instance *ask) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
@@ -103,8 +89,25 @@ func (instance *ask) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *ask) Login(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
-	if err := entities.ValidateCredentialsOnLogin(credentials); err != nil {
+func (instance *ask) Register(ctx context.Context, acc entities.Account) error {
+	return errors.New("PASSPORT.ASK.REGISTER.UNIMPLEMENT.ERROR")
+}
+
+func (instance *ask) Login(ctx context.Context, credentials entities.Credentials) (*entities.Tokens, error) {
+	return nil, errors.New("PASSPORT.ASK.LOGIN.UNIMPLEMENT.ERROR")
+}
+
+func (instance *ask) Logout(ctx context.Context, tokens entities.Tokens) error {
+	return errors.New("PASSPORT.ASK.LOGOUT.UNIMPLEMENT.ERROR")
+}
+
+func (instance *ask) Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error) {
+	credentials, err := utils.ParseBasicCredentials(tokens.Access)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := credentials.Validate(); err != nil {
 		return nil, err
 	}
 	acc, has := instance.accounts[credentials.Username]
@@ -117,18 +120,6 @@ func (instance *ask) Login(ctx context.Context, credentials *entities.Credential
 	}
 
 	return acc.Censor(), nil
-}
-
-func (instance *ask) Logout(ctx context.Context, credentials *entities.Credentials) error {
-	return nil
-}
-
-func (instance *ask) Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
-	return instance.Login(ctx, credentials)
-}
-
-func (instance *ask) Register(ctx context.Context, acc *entities.Account) error {
-	return errors.New("PASSPORT.ASK.REGISTER.UNIMPLEMENT.ERROR")
 }
 
 func (instance *ask) Deactivate(ctx context.Context, username string, ts int64) error {
@@ -157,6 +148,6 @@ func (instance *ask) List(ctx context.Context, usernames []string) ([]*entities.
 	return accounts, nil
 }
 
-func (instance *ask) Update(ctx context.Context, account *entities.Account) error {
+func (instance *ask) Update(ctx context.Context, account entities.Account) error {
 	return errors.New("PASSPORT.ASK.UPDATE.UNIMPLEMENT.ERROR")
 }

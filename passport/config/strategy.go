@@ -7,6 +7,7 @@ import (
 var (
 	EngineAsk      = "ask"
 	EngineInternal = "internal"
+	EngineExternal = "external"
 )
 
 type Strategy struct {
@@ -15,12 +16,13 @@ type Strategy struct {
 
 	Ask      Ask      `json:"ask" yaml:"ask" mapstructure:"ask"`
 	Internal Internal `json:"internal" yaml:"internal" mapstructure:"internal"`
+	External External `json:"external" yaml:"external" mapstructure:"external"`
 }
 
 func (conf *Strategy) Validate() error {
 	err := validator.Validate(
 		validator.StringRequired("PASSPORT.STRATEGY.CONFIG.NAME", conf.Name),
-		validator.StringOneOf("PASSPORT.STRATEGY.CONFIG.ENGINE", conf.Engine, []string{EngineAsk, EngineInternal}),
+		validator.StringOneOf("PASSPORT.STRATEGY.CONFIG.ENGINE", conf.Engine, []string{EngineAsk, EngineInternal, EngineExternal}),
 	)
 	if err != nil {
 		return err

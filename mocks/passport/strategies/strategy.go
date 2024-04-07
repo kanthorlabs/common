@@ -267,27 +267,27 @@ func (_c *Strategy_Liveness_Call) RunAndReturn(run func() error) *Strategy_Liven
 }
 
 // Login provides a mock function with given fields: ctx, credentials
-func (_m *Strategy) Login(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
+func (_m *Strategy) Login(ctx context.Context, credentials entities.Credentials) (*entities.Tokens, error) {
 	ret := _m.Called(ctx, credentials)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Login")
 	}
 
-	var r0 *entities.Account
+	var r0 *entities.Tokens
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Credentials) (*entities.Account, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Credentials) (*entities.Tokens, error)); ok {
 		return rf(ctx, credentials)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Credentials) *entities.Account); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Credentials) *entities.Tokens); ok {
 		r0 = rf(ctx, credentials)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.Account)
+			r0 = ret.Get(0).(*entities.Tokens)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *entities.Credentials) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, entities.Credentials) error); ok {
 		r1 = rf(ctx, credentials)
 	} else {
 		r1 = ret.Error(1)
@@ -303,39 +303,39 @@ type Strategy_Login_Call struct {
 
 // Login is a helper method to define mock.On call
 //   - ctx context.Context
-//   - credentials *entities.Credentials
+//   - credentials entities.Credentials
 func (_e *Strategy_Expecter) Login(ctx interface{}, credentials interface{}) *Strategy_Login_Call {
 	return &Strategy_Login_Call{Call: _e.mock.On("Login", ctx, credentials)}
 }
 
-func (_c *Strategy_Login_Call) Run(run func(ctx context.Context, credentials *entities.Credentials)) *Strategy_Login_Call {
+func (_c *Strategy_Login_Call) Run(run func(ctx context.Context, credentials entities.Credentials)) *Strategy_Login_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*entities.Credentials))
+		run(args[0].(context.Context), args[1].(entities.Credentials))
 	})
 	return _c
 }
 
-func (_c *Strategy_Login_Call) Return(_a0 *entities.Account, _a1 error) *Strategy_Login_Call {
+func (_c *Strategy_Login_Call) Return(_a0 *entities.Tokens, _a1 error) *Strategy_Login_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Strategy_Login_Call) RunAndReturn(run func(context.Context, *entities.Credentials) (*entities.Account, error)) *Strategy_Login_Call {
+func (_c *Strategy_Login_Call) RunAndReturn(run func(context.Context, entities.Credentials) (*entities.Tokens, error)) *Strategy_Login_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Logout provides a mock function with given fields: ctx, credentials
-func (_m *Strategy) Logout(ctx context.Context, credentials *entities.Credentials) error {
-	ret := _m.Called(ctx, credentials)
+// Logout provides a mock function with given fields: ctx, tokens
+func (_m *Strategy) Logout(ctx context.Context, tokens entities.Tokens) error {
+	ret := _m.Called(ctx, tokens)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Logout")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Credentials) error); ok {
-		r0 = rf(ctx, credentials)
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Tokens) error); ok {
+		r0 = rf(ctx, tokens)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -350,14 +350,14 @@ type Strategy_Logout_Call struct {
 
 // Logout is a helper method to define mock.On call
 //   - ctx context.Context
-//   - credentials *entities.Credentials
-func (_e *Strategy_Expecter) Logout(ctx interface{}, credentials interface{}) *Strategy_Logout_Call {
-	return &Strategy_Logout_Call{Call: _e.mock.On("Logout", ctx, credentials)}
+//   - tokens entities.Tokens
+func (_e *Strategy_Expecter) Logout(ctx interface{}, tokens interface{}) *Strategy_Logout_Call {
+	return &Strategy_Logout_Call{Call: _e.mock.On("Logout", ctx, tokens)}
 }
 
-func (_c *Strategy_Logout_Call) Run(run func(ctx context.Context, credentials *entities.Credentials)) *Strategy_Logout_Call {
+func (_c *Strategy_Logout_Call) Run(run func(ctx context.Context, tokens entities.Tokens)) *Strategy_Logout_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*entities.Credentials))
+		run(args[0].(context.Context), args[1].(entities.Tokens))
 	})
 	return _c
 }
@@ -367,66 +367,7 @@ func (_c *Strategy_Logout_Call) Return(_a0 error) *Strategy_Logout_Call {
 	return _c
 }
 
-func (_c *Strategy_Logout_Call) RunAndReturn(run func(context.Context, *entities.Credentials) error) *Strategy_Logout_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ParseCredentials provides a mock function with given fields: ctx, raw
-func (_m *Strategy) ParseCredentials(ctx context.Context, raw string) (*entities.Credentials, error) {
-	ret := _m.Called(ctx, raw)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ParseCredentials")
-	}
-
-	var r0 *entities.Credentials
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*entities.Credentials, error)); ok {
-		return rf(ctx, raw)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *entities.Credentials); ok {
-		r0 = rf(ctx, raw)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.Credentials)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, raw)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Strategy_ParseCredentials_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ParseCredentials'
-type Strategy_ParseCredentials_Call struct {
-	*mock.Call
-}
-
-// ParseCredentials is a helper method to define mock.On call
-//   - ctx context.Context
-//   - raw string
-func (_e *Strategy_Expecter) ParseCredentials(ctx interface{}, raw interface{}) *Strategy_ParseCredentials_Call {
-	return &Strategy_ParseCredentials_Call{Call: _e.mock.On("ParseCredentials", ctx, raw)}
-}
-
-func (_c *Strategy_ParseCredentials_Call) Run(run func(ctx context.Context, raw string)) *Strategy_ParseCredentials_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
-	})
-	return _c
-}
-
-func (_c *Strategy_ParseCredentials_Call) Return(_a0 *entities.Credentials, _a1 error) *Strategy_ParseCredentials_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Strategy_ParseCredentials_Call) RunAndReturn(run func(context.Context, string) (*entities.Credentials, error)) *Strategy_ParseCredentials_Call {
+func (_c *Strategy_Logout_Call) RunAndReturn(run func(context.Context, entities.Tokens) error) *Strategy_Logout_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -477,7 +418,7 @@ func (_c *Strategy_Readiness_Call) RunAndReturn(run func() error) *Strategy_Read
 }
 
 // Register provides a mock function with given fields: ctx, acc
-func (_m *Strategy) Register(ctx context.Context, acc *entities.Account) error {
+func (_m *Strategy) Register(ctx context.Context, acc entities.Account) error {
 	ret := _m.Called(ctx, acc)
 
 	if len(ret) == 0 {
@@ -485,7 +426,7 @@ func (_m *Strategy) Register(ctx context.Context, acc *entities.Account) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Account) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Account) error); ok {
 		r0 = rf(ctx, acc)
 	} else {
 		r0 = ret.Error(0)
@@ -501,14 +442,14 @@ type Strategy_Register_Call struct {
 
 // Register is a helper method to define mock.On call
 //   - ctx context.Context
-//   - acc *entities.Account
+//   - acc entities.Account
 func (_e *Strategy_Expecter) Register(ctx interface{}, acc interface{}) *Strategy_Register_Call {
 	return &Strategy_Register_Call{Call: _e.mock.On("Register", ctx, acc)}
 }
 
-func (_c *Strategy_Register_Call) Run(run func(ctx context.Context, acc *entities.Account)) *Strategy_Register_Call {
+func (_c *Strategy_Register_Call) Run(run func(ctx context.Context, acc entities.Account)) *Strategy_Register_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*entities.Account))
+		run(args[0].(context.Context), args[1].(entities.Account))
 	})
 	return _c
 }
@@ -518,13 +459,13 @@ func (_c *Strategy_Register_Call) Return(_a0 error) *Strategy_Register_Call {
 	return _c
 }
 
-func (_c *Strategy_Register_Call) RunAndReturn(run func(context.Context, *entities.Account) error) *Strategy_Register_Call {
+func (_c *Strategy_Register_Call) RunAndReturn(run func(context.Context, entities.Account) error) *Strategy_Register_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Update provides a mock function with given fields: ctx, account
-func (_m *Strategy) Update(ctx context.Context, account *entities.Account) error {
+func (_m *Strategy) Update(ctx context.Context, account entities.Account) error {
 	ret := _m.Called(ctx, account)
 
 	if len(ret) == 0 {
@@ -532,7 +473,7 @@ func (_m *Strategy) Update(ctx context.Context, account *entities.Account) error
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Account) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Account) error); ok {
 		r0 = rf(ctx, account)
 	} else {
 		r0 = ret.Error(0)
@@ -548,14 +489,14 @@ type Strategy_Update_Call struct {
 
 // Update is a helper method to define mock.On call
 //   - ctx context.Context
-//   - account *entities.Account
+//   - account entities.Account
 func (_e *Strategy_Expecter) Update(ctx interface{}, account interface{}) *Strategy_Update_Call {
 	return &Strategy_Update_Call{Call: _e.mock.On("Update", ctx, account)}
 }
 
-func (_c *Strategy_Update_Call) Run(run func(ctx context.Context, account *entities.Account)) *Strategy_Update_Call {
+func (_c *Strategy_Update_Call) Run(run func(ctx context.Context, account entities.Account)) *Strategy_Update_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*entities.Account))
+		run(args[0].(context.Context), args[1].(entities.Account))
 	})
 	return _c
 }
@@ -565,14 +506,14 @@ func (_c *Strategy_Update_Call) Return(_a0 error) *Strategy_Update_Call {
 	return _c
 }
 
-func (_c *Strategy_Update_Call) RunAndReturn(run func(context.Context, *entities.Account) error) *Strategy_Update_Call {
+func (_c *Strategy_Update_Call) RunAndReturn(run func(context.Context, entities.Account) error) *Strategy_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Verify provides a mock function with given fields: ctx, credentials
-func (_m *Strategy) Verify(ctx context.Context, credentials *entities.Credentials) (*entities.Account, error) {
-	ret := _m.Called(ctx, credentials)
+// Verify provides a mock function with given fields: ctx, tokens
+func (_m *Strategy) Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error) {
+	ret := _m.Called(ctx, tokens)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Verify")
@@ -580,19 +521,19 @@ func (_m *Strategy) Verify(ctx context.Context, credentials *entities.Credential
 
 	var r0 *entities.Account
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Credentials) (*entities.Account, error)); ok {
-		return rf(ctx, credentials)
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Tokens) (*entities.Account, error)); ok {
+		return rf(ctx, tokens)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Credentials) *entities.Account); ok {
-		r0 = rf(ctx, credentials)
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Tokens) *entities.Account); ok {
+		r0 = rf(ctx, tokens)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*entities.Account)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *entities.Credentials) error); ok {
-		r1 = rf(ctx, credentials)
+	if rf, ok := ret.Get(1).(func(context.Context, entities.Tokens) error); ok {
+		r1 = rf(ctx, tokens)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -607,14 +548,14 @@ type Strategy_Verify_Call struct {
 
 // Verify is a helper method to define mock.On call
 //   - ctx context.Context
-//   - credentials *entities.Credentials
-func (_e *Strategy_Expecter) Verify(ctx interface{}, credentials interface{}) *Strategy_Verify_Call {
-	return &Strategy_Verify_Call{Call: _e.mock.On("Verify", ctx, credentials)}
+//   - tokens entities.Tokens
+func (_e *Strategy_Expecter) Verify(ctx interface{}, tokens interface{}) *Strategy_Verify_Call {
+	return &Strategy_Verify_Call{Call: _e.mock.On("Verify", ctx, tokens)}
 }
 
-func (_c *Strategy_Verify_Call) Run(run func(ctx context.Context, credentials *entities.Credentials)) *Strategy_Verify_Call {
+func (_c *Strategy_Verify_Call) Run(run func(ctx context.Context, tokens entities.Tokens)) *Strategy_Verify_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*entities.Credentials))
+		run(args[0].(context.Context), args[1].(entities.Tokens))
 	})
 	return _c
 }
@@ -624,7 +565,7 @@ func (_c *Strategy_Verify_Call) Return(_a0 *entities.Account, _a1 error) *Strate
 	return _c
 }
 
-func (_c *Strategy_Verify_Call) RunAndReturn(run func(context.Context, *entities.Credentials) (*entities.Account, error)) *Strategy_Verify_Call {
+func (_c *Strategy_Verify_Call) RunAndReturn(run func(context.Context, entities.Tokens) (*entities.Account, error)) *Strategy_Verify_Call {
 	_c.Call.Return(run)
 	return _c
 }
