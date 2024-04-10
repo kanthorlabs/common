@@ -11,7 +11,7 @@ import (
 	"github.com/kanthorlabs/common/sender/entities"
 )
 
-func Http(conf *config.Config, logger logging.Logger) (Send, error) {
+func NewHttp(conf *config.Config, logger logging.Logger) (Send, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
@@ -40,6 +40,10 @@ func Http(conf *config.Config, logger logging.Logger) (Send, error) {
 		var err = r.Validate()
 		if err != nil {
 			return nil, err
+		}
+
+		if r.Body == nil {
+			r.Body = make([]byte, 0)
 		}
 
 		var res *resty.Response

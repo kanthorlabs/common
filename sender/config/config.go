@@ -4,6 +4,15 @@ import (
 	"github.com/kanthorlabs/common/validator"
 )
 
+var Default = &Config{
+	Timeout: 5000,
+	Headers: map[string]string{},
+	Retry: Retry{
+		Count:    1,
+		WaitTime: 500,
+	},
+}
+
 type Config struct {
 	Timeout int64             `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 	Headers map[string]string `json:"header" yaml:"header" mapstructure:"header"`

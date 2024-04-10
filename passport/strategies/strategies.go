@@ -10,7 +10,7 @@ import (
 type Strategy interface {
 	patterns.Connectable
 	Register(ctx context.Context, acc entities.Account) error
-	Login(ctx context.Context, credentials entities.Credentials) (*entities.Tokens, error)
+	Login(ctx context.Context, creds entities.Credentials) (*entities.Tokens, error)
 	Logout(ctx context.Context, tokens entities.Tokens) error
 	Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error)
 

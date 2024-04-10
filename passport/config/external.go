@@ -8,7 +8,7 @@ type External struct {
 
 func (conf *External) Validate() error {
 	return validator.Validate(
-		validator.StringUri("SQLX.CONFIG.URI", conf.Uri),
-		validator.StringStartsWithOneOf("SQLX.CONFIG.URI", conf.Uri, []string{"http", "https"}),
+		validator.StringUri("PASSPORT.CONFIG.EXTERNAL.URI", conf.Uri),
+		validator.StringStartsWithOneOf("PASSPORT.CONFIG.EXTERNAL.URI", conf.Uri, []string{"http", "https"}),
 	)
 }

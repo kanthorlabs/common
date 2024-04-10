@@ -15,7 +15,7 @@ type Request struct {
 
 func (req *Request) Validate() error {
 	return validator.Validate(
-		validator.StringUri("SENDER.REQUEST.URI", req.Uri),
 		validator.StringOneOf("SENDER.REQUEST.METHOD", req.Method, []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch}),
+		validator.StringUri("SENDER.REQUEST.URI", req.Uri),
 	)
 }

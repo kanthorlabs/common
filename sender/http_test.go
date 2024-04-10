@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHttp(t *testing.T) {
-	send, err := Http(testconf, testify.Logger())
+func TestNewHttp(t *testing.T) {
+	send, err := NewHttp(testconf, testify.Logger())
 	require.NoError(t, err)
 
 	t.Run("OK", func(st *testing.T) {

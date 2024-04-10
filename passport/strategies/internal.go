@@ -104,7 +104,7 @@ func (instance *internal) Register(ctx context.Context, acc entities.Account) er
 	return nil
 }
 
-func (instance *internal) Login(ctx context.Context, credentials entities.Credentials) (*entities.Tokens, error) {
+func (instance *internal) Login(ctx context.Context, creds entities.Credentials) (*entities.Tokens, error) {
 	return nil, errors.New("PASSPORT.ASK.LOGIN.UNIMPLEMENT.ERROR")
 }
 
@@ -113,18 +113,18 @@ func (instance *internal) Logout(ctx context.Context, tokens entities.Tokens) er
 }
 
 func (instance *internal) Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error) {
-	credentials, err := utils.ParseBasicCredentials(tokens.Access)
+	creds, err := utils.ParseBasicCredentials(tokens.Access)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := credentials.Validate(); err != nil {
+	if err := creds.Validate(); err != nil {
 		return nil, err
 	}
 
 	var acc entities.Account
 	err = instance.orm.WithContext(ctx).
-		Where("username = ?", credentials.Username).
+		Where("username = ?", creds.Username).
 		First(&acc).
 		Error
 	if err != nil {
@@ -135,7 +135,7 @@ func (instance *internal) Verify(ctx context.Context, tokens entities.Tokens) (*
 		return nil, ErrAccountDeactivated
 	}
 
-	if err := password.Compare(credentials.Password, acc.PasswordHash); err != nil {
+	if err := password.Compare(creds.Password, acc.PasswordHash); err != nil {
 		return nil, ErrLogin
 	}
 

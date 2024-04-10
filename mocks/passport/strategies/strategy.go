@@ -266,9 +266,9 @@ func (_c *Strategy_Liveness_Call) RunAndReturn(run func() error) *Strategy_Liven
 	return _c
 }
 
-// Login provides a mock function with given fields: ctx, credentials
-func (_m *Strategy) Login(ctx context.Context, credentials entities.Credentials) (*entities.Tokens, error) {
-	ret := _m.Called(ctx, credentials)
+// Login provides a mock function with given fields: ctx, creds
+func (_m *Strategy) Login(ctx context.Context, creds entities.Credentials) (*entities.Tokens, error) {
+	ret := _m.Called(ctx, creds)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Login")
@@ -277,10 +277,10 @@ func (_m *Strategy) Login(ctx context.Context, credentials entities.Credentials)
 	var r0 *entities.Tokens
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, entities.Credentials) (*entities.Tokens, error)); ok {
-		return rf(ctx, credentials)
+		return rf(ctx, creds)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, entities.Credentials) *entities.Tokens); ok {
-		r0 = rf(ctx, credentials)
+		r0 = rf(ctx, creds)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*entities.Tokens)
@@ -288,7 +288,7 @@ func (_m *Strategy) Login(ctx context.Context, credentials entities.Credentials)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, entities.Credentials) error); ok {
-		r1 = rf(ctx, credentials)
+		r1 = rf(ctx, creds)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -303,12 +303,12 @@ type Strategy_Login_Call struct {
 
 // Login is a helper method to define mock.On call
 //   - ctx context.Context
-//   - credentials entities.Credentials
-func (_e *Strategy_Expecter) Login(ctx interface{}, credentials interface{}) *Strategy_Login_Call {
-	return &Strategy_Login_Call{Call: _e.mock.On("Login", ctx, credentials)}
+//   - creds entities.Credentials
+func (_e *Strategy_Expecter) Login(ctx interface{}, creds interface{}) *Strategy_Login_Call {
+	return &Strategy_Login_Call{Call: _e.mock.On("Login", ctx, creds)}
 }
 
-func (_c *Strategy_Login_Call) Run(run func(ctx context.Context, credentials entities.Credentials)) *Strategy_Login_Call {
+func (_c *Strategy_Login_Call) Run(run func(ctx context.Context, creds entities.Credentials)) *Strategy_Login_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(entities.Credentials))
 	})

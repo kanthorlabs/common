@@ -39,87 +39,87 @@ func TestInternal_New(t *testing.T) {
 
 func TestInternal_Connect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
+		require.NoError(st, strategy.Connect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
-		require.ErrorIs(st, c.Connect(context.Background()), ErrAlreadyConnected)
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.ErrorIs(st, strategy.Connect(context.Background()), ErrAlreadyConnected)
 	})
 }
 
 func TestInternal_Readiness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
-		require.NoError(st, c.Readiness())
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Readiness())
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
-		require.NoError(st, c.Disconnect(context.Background()))
-		require.NoError(st, c.Readiness())
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Disconnect(context.Background()))
+		require.NoError(st, strategy.Readiness())
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.ErrorIs(st, c.Readiness(), ErrNotConnected)
+		require.ErrorIs(st, strategy.Readiness(), ErrNotConnected)
 	})
 }
 
 func TestInternal_Liveness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
-		require.NoError(st, c.Liveness())
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Liveness())
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
-		require.NoError(st, c.Disconnect(context.Background()))
-		require.NoError(st, c.Liveness())
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Disconnect(context.Background()))
+		require.NoError(st, strategy.Liveness())
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.ErrorIs(st, c.Liveness(), ErrNotConnected)
+		require.ErrorIs(st, strategy.Liveness(), ErrNotConnected)
 	})
 }
 
 func TestInternal_Disconnect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.NoError(st, c.Connect(context.Background()))
-		require.NoError(st, c.Disconnect(context.Background()))
+		require.NoError(st, strategy.Connect(context.Background()))
+		require.NoError(st, strategy.Disconnect(context.Background()))
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		c, err := NewInternal(internalconf, testify.Logger())
+		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
-		require.ErrorIs(st, c.Disconnect(context.Background()), ErrNotConnected)
+		require.ErrorIs(st, strategy.Disconnect(context.Background()), ErrNotConnected)
 	})
 }
 

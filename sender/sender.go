@@ -18,7 +18,7 @@ import (
 // - https://
 // If the URI scheme is not supported, an error is returned.
 func New(conf *config.Config, logger logging.Logger) (Send, error) {
-	http, err := Http(conf, logger)
+	http, err := NewHttp(conf, logger)
 	if err != nil {
 		return nil, err
 	}

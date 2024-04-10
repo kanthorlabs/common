@@ -15,7 +15,7 @@ type E struct {
 type M map[string]any
 
 func Write(w http.ResponseWriter, status int, data any) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	w.Write([]byte(utils.Stringify(data)))
 }
