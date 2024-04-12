@@ -15,7 +15,11 @@ type Strategy interface {
 	Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error)
 
 	// Management APIs
+	Management() Management
+}
+
+type Management interface {
 	Deactivate(ctx context.Context, username string, at int64) error
 	List(ctx context.Context, usernames []string) ([]*entities.Account, error)
-	Update(ctx context.Context, account entities.Account) error
+	Update(ctx context.Context, acc entities.Account) error
 }

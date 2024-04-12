@@ -94,83 +94,15 @@ func (instance *external) Disconnect(ctx context.Context) error {
 }
 
 func (instance *external) Register(ctx context.Context, acc entities.Account) error {
-	body, err := json.Marshal(acc)
-	if err != nil {
-		return err
-	}
-
-	req := &senderentities.Request{
-		Method:  http.MethodPost,
-		Headers: ExternalDefaultHeaders,
-		Uri:     fmt.Sprintf("%s/authn/register", instance.conf.Uri),
-		Body:    body,
-	}
-	req.Headers.Set("Idempotency-Key", idx.New("ik"))
-	res, err := instance.send(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	if !res.Ok() {
-		return errors.New(res.StatusText())
-	}
-
-	return nil
+	return errors.New("PASSPORT.EXTERNAL.REGISTER.UNIMPLEMENT.ERROR")
 }
 
 func (instance *external) Login(ctx context.Context, creds entities.Credentials) (*entities.Tokens, error) {
-	body, err := json.Marshal(creds)
-	if err != nil {
-		return nil, err
-	}
-
-	req := &senderentities.Request{
-		Method:  http.MethodPost,
-		Headers: ExternalDefaultHeaders,
-		Uri:     fmt.Sprintf("%s/authn/login", instance.conf.Uri),
-		Body:    body,
-	}
-	req.Headers.Set("Idempotency-Key", idx.New("ik"))
-	res, err := instance.send(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	if !res.Ok() {
-		return nil, errors.New(res.StatusText())
-	}
-
-	var tokens entities.Tokens
-	if err := json.Unmarshal(res.Body, &tokens); err != nil {
-		return nil, err
-	}
-
-	if err := tokens.Validate(); err != nil {
-		return nil, err
-	}
-
-	return &tokens, nil
+	return nil, errors.New("PASSPORT.EXTERNAL.LOGIN.UNIMPLEMENT.ERROR")
 }
 
 func (instance *external) Logout(ctx context.Context, tokens entities.Tokens) error {
-	req := &senderentities.Request{
-		Method:  http.MethodPost,
-		Headers: ExternalDefaultHeaders,
-		Uri:     fmt.Sprintf("%s/account/logout", instance.conf.Uri),
-		Body:    nil,
-	}
-	req.Headers.Set("Authorization", tokens.Access)
-	req.Headers.Set("Idempotency-Key", idx.New("ik"))
-	res, err := instance.send(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	if !res.Ok() {
-		return errors.New(res.StatusText())
-	}
-
-	return nil
+	return errors.New("PASSPORT.EXTERNAL.LOGOUT.UNIMPLEMENT.ERROR")
 }
 
 func (instance *external) Verify(ctx context.Context, tokens entities.Tokens) (*entities.Account, error) {
@@ -203,14 +135,23 @@ func (instance *external) Verify(ctx context.Context, tokens entities.Tokens) (*
 	return &account, nil
 }
 
-func (instance *external) Deactivate(ctx context.Context, username string, at int64) error {
-	return errors.New("PASSPORT.EXTERNAL.DEACTIVATE.UNIMPLEMENT.ERROR")
+func (instance *external) Management() Management {
+	if instance.status != patterns.StatusConnected {
+		panic(ErrNotConnected)
+	}
+	return &externalmanagement{}
 }
 
-func (instance *external) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
-	return nil, errors.New("PASSPORT.EXTERNAL.LIST.UNIMPLEMENT.ERROR")
+type externalmanagement struct{}
+
+func (instance *externalmanagement) Deactivate(ctx context.Context, username string, at int64) error {
+	return errors.New("PASSPORT.EXTERNAL.MANAGEMENT.DEACTIVATE.UNIMPLEMENT.ERROR")
 }
 
-func (instance *external) Update(ctx context.Context, account entities.Account) error {
-	return errors.New("PASSPORT.EXTERNAL.UPDATE.UNIMPLEMENT.ERROR")
+func (instance *externalmanagement) List(ctx context.Context, usernames []string) ([]*entities.Account, error) {
+	return nil, errors.New("PASSPORT.EXTERNAL.MANAGEMENT.LIST.UNIMPLEMENT.ERROR")
+}
+
+func (instance *externalmanagement) Update(ctx context.Context, acc entities.Account) error {
+	return errors.New("PASSPORT.EXTERNAL.MANAGEMENT.UPDATE.UNIMPLEMENT.ERROR")
 }

@@ -3,9 +3,7 @@ package entities
 import "github.com/kanthorlabs/common/validator"
 
 type Tokens struct {
-	Access  string `json:"access" yaml:"access" mapstructure:"access"`
-	Refresh string `json:"refresh" yaml:"refresh" mapstructure:"refresh"`
-	Id      string `json:"id" yaml:"id" mapstructure:"id"`
+	Access string `json:"access" yaml:"access" mapstructure:"access"`
 }
 
 func (entity *Tokens) Validate() error {

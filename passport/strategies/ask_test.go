@@ -233,7 +233,7 @@ func TestAsk_Verify(t *testing.T) {
 		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
 	})
 
-	t.Run("KO - user not found", func(st *testing.T) {
+	t.Run("KO - user not found error", func(st *testing.T) {
 		basic := utils.CreateRegionalBasicCredentials(
 			uuid.NewString() + ":" + testdata.Fake.Internet().Password(),
 		)
@@ -243,7 +243,7 @@ func TestAsk_Verify(t *testing.T) {
 		require.ErrorIs(st, err, ErrLogin)
 	})
 
-	t.Run("KO - password not match", func(st *testing.T) {
+	t.Run("KO - password not match error", func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
 		user := accounts[i].Username
 		pass := passwords[i]
@@ -257,29 +257,52 @@ func TestAsk_Verify(t *testing.T) {
 	})
 }
 
-func TestAsk_Deactivate(t *testing.T) {
+func TestAskManagement(t *testing.T) {
 	accounts, _ := setup(t)
 
 	conf := &config.Ask{Accounts: accounts}
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
+	t.Run("KO", func(st *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				require.ErrorIs(t, r.(error), ErrNotConnected)
+			}
+		}()
+		strategy.Management()
+	})
+}
+
+func TestAskManagement_Deactivate(t *testing.T) {
+	accounts, _ := setup(t)
+
+	conf := &config.Ask{Accounts: accounts}
+	strategy, err := NewAsk(conf, testify.Logger())
+	require.NoError(t, err)
+
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
 	t.Run("KO - unimplement error", func(st *testing.T) {
-		err = strategy.Deactivate(context.Background(), accounts[0].Username, time.Now().UnixMilli())
+		err = strategy.Management().Deactivate(context.Background(), accounts[0].Username, time.Now().UnixMilli())
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }
 
-func TestAsk_List(t *testing.T) {
+func TestAskManagement_List(t *testing.T) {
 	accounts, _ := setup(t)
 
 	conf := &config.Ask{Accounts: accounts}
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
 	t.Run("OK", func(st *testing.T) {
 		usernames := []string{accounts[0].Username, accounts[1].Username}
-		acc, err := strategy.List(context.Background(), usernames)
+		acc, err := strategy.Management().List(context.Background(), usernames)
 		require.NoError(st, err)
 
 		require.Equal(st, len(usernames), len(acc))
@@ -294,20 +317,23 @@ func TestAsk_List(t *testing.T) {
 		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
 		usernames := []string{accounts[i].Username, accounts[j].Username, ""}
 
-		_, err := strategy.List(context.Background(), usernames)
+		_, err := strategy.Management().List(context.Background(), usernames)
 		require.ErrorContains(st, err, fmt.Sprintf("usernames[%d]", len(usernames)-1))
 	})
 }
 
-func TestAsk_Update(t *testing.T) {
+func TestAskManagement_Update(t *testing.T) {
 	accounts, _ := setup(t)
 
 	conf := &config.Ask{Accounts: accounts}
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
+	strategy.Connect(context.Background())
+	defer strategy.Disconnect(context.Background())
+
 	t.Run("KO - unimplement error", func(st *testing.T) {
-		err := strategy.Update(context.Background(), entities.Account{})
+		err := strategy.Management().Update(context.Background(), entities.Account{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }

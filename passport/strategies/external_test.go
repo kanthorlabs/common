@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kanthorlabs/common/cipher/password"
 	"github.com/kanthorlabs/common/passport/config"
 	"github.com/kanthorlabs/common/passport/entities"
 	"github.com/kanthorlabs/common/project"
@@ -150,55 +149,21 @@ func TestExternal_Register(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("OK", func(st *testing.T) {
-		pass := uuid.NewString()
-		hash, err := password.Hash(pass)
-		require.NoError(st, err)
-
-		acc := entities.Account{
-			Username:     uuid.NewString(),
-			PasswordHash: hash,
-			Name:         testoktext + testdata.Fake.Internet().User(),
-			CreatedAt:    time.Now().UnixMilli(),
-			UpdatedAt:    time.Now().UnixMilli(),
-		}
-
-		require.NoError(st, strategy.Register(context.Background(), acc))
-	})
-
 	t.Run("KO", func(st *testing.T) {
-		pass := uuid.NewString()
-		hash, err := password.Hash(pass)
-		require.NoError(st, err)
-
 		acc := entities.Account{
-			Username:     uuid.NewString(),
-			PasswordHash: hash,
-			Name:         testdata.Fake.Internet().User(),
-			CreatedAt:    time.Now().UnixMilli(),
-			UpdatedAt:    time.Now().UnixMilli(),
+			Username:  uuid.NewString(),
+			Password:  uuid.NewString(),
+			Name:      testdata.Fake.Internet().User(),
+			CreatedAt: time.Now().UnixMilli(),
+			UpdatedAt: time.Now().UnixMilli(),
 		}
 
-		require.ErrorContains(st, strategy.Register(context.Background(), acc), testkostatustext)
+		require.ErrorContains(st, strategy.Register(context.Background(), acc), "UNIMPLEMENT.ERROR")
 	})
 }
 
 func TestExternal_Login(t *testing.T) {
-	var emptyres = "###EMPTY###"
-
-	conf, server := externalsetup(func(w http.ResponseWriter, r *http.Request) {
-		tokens := &entities.Tokens{
-			Access: testdata.Fake.RandomStringWithLength(256),
-		}
-
-		if strings.Contains(r.Context().Value(testctxkeydata).(string), emptyres) {
-			tokens.Access = ""
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(utils.Stringify(tokens)))
-	})
+	conf, server := externalsetup(nil)
 	defer server.Close()
 
 	strategy, err := NewExternal(conf, testify.Logger())
@@ -207,40 +172,15 @@ func TestExternal_Login(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("OK", func(st *testing.T) {
+	t.Run("KO", func(st *testing.T) {
 		creds := entities.Credentials{
 			Region:   project.Region(),
 			Username: uuid.NewString(),
 			Password: testoktext + uuid.NewString(),
 		}
 
-		tokens, err := strategy.Login(context.Background(), creds)
-		require.NoError(st, err)
-		require.NotNil(st, tokens)
-	})
-
-	t.Run("KO - external error", func(st *testing.T) {
-		creds := entities.Credentials{
-			Region:   project.Region(),
-			Username: uuid.NewString(),
-			Password: uuid.NewString(),
-		}
-
-		tokens, err := strategy.Login(context.Background(), creds)
-		require.ErrorContains(st, err, testkostatustext)
-		require.Nil(st, tokens)
-	})
-
-	t.Run("KO - returning tokens error", func(st *testing.T) {
-		creds := entities.Credentials{
-			Region:   project.Region(),
-			Username: uuid.NewString(),
-			Password: testoktext + uuid.NewString() + emptyres,
-		}
-
-		tokens, err := strategy.Login(context.Background(), creds)
-		require.ErrorContains(st, err, "PASSPORT.TOKENS.")
-		require.Nil(st, tokens)
+		_, err := strategy.Login(context.Background(), creds)
+		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }
 
@@ -254,36 +194,25 @@ func TestExternal_Logout(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("OK", func(st *testing.T) {
-		tokens := entities.Tokens{
-			Access: testoktext + testdata.Fake.RandomStringWithLength(256),
-		}
-
-		require.NoError(st, strategy.Logout(context.Background(), tokens))
-	})
-
 	t.Run("KO", func(st *testing.T) {
 		tokens := entities.Tokens{
 			Access: testdata.Fake.RandomStringWithLength(256),
 		}
 
-		require.ErrorContains(st, strategy.Logout(context.Background(), tokens), testkostatustext)
+		require.ErrorContains(st, strategy.Logout(context.Background(), tokens), "UNIMPLEMENT.ERROR")
 	})
 }
 
 func TestExternal_Verify(t *testing.T) {
 	var emptyres = "###EMPTY###"
-	pass := uuid.NewString()
-	hash, err := password.Hash(pass)
-	require.NoError(t, err)
 
 	conf, server := externalsetup(func(w http.ResponseWriter, r *http.Request) {
 		account := &entities.Account{
-			Username:     uuid.NewString(),
-			PasswordHash: hash,
-			Name:         testdata.Fake.Internet().User(),
-			CreatedAt:    time.Now().UnixMilli(),
-			UpdatedAt:    time.Now().UnixMilli(),
+			Username:  uuid.NewString(),
+			Password:  uuid.NewString(),
+			Name:      testdata.Fake.Internet().User(),
+			CreatedAt: time.Now().UnixMilli(),
+			UpdatedAt: time.Now().UnixMilli(),
 		}
 
 		if strings.Contains(r.Context().Value(testctxkeydata).(string), emptyres) {
@@ -333,7 +262,24 @@ func TestExternal_Verify(t *testing.T) {
 	})
 }
 
-func TestExternal_Deactivate(t *testing.T) {
+func TestExternalManagement(t *testing.T) {
+	conf, server := externalsetup(nil)
+	defer server.Close()
+
+	strategy, err := NewExternal(conf, testify.Logger())
+	require.NoError(t, err)
+
+	t.Run("KO", func(st *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				require.ErrorIs(t, r.(error), ErrNotConnected)
+			}
+		}()
+		strategy.Management()
+	})
+}
+
+func TestExternalManagement_Deactivate(t *testing.T) {
 	conf, server := externalsetup(nil)
 	defer server.Close()
 
@@ -344,12 +290,12 @@ func TestExternal_Deactivate(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	t.Run("KO - unimplement error", func(st *testing.T) {
-		err := strategy.Deactivate(context.Background(), uuid.NewString(), time.Now().UnixMilli())
+		err := strategy.Management().Deactivate(context.Background(), uuid.NewString(), time.Now().UnixMilli())
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }
 
-func TestExternal_List(t *testing.T) {
+func TestExternalManagement_List(t *testing.T) {
 	conf, server := externalsetup(nil)
 	defer server.Close()
 
@@ -360,12 +306,12 @@ func TestExternal_List(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	t.Run("KO - unimplement error", func(st *testing.T) {
-		_, err := strategy.List(context.Background(), []string{})
+		_, err := strategy.Management().List(context.Background(), []string{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }
 
-func TestExternal_Update(t *testing.T) {
+func TestExternalManagement_Update(t *testing.T) {
 	conf, server := externalsetup(nil)
 	defer server.Close()
 
@@ -376,7 +322,7 @@ func TestExternal_Update(t *testing.T) {
 	defer strategy.Disconnect(context.Background())
 
 	t.Run("KO - unimplement error", func(st *testing.T) {
-		err := strategy.Update(context.Background(), entities.Account{})
+		err := strategy.Management().Update(context.Background(), entities.Account{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
 }

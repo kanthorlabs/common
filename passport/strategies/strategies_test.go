@@ -23,6 +23,7 @@ func setup(t *testing.T) ([]entities.Account, []string) {
 		require.NoError(t, err)
 		accounts[i] = entities.Account{
 			Username:     uuid.NewString(),
+			Password:     passwords[i],
 			PasswordHash: hash,
 			Name:         testdata.Fake.Internet().User(),
 			CreatedAt:    time.Now().UnixMilli(),

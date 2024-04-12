@@ -9,7 +9,8 @@ import (
 
 type Account struct {
 	Username     string         `json:"username" yaml:"username" mapstructure:"username" gorm:"primaryKey"`
-	PasswordHash string         `json:"password_hash,omitempty" yaml:"password_hash,omitempty" mapstructure:"password_hash"`
+	Password     string         `json:"-" yaml:"-" mapstructure:"-" gorm:"-"`
+	PasswordHash string         `json:"password_hash" yaml:"password_hash" mapstructure:"password_hash"`
 	Name         string         `json:"name" yaml:"name" mapstructure:"name"`
 	Metadata     *safe.Metadata `json:"metadata" yaml:"metadata" mapstructure:"metadata"`
 

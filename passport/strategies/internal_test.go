@@ -145,19 +145,41 @@ func TestInternal_Register(t *testing.T) {
 	require.NoError(t, orm.Create(accounts).Error)
 
 	t.Run("OK", func(st *testing.T) {
-		pass := uuid.NewString()
-		hash, err := password.Hash(pass)
-		require.NoError(st, err)
-
 		acc := entities.Account{
-			Username:     uuid.NewString(),
-			PasswordHash: hash,
-			Name:         testdata.Fake.Internet().User(),
-			CreatedAt:    time.Now().UnixMilli(),
-			UpdatedAt:    time.Now().UnixMilli(),
+			Username:  uuid.NewString(),
+			Password:  uuid.NewString(),
+			Name:      testdata.Fake.Internet().User(),
+			CreatedAt: time.Now().UnixMilli(),
+			UpdatedAt: time.Now().UnixMilli(),
 		}
 
 		require.NoError(st, strategy.Register(context.Background(), acc))
+	})
+
+	t.Run("KO - validation error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		acc := accounts[i].Censor()
+		acc.Username = ""
+
+		err := strategy.Register(context.Background(), *acc)
+		require.ErrorContains(st, err, "PASSPORT.ACCOUNT.USERNAME")
+	})
+
+	t.Run("KO - password validation error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		acc := accounts[i].Censor()
+
+		err := strategy.Register(context.Background(), *acc)
+		require.ErrorContains(st, err, "PASSPORT.ACCOUNT.PASSWORD")
+	})
+
+	t.Run("KO - password hash error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		acc := accounts[i].Censor()
+		acc.Password = uuid.NewString() + uuid.NewString() + uuid.NewString()
+
+		err := strategy.Register(context.Background(), *acc)
+		require.ErrorContains(st, err, "bcrypt")
 	})
 
 	t.Run("KO - already exist error", func(st *testing.T) {
@@ -247,7 +269,7 @@ func TestInternal_Verify(t *testing.T) {
 		require.ErrorContains(st, err, "PASSPORT.CREDENTIALS")
 	})
 
-	t.Run("KO - user not found", func(st *testing.T) {
+	t.Run("KO - user not found error", func(st *testing.T) {
 		basic := utils.CreateRegionalBasicCredentials(
 			uuid.NewString() + ":" + testdata.Fake.Internet().Password(),
 		)
@@ -262,7 +284,7 @@ func TestInternal_Verify(t *testing.T) {
 		newaccounts, newpasswords := setup(t)
 		require.NoError(st, orm.Create(newaccounts).Error)
 
-		i := testdata.Fake.IntBetween(0, len(passwords)-1)
+		i := testdata.Fake.IntBetween(0, len(newpasswords)-1)
 		user := newaccounts[i].Username
 		pass := newpasswords[i]
 
@@ -291,7 +313,21 @@ func TestInternal_Verify(t *testing.T) {
 	})
 }
 
-func TestInternal_Deactivate(t *testing.T) {
+func TestInternalManagement(t *testing.T) {
+	strategy, err := NewInternal(internalconf, testify.Logger())
+	require.NoError(t, err)
+
+	t.Run("KO", func(st *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				require.ErrorIs(t, r.(error), ErrNotConnected)
+			}
+		}()
+		strategy.Management()
+	})
+}
+
+func TestInternalManagement_Deactivate(t *testing.T) {
 	accounts, _ := setup(t)
 
 	strategy, err := NewInternal(internalconf, testify.Logger())
@@ -308,15 +344,22 @@ func TestInternal_Deactivate(t *testing.T) {
 		username := accounts[i].Username
 		ts := time.Now().UnixMilli()
 
-		err := strategy.Deactivate(context.Background(), username, ts)
+		err := strategy.Management().Deactivate(context.Background(), username, ts)
 		require.NoError(st, err)
 	})
 
-	t.Run("KO - user not found", func(st *testing.T) {
+	t.Run("KO - validation error", func(st *testing.T) {
+		ts := time.Now().UnixMilli()
+
+		err := strategy.Management().Deactivate(context.Background(), "", ts)
+		require.ErrorContains(st, err, "PASSPORT.ACCOUNT.USERNAME")
+	})
+
+	t.Run("KO - user not found error", func(st *testing.T) {
 		username := uuid.NewString()
 		ts := time.Now().UnixMilli()
 
-		err := strategy.Deactivate(context.Background(), username, ts)
+		err := strategy.Management().Deactivate(context.Background(), username, ts)
 		require.ErrorIs(st, err, ErrAccountNotFound)
 	})
 
@@ -325,15 +368,15 @@ func TestInternal_Deactivate(t *testing.T) {
 		username := accounts[i].Username
 		ts := time.Now().UnixMilli()
 
-		err := strategy.Deactivate(context.Background(), username, ts)
+		err := strategy.Management().Deactivate(context.Background(), username, ts)
 		require.NoError(st, err)
 
-		err = strategy.Deactivate(context.Background(), username, ts-1)
+		err = strategy.Management().Deactivate(context.Background(), username, ts-1)
 		require.ErrorIs(st, err, ErrDeactivate)
 	})
 }
 
-func TestInternal_List(t *testing.T) {
+func TestInternalManagement_List(t *testing.T) {
 	accounts, _ := setup(t)
 
 	strategy, err := NewInternal(internalconf, testify.Logger())
@@ -350,7 +393,7 @@ func TestInternal_List(t *testing.T) {
 		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
 		usernames := []string{accounts[i].Username, accounts[j].Username}
 
-		acc, err := strategy.List(context.Background(), usernames)
+		acc, err := strategy.Management().List(context.Background(), usernames)
 		require.NoError(st, err)
 
 		require.Equal(st, len(usernames), len(acc))
@@ -365,12 +408,12 @@ func TestInternal_List(t *testing.T) {
 		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
 		usernames := []string{accounts[i].Username, accounts[j].Username, ""}
 
-		_, err := strategy.List(context.Background(), usernames)
+		_, err := strategy.Management().List(context.Background(), usernames)
 		require.ErrorContains(st, err, fmt.Sprintf("usernames[%d]", len(usernames)-1))
 	})
 }
 
-func TestInternal_Update(t *testing.T) {
+func TestInternalManagement_Update(t *testing.T) {
 	accounts, _ := setup(t)
 
 	strategy, err := NewInternal(internalconf, testify.Logger())
@@ -386,16 +429,30 @@ func TestInternal_Update(t *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
 		accounts[i].Name = testdata.Fake.Internet().User()
 
-		require.NoError(st, strategy.Update(context.Background(), accounts[i]))
+		require.NoError(st, strategy.Management().Update(context.Background(), accounts[i]))
 
 		accounts[i].Metadata = &safe.Metadata{}
 		accounts[i].Metadata.Set("external_id", uuid.NewString())
 
-		require.NoError(st, strategy.Update(context.Background(), accounts[i]))
+		require.NoError(st, strategy.Management().Update(context.Background(), accounts[i]))
 	})
 
-	t.Run("KO - user not found", func(st *testing.T) {
-		err := strategy.Update(context.Background(), entities.Account{Username: uuid.NewString()})
+	t.Run("KO - validation error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		acc := accounts[i].Censor()
+		acc.Username = ""
+
+		err := strategy.Management().Update(context.Background(), *acc)
+		require.ErrorContains(st, err, "PASSPORT.ACCOUNT.USERNAME")
+	})
+
+	t.Run("KO - user not found error", func(st *testing.T) {
+		i := testdata.Fake.IntBetween(0, len(accounts)-1)
+		acc := accounts[i].Censor()
+		acc.Username = uuid.NewString()
+		acc.Name = testdata.Fake.Internet().User()
+
+		err := strategy.Management().Update(context.Background(), *acc)
 		require.ErrorIs(st, err, ErrAccountNotFound)
 	})
 
@@ -413,7 +470,7 @@ func TestInternal_Update(t *testing.T) {
 		}
 		require.NoError(t, orm.Create(account).Error)
 
-		err = strategy.Update(context.Background(), account)
+		err = strategy.Management().Update(context.Background(), account)
 		require.ErrorIs(st, err, ErrDeactivate)
 	})
 }
