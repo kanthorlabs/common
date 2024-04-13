@@ -51,6 +51,18 @@ func New(conf *config.Config, logger logging.Logger) (Passport, error) {
 
 			instances[conf.Strategies[i].Name] = strategy
 		}
+
+		if engine == config.EngineExternal {
+			strategy, err := strategies.NewExternal(
+				&conf.Strategies[i].External,
+				logger.With("strategy_engine", engine, "strategy_name", name),
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			instances[conf.Strategies[i].Name] = strategy
+		}
 	}
 
 	return &passport{strategies: instances}, nil

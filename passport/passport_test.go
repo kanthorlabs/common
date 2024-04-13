@@ -2,6 +2,8 @@ package passport
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
@@ -60,30 +62,52 @@ func TestPassport_New(t *testing.T) {
 		_, err := New(conf, testify.Logger())
 		require.ErrorContains(st, err, "SQLX.CONFIG.")
 	})
+
+	t.Run("KO - External configuration error", func(st *testing.T) {
+		server := httptestserver()
+		defer server.Close()
+
+		conf := &config.Config{Strategies: make([]config.Strategy, 1)}
+		conf.Strategies[0] = external(server.URL)
+		conf.Strategies[0].External = config.External{}
+
+		_, err := New(conf, testify.Logger())
+		require.ErrorContains(st, err, "PASSPORT.CONFIG.EXTERNAL.")
+	})
 }
 
 func TestPassport_Connect(t *testing.T) {
+	server := httptestserver()
+	defer server.Close()
+
 	t.Run("OK", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		require.ErrorIs(st, pp.Connect(context.Background()), ErrAlreadyConnected)
 	})
 }
 
 func TestPassport_Readiness(t *testing.T) {
+	server := httptestserver()
+	defer server.Close()
+
 	t.Run("OK", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		require.NoError(st, pp.Readiness())
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		require.NoError(st, pp.Disconnect(context.Background()))
 
@@ -91,47 +115,63 @@ func TestPassport_Readiness(t *testing.T) {
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.ErrorIs(st, pp.Readiness(), ErrNotConnected)
 	})
 }
 
 func TestPassport_Liveness(t *testing.T) {
+	server := httptestserver()
+	defer server.Close()
+
 	t.Run("OK", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		require.NoError(st, pp.Liveness())
 	})
 
 	t.Run("OK - disconnected", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		require.NoError(st, pp.Disconnect(context.Background()))
 
 		require.NoError(st, pp.Liveness())
 	})
 	t.Run("KO - not connected error", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.ErrorIs(st, pp.Liveness(), ErrNotConnected)
 	})
 }
 
 func TestPassport_Disconnect(t *testing.T) {
+	server := httptestserver()
+	defer server.Close()
+
 	t.Run("OK", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		require.NoError(st, pp.Disconnect(context.Background()))
 	})
 
 	t.Run("KO - not connected error", func(st *testing.T) {
-		pp, _ := instance(t)
+		pp, _ := instance(t, server)
+
 		require.ErrorIs(st, pp.Disconnect(context.Background()), ErrNotConnected)
 	})
 }
 
 func TestPassport_Strategy(t *testing.T) {
+	server := httptestserver()
+	defer server.Close()
+
 	t.Run("OK", func(st *testing.T) {
-		pp, conf := instance(st)
+		pp, conf := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		defer func() {
 			require.NoError(st, pp.Disconnect(context.Background()))
@@ -152,7 +192,8 @@ func TestPassport_Strategy(t *testing.T) {
 	})
 
 	t.Run("KO - strategy not found", func(st *testing.T) {
-		pp, _ := instance(st)
+		pp, _ := instance(t, server)
+
 		require.NoError(st, pp.Connect(context.Background()))
 		defer func() {
 			require.NoError(st, pp.Disconnect(context.Background()))
@@ -163,10 +204,11 @@ func TestPassport_Strategy(t *testing.T) {
 	})
 }
 
-func instance(t *testing.T) (Passport, *config.Config) {
+func instance(t *testing.T, server *httptest.Server) (Passport, *config.Config) {
 	conf := &config.Config{Strategies: make([]config.Strategy, 0)}
 	conf.Strategies = append(conf.Strategies, internal())
 	conf.Strategies = append(conf.Strategies, ask())
+	conf.Strategies = append(conf.Strategies, external(server.URL))
 
 	pp, err := New(conf, testify.Logger())
 	require.NoError(t, err)
@@ -231,4 +273,24 @@ func internal() config.Strategy {
 			},
 		},
 	}
+}
+
+func external(uri string) config.Strategy {
+	return config.Strategy{
+		Engine: config.EngineExternal,
+		Name:   uuid.NewString(),
+		External: config.External{
+			Uri: uri,
+		},
+	}
+}
+
+func httptestserver() *httptest.Server {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	}))
+
+	return server
 }
