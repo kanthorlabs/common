@@ -13,17 +13,12 @@ import (
 )
 
 func TestNewFile(t *testing.T) {
-	data, err := yaml.Marshal(configs{
-		Counter: testdata.Fake.IntBetween(1, 100),
-		Blood:   testdata.Fake.Blood().Name(),
-	})
-	require.NoError(t, err)
-
 	t.Run("OK - $KANTHOR_HOME", func(st *testing.T) {
 		home := "/tmp/" + uuid.NewString()
 		require.NoError(st, os.Mkdir(home, 0755))
 
 		st.Setenv("KANTHOR_HOME", home)
+		_, data := setupdata(t)
 		require.NoError(st, os.WriteFile(home+"/"+FileName+"."+FileExt, data, 0644))
 
 		provider, err := NewFile(project.Namespace(), FileLookingDirs)
@@ -49,18 +44,9 @@ func TestNewFile(t *testing.T) {
 }
 
 func TestFile_Unmarshal(t *testing.T) {
-	orignal := configs{
-		Counter:  testdata.Fake.IntBetween(1, 100),
-		Blood:    testdata.Fake.Blood().Name(),
-		Metadata: &safe.Metadata{},
-	}
-	orignal.Metadata.Set("bool", testdata.Fake.Bool())
-	orignal.Metadata.Set("number", testdata.Fake.Int64Between(1, 100))
-
-	data, err := yaml.Marshal(orignal)
-	require.NoError(t, err)
-
 	t.Run("OK - $KANTHOR_HOME", func(st *testing.T) {
+		orignal, data := setupdata(t)
+
 		home := "/tmp/kanthor-" + uuid.NewString()
 		require.NoError(st, os.Mkdir(home, 0755))
 
@@ -85,6 +71,8 @@ func TestFile_Unmarshal(t *testing.T) {
 	})
 
 	t.Run("OK - $HOME", func(st *testing.T) {
+		orignal, data := setupdata(t)
+
 		home := "/tmp/" + uuid.NewString()
 		require.NoError(st, os.Mkdir(home, 0755))
 		require.NoError(st, os.Mkdir(home+"/.kanthor/", 0755))
@@ -102,6 +90,7 @@ func TestFile_Unmarshal(t *testing.T) {
 	})
 
 	t.Run("OK - current directory", func(st *testing.T) {
+		orignal, data := setupdata(t)
 		require.NoError(st, os.WriteFile("./"+FileName+"."+FileExt, data, 0644))
 
 		provider, err := NewFile(project.Namespace(), FileLookingDirs)
@@ -131,6 +120,9 @@ func TestFile_SetDefault(t *testing.T) {
 
 func TestFile_Sources(t *testing.T) {
 	setupfile(t)
+
+	_, data := setupdata(t)
+	require.NoError(t, os.WriteFile("./"+FileName+"."+FileExt, data, 0644))
 
 	provider, err := NewFile(project.Namespace(), FileLookingDirs)
 	require.NoError(t, err)
@@ -162,11 +154,7 @@ func TestFile_Set(t *testing.T) {
 }
 
 func setupfile(t *testing.T) {
-	data, err := yaml.Marshal(configs{
-		Counter: testdata.Fake.IntBetween(1, 100),
-		Blood:   testdata.Fake.Blood().Name(),
-	})
-	require.NoError(t, err)
+	_, data := setupdata(t)
 
 	home := "/tmp/" + uuid.NewString()
 	require.NoError(t, os.Mkdir(home, 0755))
@@ -174,4 +162,19 @@ func setupfile(t *testing.T) {
 
 	t.Setenv("HOME", home)
 	require.NoError(t, os.WriteFile(home+"/.kanthor/"+FileName+"."+FileExt, data, 0644))
+}
+
+func setupdata(t *testing.T) (*configs, []byte) {
+	conf := &configs{
+		Counter:  testdata.Fake.IntBetween(1, 100),
+		Blood:    testdata.Fake.Blood().Name(),
+		Metadata: &safe.Metadata{},
+	}
+	conf.Metadata.Set("id", uuid.NewString())
+	conf.Metadata.Set("bool", true)
+	conf.Metadata.Set("number", testdata.Fake.Int64Between(1, 100))
+
+	data, err := yaml.Marshal(conf)
+	require.NoError(t, err)
+	return conf, data
 }

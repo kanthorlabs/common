@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"strings"
 
@@ -32,20 +33,25 @@ func NewFile(ns string, dirs []string) (Provider, error) {
 	for _, dir := range dirs {
 		dir = strings.Trim(dir, " ")
 		filename := FileName + "." + FileExt
-		sources = append(sources, Source{Looking: path.Join(dir, filename), Found: path.Join(utils.AbsPathify(dir), filename)})
-		instance.AddConfigPath(dir)
+
+		source := Source{Dir: dir, Looking: path.Join(dir, filename), Found: path.Join(utils.AbsPathify(dir), filename)}
+		sources = append(sources, source)
 	}
 
-	if err := instance.MergeInConfig(); err != nil {
-		// ignore not found files, otherwise return error
-		if _, notfound := err.(viper.ConfigFileNotFoundError); !notfound {
-			return nil, fmt.Errorf("CONFIGURATION.FILE.ERROR: %w", err)
+	for i := range sources {
+		if _, err := os.Stat(sources[i].Found); err == nil {
+			sources[i].Used = true
+			instance.AddConfigPath(sources[i].Dir)
+
+			if err := instance.MergeInConfig(); err != nil {
+				// ignore not found files, otherwise return error
+				if _, notfound := err.(viper.ConfigFileNotFoundError); !notfound {
+					return nil, fmt.Errorf("CONFIGURATION.FILE.ERROR: %w", err)
+				}
+			}
+
+			break
 		}
-	}
-
-	for index, source := range sources {
-		source.Used = instance.ConfigFileUsed() != "" && instance.ConfigFileUsed() == source.Found
-		sources[index] = source
 	}
 
 	instance.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))

@@ -8,6 +8,7 @@ type Provider interface {
 }
 
 type Source struct {
+	Dir     string
 	Looking string
 	Found   string
 	Used    bool
