@@ -120,7 +120,7 @@ func (instance *external) Verify(ctx context.Context, tokens entities.Tokens) (*
 	}
 
 	if !res.Ok() {
-		return nil, errors.New(res.StatusText())
+		return nil, fmt.Errorf("%s: %s", res.StatusText(), string(res.Body))
 	}
 
 	var account entities.Account
