@@ -31,12 +31,7 @@ func TestNatsPublisher_Name(t *testing.T) {
 func TestNatsPublisher_Pub(t *testing.T) {
 	t.Run("KO - validation error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		publisher := &NatsPublisher{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		publisher := newnatspublisher(js)
 
 		ctx := context.Background()
 
@@ -59,12 +54,7 @@ func TestNatsPublisher_Pub(t *testing.T) {
 
 	t.Run("KO - publish error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		publisher := &NatsPublisher{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		publisher := newnatspublisher(js)
 
 		data := testdata.NewUser(clock.New())
 		id := uuid.NewString()
@@ -89,12 +79,7 @@ func TestNatsPublisher_Pub(t *testing.T) {
 
 	t.Run("KO - duplicated error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		publisher := &NatsPublisher{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		publisher := newnatspublisher(js)
 
 		data := testdata.NewUser(clock.New())
 		id := uuid.NewString()
@@ -121,4 +106,13 @@ func TestNatsPublisher_Pub(t *testing.T) {
 
 		require.ErrorContains(st, errs[id], "STREAMING.PUBLISHER.EVENT_DUPLICATED")
 	})
+}
+
+func newnatspublisher(js *mockjetstream.JetStream) *NatsPublisher {
+	return &NatsPublisher{
+		name:   pubsubname(),
+		conf:   testconf(testdata.NatsUri),
+		logger: testify.Logger(),
+		js:     js,
+	}
 }
