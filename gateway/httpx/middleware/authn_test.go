@@ -159,11 +159,9 @@ func TestAuthn_WithCache(t *testing.T) {
 	// second verification
 	req, err := http.NewRequest(http.MethodGet, path, nil)
 	require.NoError(t, err)
-
 	req.Header.Set(HeaderAuthnCredentials, pputils.SchemeBasic+basic)
 
-	// strategy.Strategy should not be called here
-	// strategy.ParseCredentials should not be called here
+	// passport.Strategy should not be called here
 	// strategy.Verify should not be called here
 
 	res := httptest.NewRecorder()

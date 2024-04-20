@@ -126,7 +126,7 @@ func TestMemory_Validate(t *testing.T) {
 		require.NoError(t, c.Validate(context.Background(), key))
 	})
 
-	t.Run("KO - key empty error", func(st *testing.T) {
+	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 		c.Connect(context.Background())

@@ -128,7 +128,7 @@ func TestRedis_Validate(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("KO - key empty error", func(st *testing.T) {
+	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		c, err := NewRedis(redistestconf(), testify.Logger())
 		require.NoError(t, err)
 

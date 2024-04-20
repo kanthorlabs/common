@@ -124,7 +124,7 @@ func TestMemory_Lock(t *testing.T) {
 		require.NotNil(st, identifier)
 	})
 
-	t.Run("KO - key empty error", func(st *testing.T) {
+	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		_, err := dlm.Lock(context.Background(), "", ttl)
 		require.ErrorIs(st, err, ErrKeyEmpty)
 	})

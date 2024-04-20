@@ -19,7 +19,7 @@ func TestGoBreaker_New(t *testing.T) {
 		require.NoError(st, err)
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		conf := &config.Config{}
 		_, err := NewGoBreaker(conf, testify.Logger())
 		require.ErrorContains(st, err, "CIRCUIT_BREAKER.CONFIG")

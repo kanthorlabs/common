@@ -3,6 +3,7 @@ package idempotency
 import (
 	"testing"
 
+	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,7 +14,7 @@ func TestKey(t *testing.T) {
 		require.Equal(st, "idempotency/test", k)
 	})
 
-	t.Run("KO - key empty error", func(st *testing.T) {
+	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		_, err := Key("")
 		require.ErrorIs(st, err, ErrKeyEmpty)
 	})

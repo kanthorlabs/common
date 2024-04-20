@@ -24,7 +24,7 @@ func TestNatsPublisher_Name(t *testing.T) {
 }
 
 func TestNatsPublisher_Pub(t *testing.T) {
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		publisher := newnatspublisher(js)
 

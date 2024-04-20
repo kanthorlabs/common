@@ -156,7 +156,7 @@ func TestInternal_Register(t *testing.T) {
 		require.NoError(st, strategy.Register(context.Background(), acc))
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
 		acc := accounts[i].Censor()
 		acc.Username = ""
@@ -201,7 +201,7 @@ func TestInternal_Login(t *testing.T) {
 	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
 		credentials := entities.Credentials{
 			Username: accounts[i].Username,
@@ -224,7 +224,7 @@ func TestInternal_Logout(t *testing.T) {
 	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err := strategy.Logout(context.Background(), entities.Tokens{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -348,7 +348,7 @@ func TestInternalManagement_Deactivate(t *testing.T) {
 		require.NoError(st, err)
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		ts := time.Now().UnixMilli()
 
 		err := strategy.Management().Deactivate(context.Background(), "", ts)
@@ -403,7 +403,7 @@ func TestInternalManagement_List(t *testing.T) {
 		}
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)/2-1)
 		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
 		usernames := []string{accounts[i].Username, accounts[j].Username, ""}
@@ -437,7 +437,7 @@ func TestInternalManagement_Update(t *testing.T) {
 		require.NoError(st, strategy.Management().Update(context.Background(), accounts[i]))
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)-1)
 		acc := accounts[i].Censor()
 		acc.Username = ""

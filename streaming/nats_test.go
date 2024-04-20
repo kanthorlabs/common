@@ -30,7 +30,7 @@ func TestNats_New(t *testing.T) {
 		require.NotNil(st, stream)
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		stream, err := NewNats(&config.Config{}, testify.Logger())
 		require.Error(st, err)
 		require.Nil(st, stream)

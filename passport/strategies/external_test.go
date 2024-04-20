@@ -289,7 +289,7 @@ func TestExternalManagement_Deactivate(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err := strategy.Management().Deactivate(context.Background(), uuid.NewString(), time.Now().UnixMilli())
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -305,7 +305,7 @@ func TestExternalManagement_List(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		_, err := strategy.Management().List(context.Background(), []string{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -321,7 +321,7 @@ func TestExternalManagement_Update(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err := strategy.Management().Update(context.Background(), entities.Account{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})

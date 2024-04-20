@@ -160,7 +160,7 @@ func TestAsk_Register(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err = strategy.Register(context.Background(), accounts[0])
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -173,7 +173,7 @@ func TestAsk_Login(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
 		credentials := entities.Credentials{
 			Username: accounts[i].Username,
@@ -191,7 +191,7 @@ func TestAsk_Logout(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err := strategy.Logout(context.Background(), entities.Tokens{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -284,7 +284,7 @@ func TestAskManagement_Deactivate(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err = strategy.Management().Deactivate(context.Background(), accounts[0].Username, time.Now().UnixMilli())
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -312,7 +312,7 @@ func TestAskManagement_List(t *testing.T) {
 		}
 	})
 
-	t.Run("KO - validation error", func(st *testing.T) {
+	t.Run(testify.CaseKOValidationError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(accounts)/2-1)
 		j := testdata.Fake.IntBetween(len(accounts)/2, len(accounts)-1)
 		usernames := []string{accounts[i].Username, accounts[j].Username, ""}
@@ -332,7 +332,7 @@ func TestAskManagement_Update(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
+	t.Run(testify.CaseKOUnimplementedError, func(st *testing.T) {
 		err := strategy.Management().Update(context.Background(), entities.Account{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})

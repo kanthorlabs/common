@@ -34,6 +34,7 @@ func Authn(authn passport.Passport, options ...AuthnOption) Middleware {
 			if name == "" {
 				name = conf.Fallback
 			}
+
 			tokens := ppentities.Tokens{Access: r.Header.Get(HeaderAuthnCredentials)}
 
 			acc, err := cache.GetOrSet(
@@ -46,7 +47,6 @@ func Authn(authn passport.Passport, options ...AuthnOption) Middleware {
 					if err != nil {
 						return nil, err
 					}
-
 					return strategy.Verify(ctx, tokens)
 				},
 			)
