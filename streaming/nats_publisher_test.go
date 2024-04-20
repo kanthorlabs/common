@@ -17,13 +17,8 @@ import (
 
 func TestNatsPublisher_Name(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
-		js := mockjetstream.NewJetStream(t)
-		publisher := &NatsPublisher{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		js := mockjetstream.NewJetStream(st)
+		publisher := newnatspublisher(js)
 		require.Equal(st, publisher.name, publisher.Name())
 	})
 }

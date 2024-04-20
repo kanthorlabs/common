@@ -20,12 +20,7 @@ import (
 func TestNatsSubscriber_Name(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(t)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
 		require.Equal(st, subscriber.name, subscriber.Name())
 	})
 }
@@ -33,23 +28,14 @@ func TestNatsSubscriber_Name(t *testing.T) {
 func TestNatsSubscriber_Connect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
 		require.NoError(st, subscriber.Connect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 		require.ErrorIs(st, subscriber.Connect(context.Background()), ErrSubAlreadyConnected)
 	})
@@ -58,12 +44,8 @@ func TestNatsSubscriber_Connect(t *testing.T) {
 func TestNatsSubscriber_Readiness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 		js.EXPECT().Stream(mock.Anything, subscriber.conf.Name).Return(nil, nil)
 		require.NoError(st, subscriber.Readiness())
@@ -71,12 +53,8 @@ func TestNatsSubscriber_Readiness(t *testing.T) {
 
 	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 		require.NoError(st, subscriber.Disconnect(context.Background()))
 		require.NoError(st, subscriber.Readiness())
@@ -84,12 +62,8 @@ func TestNatsSubscriber_Readiness(t *testing.T) {
 
 	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.ErrorIs(st, subscriber.Readiness(), ErrSubNotConnected)
 	})
 }
@@ -97,12 +71,8 @@ func TestNatsSubscriber_Readiness(t *testing.T) {
 func TestNatsSubscriber_Liveness(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 		js.EXPECT().Stream(mock.Anything, subscriber.conf.Name).Return(nil, nil)
 		require.NoError(st, subscriber.Liveness())
@@ -110,12 +80,8 @@ func TestNatsSubscriber_Liveness(t *testing.T) {
 
 	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 		require.NoError(st, subscriber.Disconnect(context.Background()))
 		require.NoError(st, subscriber.Liveness())
@@ -123,12 +89,8 @@ func TestNatsSubscriber_Liveness(t *testing.T) {
 
 	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.ErrorIs(st, subscriber.Liveness(), ErrSubNotConnected)
 	})
 }
@@ -136,24 +98,16 @@ func TestNatsSubscriber_Liveness(t *testing.T) {
 func TestNatsSubscriber_Disconnect(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 		require.NoError(st, subscriber.Disconnect(context.Background()))
 	})
 
 	t.Run("KO - already connected error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.ErrorIs(st, subscriber.Disconnect(context.Background()), ErrSubNotConnected)
 	})
 }
@@ -161,12 +115,8 @@ func TestNatsSubscriber_Disconnect(t *testing.T) {
 func TestNatsSubscriber_Subscribe(t *testing.T) {
 	t.Run("OK", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 
 		batch := mockjetstream.NewMessageBatch(st)
@@ -221,12 +171,8 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 
 	t.Run("OK - no valid event", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 
 		batch := mockjetstream.NewMessageBatch(st)
@@ -265,12 +211,8 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 
 	t.Run("OK - batch fetching got error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 
 		consumer := mockjetstream.NewConsumer(st)
@@ -297,12 +239,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 
 	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
 
 		topic := topicname()
 		err := subscriber.Sub(context.Background(), topic, consumerhandler(nil))
@@ -311,12 +248,8 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 
 	t.Run("KO - topic error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 
 		topic := topicname() + "#" + topicname()
@@ -326,12 +259,8 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 
 	t.Run("KO - consumer error", func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
-		subscriber := &NatsSubscriber{
-			name:   pubsubname(),
-			conf:   testconf(testdata.NatsUri),
-			logger: testify.Logger(),
-			js:     js,
-		}
+		subscriber := newnatssubscriber(js)
+
 		require.NoError(st, subscriber.Connect(context.Background()))
 
 		topic := topicname()
@@ -407,5 +336,14 @@ func consumerfetch(t *testing.T, ch chan jetstream.Msg, events []*entities.Event
 			}
 		}
 		ch <- jsmsg
+	}
+}
+
+func newnatssubscriber(js *mockjetstream.JetStream) *NatsSubscriber {
+	return &NatsSubscriber{
+		name:   pubsubname(),
+		conf:   testconf(testdata.NatsUri),
+		logger: testify.Logger(),
+		js:     js,
 	}
 }
