@@ -22,7 +22,7 @@ func TestNatsSubscriber_Name(t *testing.T) {
 		js := mockjetstream.NewJetStream(t)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -35,7 +35,7 @@ func TestNatsSubscriber_Connect(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -46,7 +46,7 @@ func TestNatsSubscriber_Connect(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -60,7 +60,7 @@ func TestNatsSubscriber_Readiness(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -69,11 +69,11 @@ func TestNatsSubscriber_Readiness(t *testing.T) {
 		require.NoError(st, subscriber.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -82,11 +82,11 @@ func TestNatsSubscriber_Readiness(t *testing.T) {
 		require.NoError(st, subscriber.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -99,7 +99,7 @@ func TestNatsSubscriber_Liveness(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -108,11 +108,11 @@ func TestNatsSubscriber_Liveness(t *testing.T) {
 		require.NoError(st, subscriber.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -121,11 +121,11 @@ func TestNatsSubscriber_Liveness(t *testing.T) {
 		require.NoError(st, subscriber.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -138,7 +138,7 @@ func TestNatsSubscriber_Disconnect(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -150,7 +150,7 @@ func TestNatsSubscriber_Disconnect(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -163,7 +163,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -223,7 +223,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -267,7 +267,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -295,11 +295,11 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 		time.Sleep(time.Second)
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -313,7 +313,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -328,7 +328,7 @@ func TestNatsSubscriber_Subscribe(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		subscriber := &NatsSubscriber{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}

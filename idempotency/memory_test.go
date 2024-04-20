@@ -51,7 +51,7 @@ func TestMemory_Readiness(t *testing.T) {
 		require.NoError(t, c.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 
@@ -61,7 +61,7 @@ func TestMemory_Readiness(t *testing.T) {
 		require.NoError(t, c.Readiness())
 	})
 
-	t.Run("KO - not connect", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 
@@ -80,7 +80,7 @@ func TestMemory_Liveness(t *testing.T) {
 		require.NoError(t, c.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 
@@ -90,7 +90,7 @@ func TestMemory_Liveness(t *testing.T) {
 		require.NoError(t, c.Liveness())
 	})
 
-	t.Run("KO - not connect", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 
@@ -107,7 +107,7 @@ func TestMemory_Disconnect(t *testing.T) {
 		require.NoError(t, c.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connect", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		c, err := NewMemory(testconf, testify.Logger())
 		require.NoError(t, err)
 

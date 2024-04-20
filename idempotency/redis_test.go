@@ -53,7 +53,7 @@ func TestRedis_Readiness(t *testing.T) {
 		require.NoError(t, c.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		c, err := NewRedis(redistestconf(), testify.Logger())
 		require.NoError(t, err)
 
@@ -62,7 +62,7 @@ func TestRedis_Readiness(t *testing.T) {
 		require.NoError(t, c.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		c, err := NewRedis(redistestconf(), testify.Logger())
 		require.NoError(t, err)
 
@@ -81,7 +81,7 @@ func TestRedis_Liveness(t *testing.T) {
 		require.NoError(t, c.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		c, err := NewRedis(redistestconf(), testify.Logger())
 		require.NoError(t, err)
 
@@ -90,7 +90,7 @@ func TestRedis_Liveness(t *testing.T) {
 		require.NoError(t, c.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		c, err := NewRedis(redistestconf(), testify.Logger())
 		require.NoError(t, err)
 
@@ -107,7 +107,7 @@ func TestRedis_Disconnect(t *testing.T) {
 		require.NoError(t, c.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		c, err := NewRedis(redistestconf(), testify.Logger())
 		require.NoError(t, err)
 

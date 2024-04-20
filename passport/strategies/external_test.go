@@ -73,7 +73,7 @@ func TestExternal_Readiness(t *testing.T) {
 		require.NoError(st, strategy.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		strategy, err := NewExternal(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -82,7 +82,7 @@ func TestExternal_Readiness(t *testing.T) {
 		require.NoError(st, strategy.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		strategy, err := NewExternal(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -102,7 +102,7 @@ func TestExternal_Liveness(t *testing.T) {
 		require.NoError(st, strategy.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		strategy, err := NewExternal(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -111,7 +111,7 @@ func TestExternal_Liveness(t *testing.T) {
 		require.NoError(st, strategy.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		strategy, err := NewExternal(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -131,7 +131,7 @@ func TestExternal_Disconnect(t *testing.T) {
 		require.NoError(st, strategy.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		strategy, err := NewExternal(conf, testify.Logger())
 		require.NoError(st, err)
 
@@ -289,7 +289,7 @@ func TestExternalManagement_Deactivate(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err := strategy.Management().Deactivate(context.Background(), uuid.NewString(), time.Now().UnixMilli())
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -305,7 +305,7 @@ func TestExternalManagement_List(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		_, err := strategy.Management().List(context.Background(), []string{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -321,7 +321,7 @@ func TestExternalManagement_Update(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err := strategy.Management().Update(context.Background(), entities.Account{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})

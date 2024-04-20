@@ -105,7 +105,7 @@ func TestPassport_Readiness(t *testing.T) {
 		require.NoError(st, pp.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		pp, _ := instance(t, server)
 
 		require.NoError(st, pp.Connect(context.Background()))
@@ -114,7 +114,7 @@ func TestPassport_Readiness(t *testing.T) {
 		require.NoError(st, pp.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		pp, _ := instance(t, server)
 
 		require.ErrorIs(st, pp.Readiness(), ErrNotConnected)
@@ -132,7 +132,7 @@ func TestPassport_Liveness(t *testing.T) {
 		require.NoError(st, pp.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		pp, _ := instance(t, server)
 
 		require.NoError(st, pp.Connect(context.Background()))
@@ -140,7 +140,7 @@ func TestPassport_Liveness(t *testing.T) {
 
 		require.NoError(st, pp.Liveness())
 	})
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		pp, _ := instance(t, server)
 
 		require.ErrorIs(st, pp.Liveness(), ErrNotConnected)
@@ -158,7 +158,7 @@ func TestPassport_Disconnect(t *testing.T) {
 		require.NoError(st, pp.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		pp, _ := instance(t, server)
 
 		require.ErrorIs(st, pp.Disconnect(context.Background()), ErrNotConnected)

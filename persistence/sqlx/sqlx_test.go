@@ -62,14 +62,14 @@ func TestSqlx_Readiness(t *testing.T) {
 		require.NoError(st, instance.Disconnect(context.Background()))
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		instance := start(t)
 		require.NoError(st, instance.Connect(context.Background()))
 		require.NoError(st, instance.Disconnect(context.Background()))
 		require.NoError(st, instance.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		instance := start(t)
 		require.ErrorIs(st, instance.Readiness(), ErrNotConnected)
 	})
@@ -83,14 +83,14 @@ func TestSqlx_Liveness(t *testing.T) {
 		require.NoError(st, instance.Disconnect(context.Background()))
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		instance := start(t)
 		require.NoError(st, instance.Connect(context.Background()))
 		require.NoError(st, instance.Disconnect(context.Background()))
 		require.NoError(st, instance.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		instance := start(t)
 		require.ErrorIs(st, instance.Liveness(), ErrNotConnected)
 	})
@@ -103,7 +103,7 @@ func TestSqlx_Disconnect(t *testing.T) {
 		require.NoError(st, instance.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		instance := start(t)
 		require.ErrorIs(st, instance.Disconnect(context.Background()), ErrNotConnected)
 	})

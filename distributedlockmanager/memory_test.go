@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
 	"github.com/kanthorlabs/common/testdata"
+	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,7 +50,7 @@ func TestMemory_Readiness(t *testing.T) {
 		require.NoError(st, dlm.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		dlm, err := NewMemory(testconf)
 		require.NoError(t, err)
 
@@ -58,7 +59,7 @@ func TestMemory_Readiness(t *testing.T) {
 		require.NoError(st, dlm.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		dlm, err := NewMemory(testconf)
 		require.NoError(t, err)
 
@@ -75,7 +76,7 @@ func TestMemory_Liveness(t *testing.T) {
 		require.NoError(st, dlm.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		dlm, err := NewMemory(testconf)
 		require.NoError(t, err)
 
@@ -84,7 +85,7 @@ func TestMemory_Liveness(t *testing.T) {
 		require.NoError(st, dlm.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		dlm, err := NewMemory(testconf)
 		require.NoError(t, err)
 
@@ -101,7 +102,7 @@ func TestMemory_Disconnect(t *testing.T) {
 		require.NoError(st, dlm.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connect error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		dlm, err := NewMemory(testconf)
 		require.NoError(t, err)
 

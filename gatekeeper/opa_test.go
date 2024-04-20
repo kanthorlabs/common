@@ -93,7 +93,7 @@ func TestOpa_Readiness(t *testing.T) {
 		require.NoError(st, gk.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
@@ -112,7 +112,7 @@ func TestOpa_Liveness(t *testing.T) {
 		require.NoError(st, gk.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 
@@ -131,7 +131,7 @@ func TestOpa_Disconnect(t *testing.T) {
 		require.NoError(st, gk.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		gk, err := NewOpa(testconf, testify.Logger())
 		require.NoError(t, err)
 

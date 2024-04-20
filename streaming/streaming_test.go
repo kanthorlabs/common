@@ -14,7 +14,7 @@ import (
 func TestStreaming_New(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		t.Run("OK", func(st *testing.T) {
-			_, err := New(testconf("nats://127.0.0.1:42222"), testify.Logger())
+			_, err := New(testconf(testdata.NatsUri), testify.Logger())
 			require.NoError(st, err)
 		})
 	})

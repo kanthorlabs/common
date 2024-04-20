@@ -63,7 +63,7 @@ func TestInternal_Readiness(t *testing.T) {
 		require.NoError(st, strategy.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
@@ -72,7 +72,7 @@ func TestInternal_Readiness(t *testing.T) {
 		require.NoError(st, strategy.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
@@ -89,7 +89,7 @@ func TestInternal_Liveness(t *testing.T) {
 		require.NoError(st, strategy.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
@@ -98,7 +98,7 @@ func TestInternal_Liveness(t *testing.T) {
 		require.NoError(st, strategy.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
@@ -115,7 +115,7 @@ func TestInternal_Disconnect(t *testing.T) {
 		require.NoError(st, strategy.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		strategy, err := NewInternal(internalconf, testify.Logger())
 		require.NoError(st, err)
 
@@ -201,7 +201,7 @@ func TestInternal_Login(t *testing.T) {
 	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
 		credentials := entities.Credentials{
 			Username: accounts[i].Username,
@@ -224,7 +224,7 @@ func TestInternal_Logout(t *testing.T) {
 	orm := strategy.(*internal).orm
 	require.NoError(t, orm.Create(accounts).Error)
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err := strategy.Logout(context.Background(), entities.Tokens{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})

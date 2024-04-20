@@ -20,7 +20,7 @@ func TestNatsPublisher_Name(t *testing.T) {
 		js := mockjetstream.NewJetStream(t)
 		publisher := &NatsPublisher{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -33,7 +33,7 @@ func TestNatsPublisher_Pub(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		publisher := &NatsPublisher{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -61,7 +61,7 @@ func TestNatsPublisher_Pub(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		publisher := &NatsPublisher{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}
@@ -91,7 +91,7 @@ func TestNatsPublisher_Pub(t *testing.T) {
 		js := mockjetstream.NewJetStream(st)
 		publisher := &NatsPublisher{
 			name:   pubsubname(),
-			conf:   testconf("nats://127.0.0.1:42222"),
+			conf:   testconf(testdata.NatsUri),
 			logger: testify.Logger(),
 			js:     js,
 		}

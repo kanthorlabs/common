@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
 	"github.com/kanthorlabs/common/testdata"
+	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,7 +62,7 @@ func TestRedlock_Readiness(t *testing.T) {
 		require.NoError(st, dlm.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		dlm, err := NewRedlock(redistestconf())
 		require.NoError(t, err)
 
@@ -70,7 +71,7 @@ func TestRedlock_Readiness(t *testing.T) {
 		require.NoError(st, dlm.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		dlm, err := NewRedlock(redistestconf())
 		require.NoError(t, err)
 
@@ -87,7 +88,7 @@ func TestRedlock_Liveness(t *testing.T) {
 		require.NoError(st, dlm.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		dlm, err := NewRedlock(redistestconf())
 		require.NoError(t, err)
 
@@ -96,7 +97,7 @@ func TestRedlock_Liveness(t *testing.T) {
 		require.NoError(st, dlm.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		dlm, err := NewRedlock(redistestconf())
 		require.NoError(t, err)
 
@@ -125,7 +126,7 @@ func TestRedlock_Disconnect(t *testing.T) {
 		require.ErrorContains(st, dlm.Disconnect(context.Background()), "redis: ")
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		dlm, err := NewRedlock(redistestconf())
 		require.NoError(t, err)
 

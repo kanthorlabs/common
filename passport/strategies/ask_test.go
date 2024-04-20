@@ -82,7 +82,7 @@ func TestAsk_Readiness(t *testing.T) {
 		require.NoError(st, strategy.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
 		require.NoError(st, err)
@@ -92,7 +92,7 @@ func TestAsk_Readiness(t *testing.T) {
 		require.NoError(st, strategy.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
 		require.NoError(st, err)
@@ -113,7 +113,7 @@ func TestAsk_Liveness(t *testing.T) {
 		require.NoError(st, strategy.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
 		require.NoError(st, err)
@@ -123,7 +123,7 @@ func TestAsk_Liveness(t *testing.T) {
 		require.NoError(st, strategy.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
 		require.NoError(st, err)
@@ -144,7 +144,7 @@ func TestAsk_Disconnect(t *testing.T) {
 		require.NoError(st, strategy.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := &config.Ask{Accounts: accounts}
 		strategy, err := NewAsk(conf, testify.Logger())
 		require.NoError(st, err)
@@ -160,7 +160,7 @@ func TestAsk_Register(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err = strategy.Register(context.Background(), accounts[0])
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -173,7 +173,7 @@ func TestAsk_Login(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		i := testdata.Fake.IntBetween(0, len(passwords)-1)
 		credentials := entities.Credentials{
 			Username: accounts[i].Username,
@@ -191,7 +191,7 @@ func TestAsk_Logout(t *testing.T) {
 	strategy, err := NewAsk(conf, testify.Logger())
 	require.NoError(t, err)
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err := strategy.Logout(context.Background(), entities.Tokens{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -284,7 +284,7 @@ func TestAskManagement_Deactivate(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err = strategy.Management().Deactivate(context.Background(), accounts[0].Username, time.Now().UnixMilli())
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})
@@ -332,7 +332,7 @@ func TestAskManagement_Update(t *testing.T) {
 	strategy.Connect(context.Background())
 	defer strategy.Disconnect(context.Background())
 
-	t.Run("KO - unimplement error", func(st *testing.T) {
+	t.Run(testify.CaseKoUnimplementedError, func(st *testing.T) {
 		err := strategy.Management().Update(context.Background(), entities.Account{})
 		require.ErrorContains(st, err, "UNIMPLEMENT.ERROR")
 	})

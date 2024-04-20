@@ -79,7 +79,7 @@ func TestNats_Readiness(t *testing.T) {
 		require.NoError(st, stream.Readiness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		server := natsserver()
 		defer server.Shutdown()
 
@@ -93,7 +93,7 @@ func TestNats_Readiness(t *testing.T) {
 		require.NoError(st, stream.Readiness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
@@ -113,7 +113,7 @@ func TestNats_Liveness(t *testing.T) {
 		require.NoError(st, stream.Liveness())
 	})
 
-	t.Run("OK - disconnected", func(st *testing.T) {
+	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
 		server := natsserver()
 		defer server.Shutdown()
 
@@ -127,7 +127,7 @@ func TestNats_Liveness(t *testing.T) {
 		require.NoError(st, stream.Liveness())
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
@@ -147,7 +147,7 @@ func TestNats_Disconnect(t *testing.T) {
 		require.NoError(st, stream.Disconnect(context.Background()))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
@@ -190,7 +190,7 @@ func TestNats_Publisher(t *testing.T) {
 		require.Equal(st, 1, len(stream.(*nats).publishers))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
@@ -248,7 +248,7 @@ func TestNats_Subscriber(t *testing.T) {
 		require.Equal(st, 1, len(stream.(*nats).subscribers))
 	})
 
-	t.Run("KO - not connected error", func(st *testing.T) {
+	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
 		conf := testconf(testdata.NatsUri)
 		stream, err := NewNats(conf, testify.Logger())
 		require.NoError(st, err)
