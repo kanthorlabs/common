@@ -82,7 +82,7 @@ func TestMemory_Get(t *testing.T) {
 	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		var dest string
 		err := c.Get(context.Background(), "", &dest)
-		require.ErrorContains(t, err, "CACHE.KEY.EMPTY.ERROR")
+		require.ErrorIs(t, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - key not found error", func(st *testing.T) {
@@ -119,7 +119,7 @@ func TestMemory_Set(t *testing.T) {
 
 	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		err := c.Set(context.Background(), "", value, ttl)
-		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - marshal error", func(st *testing.T) {
@@ -177,7 +177,7 @@ func TestNenory_Del(t *testing.T) {
 
 	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		err := c.Del(context.Background(), "")
-		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 }
 
@@ -213,7 +213,7 @@ func TestMemory_Expire(t *testing.T) {
 
 	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
 		err := c.Expire(context.Background(), "", time.Now())
-		require.ErrorContains(st, err, "CACHE.KEY.EMPTY.ERROR")
+		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - key not found error", func(st *testing.T) {
