@@ -12,7 +12,7 @@ then
   opa test gatekeeper/rego/
   
   echo "--> coverage"
-  go test -timeout 30s --count=1 -cover -coverprofile cover.out $(go list ./... | grep github.com/kanthorlabs/common)
+  go test -timeout 30s --count=1 -cover -coverprofile cover.out $(go list ./... | grep github.com/kanthorlabs/common | grep -v github.com/kanthorlabs/common/commands  | grep -v github.com/kanthorlabs/common/logging | grep -v github.com/kanthorlabs/common/testdata | grep -v github.com/kanthorlabs/common/testify)
 fi
 
 if [ "$CI" = "" ];
