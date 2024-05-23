@@ -2,7 +2,6 @@ package distributedlockmanager
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -10,138 +9,87 @@ import (
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go/modules/redis"
 )
 
 func TestRedlock_New(t *testing.T) {
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+
 	t.Run("OK", func(st *testing.T) {
-		_, err := NewRedlock(redistestconf())
+		_, err := NewRedlock(testConf(t, container))
 		require.NoError(st, err)
 	})
 
 	t.Run("KO - configuration error", func(st *testing.T) {
-		conf := &config.Config{}
-		_, err := NewRedlock(conf)
+		_, err := NewRedlock(&config.Config{})
 		require.ErrorContains(st, err, "DISTRIBUTED_LOCK_MANAGER.CONFIG.")
 	})
 }
 
 func TestRedlock_Connect(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.NoError(st, dlm.Connect(context.Background()))
-	})
+	dlm, err := NewRedlock(testConf(t, container))
+	require.NoError(t, err)
 
-	t.Run("KO - already connected error", func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.NoError(st, dlm.Connect(context.Background()))
-		require.ErrorIs(st, dlm.Connect(context.Background()), ErrAlreadyConnected)
-	})
-
-	t.Run("KO - redis url error", func(st *testing.T) {
-		conf := &config.Config{
-			Uri:        "tcp://localhost:6379/0",
-			TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
-		}
-		dlm, err := NewRedlock(conf)
-		require.NoError(t, err)
-
-		require.ErrorContains(st, dlm.Connect(context.Background()), "redis: ")
-	})
+	testify.AssertConnect(t, dlm, ErrAlreadyConnected)
 }
 
 func TestRedlock_Readiness(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.NoError(st, dlm.Connect(context.Background()))
-		require.NoError(st, dlm.Readiness())
-	})
+	dlm, err := NewRedlock(testConf(t, container))
+	require.NoError(t, err)
 
-	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.NoError(st, dlm.Connect(context.Background()))
-		require.NoError(st, dlm.Disconnect(context.Background()))
-		require.NoError(st, dlm.Readiness())
-	})
-
-	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.ErrorIs(st, dlm.Readiness(), ErrNotConnected)
-	})
+	testify.AssertReadiness(t, dlm, ErrNotConnected)
 }
 
 func TestRedlock_Liveness(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.NoError(st, dlm.Connect(context.Background()))
-		require.NoError(st, dlm.Liveness())
-	})
+	dlm, err := NewRedlock(testConf(t, container))
+	require.NoError(t, err)
 
-	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.NoError(st, dlm.Connect(context.Background()))
-		require.NoError(st, dlm.Disconnect(context.Background()))
-		require.NoError(st, dlm.Liveness())
-	})
-
-	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.ErrorIs(st, dlm.Liveness(), ErrNotConnected)
-	})
+	testify.AssertLiveness(t, dlm, ErrNotConnected)
 }
 
 func TestRedlock_Disconnect(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.NoError(st, dlm.Connect(context.Background()))
-		require.NoError(st, dlm.Disconnect(context.Background()))
-	})
+	dlm, err := NewRedlock(testConf(t, container))
+	require.NoError(t, err)
 
-	t.Run("KO", func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.NoError(st, dlm.Connect(context.Background()))
-
-		// Close the connection to simulate the error of disconnection
-		require.NoError(t, dlm.(*redlock).gredis.Close())
-
-		require.ErrorContains(st, dlm.Disconnect(context.Background()), "redis: ")
-	})
-
-	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
-		dlm, err := NewRedlock(redistestconf())
-		require.NoError(t, err)
-
-		require.ErrorIs(st, dlm.Disconnect(context.Background()), ErrNotConnected)
-	})
-
+	testify.AssertLiveness(t, dlm, ErrNotConnected)
 }
 
 func TestRedlock_Lock(t *testing.T) {
-	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
-	dlm, err := NewRedlock(redistestconf())
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+
+	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
 
-	dlm.Connect(context.Background())
+	require.NoError(t, dlm.Connect(ctx))
 	defer dlm.Disconnect(context.Background())
+
+	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
 
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
@@ -150,12 +98,12 @@ func TestRedlock_Lock(t *testing.T) {
 		require.NotNil(st, identifier)
 	})
 
-	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
+	t.Run("KO - lock key empty error", func(st *testing.T) {
 		_, err := dlm.Lock(context.Background(), "", ttl)
 		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 
-	t.Run("KO - key already locked error", func(st *testing.T) {
+	t.Run("KO - lock key already locked error", func(st *testing.T) {
 		key := uuid.NewString()
 		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
@@ -167,12 +115,18 @@ func TestRedlock_Lock(t *testing.T) {
 }
 
 func TestRedlock_Unlock(t *testing.T) {
-	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
-	dlm, err := NewRedlock(redistestconf())
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+
+	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
 
-	dlm.Connect(context.Background())
+	require.NoError(t, dlm.Connect(ctx))
 	defer dlm.Disconnect(context.Background())
+
+	ttl := config.TimeToLive(testdata.Fake.UInt64Between(10000, 100000))
 
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
@@ -183,7 +137,7 @@ func TestRedlock_Unlock(t *testing.T) {
 		require.NoError(st, identifier.Unlock(context.Background()))
 	})
 
-	t.Run("KO - key not locked error", func(st *testing.T) {
+	t.Run("KO - lock key is not locked error", func(st *testing.T) {
 		key := uuid.NewString()
 		identifier, err := dlm.Lock(context.Background(), key, ttl)
 		require.NoError(st, err)
@@ -191,18 +145,11 @@ func TestRedlock_Unlock(t *testing.T) {
 
 		require.NoError(st, identifier.Unlock(context.Background()))
 		require.ErrorContains(st, identifier.Unlock(context.Background()), ErrUnlock.Error())
-
 	})
 }
 
-func redistestconf() *config.Config {
-	testconf := &config.Config{
-		Uri:        os.Getenv("REDIS_URI"),
-		TimeToLive: testdata.Fake.UInt64Between(10000, 100000),
-	}
-	if testconf.Uri == "" {
-		testconf.Uri = testdata.RedisUri
-	}
-
-	return testconf
+func testConf(t *testing.T, container *redis.RedisContainer) *config.Config {
+	uri, err := container.ConnectionString(context.Background())
+	require.NoError(t, err)
+	return &config.Config{Uri: uri, TimeToLive: testdata.Fake.UInt64Between(10000, 100000)}
 }

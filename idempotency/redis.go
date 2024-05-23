@@ -7,24 +7,21 @@ import (
 	"time"
 
 	"github.com/kanthorlabs/common/idempotency/config"
-	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 	goredis "github.com/redis/go-redis/v9"
 )
 
 // NewRedis creates a new idempotency instance that uses Redis as the underlying storage.
-func NewRedis(conf *config.Config, logger logging.Logger) (Idempotency, error) {
+func NewRedis(conf *config.Config) (Idempotency, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
-	logger = logger.With("cache", "redis")
-	return &redis{conf: conf, logger: logger}, nil
+	return &redict{conf: conf}, nil
 }
 
-type redis struct {
-	conf   *config.Config
-	logger logging.Logger
+type redict struct {
+	conf *config.Config
 
 	client *goredis.Client
 
@@ -32,7 +29,7 @@ type redis struct {
 	status int
 }
 
-func (instance *redis) Readiness() error {
+func (instance *redict) Readiness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -45,7 +42,7 @@ func (instance *redis) Readiness() error {
 	return instance.client.Ping(ctx).Err()
 }
 
-func (instance *redis) Liveness() error {
+func (instance *redict) Liveness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -58,7 +55,7 @@ func (instance *redis) Liveness() error {
 	return instance.client.Ping(ctx).Err()
 }
 
-func (instance *redis) Connect(ctx context.Context) error {
+func (instance *redict) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -75,7 +72,7 @@ func (instance *redis) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *redis) Disconnect(ctx context.Context) error {
+func (instance *redict) Disconnect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -93,7 +90,7 @@ func (instance *redis) Disconnect(ctx context.Context) error {
 	return returning
 }
 
-func (instance *redis) Validate(ctx context.Context, key string) error {
+func (instance *redict) Validate(ctx context.Context, key string) error {
 	k, err := Key(key)
 	if err != nil {
 		return err

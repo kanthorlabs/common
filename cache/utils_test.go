@@ -62,20 +62,25 @@ func TestEncodeKey(t *testing.T) {
 }
 
 func TestGetOrSet(t *testing.T) {
-	c, err := NewMemory(testconf, testify.Logger())
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	c.Connect(context.Background())
-	defer c.Disconnect(context.Background())
+	defer container.Terminate(ctx)
+
+	cache, err := NewRedis(testConf(t, container))
+	require.NoError(t, err)
+	require.NoError(t, cache.Connect(ctx))
+	defer cache.Disconnect(ctx)
 
 	ttl := time.Minute
 	value := testdata.NewUser(clock.New())
 
 	t.Run("OK - get from cache", func(st *testing.T) {
 		key := uuid.NewString()
-		err := c.Set(context.Background(), key, value, ttl)
+		err := cache.Set(context.Background(), key, value, ttl)
 		require.NoError(st, err)
 
-		entry, err := GetOrSet(c, context.Background(), key, ttl, func() (*testdata.User, error) {
+		entry, err := GetOrSet(cache, context.Background(), key, ttl, func() (*testdata.User, error) {
 			return nil, nil
 		})
 
@@ -86,7 +91,7 @@ func TestGetOrSet(t *testing.T) {
 	t.Run("OK - get from fn", func(st *testing.T) {
 		key := uuid.NewString()
 
-		entry, err := GetOrSet(c, context.Background(), key, ttl, func() (*testdata.User, error) {
+		entry, err := GetOrSet(cache, context.Background(), key, ttl, func() (*testdata.User, error) {
 			return &value, nil
 		})
 
@@ -96,10 +101,10 @@ func TestGetOrSet(t *testing.T) {
 
 	t.Run("KO - get from cache error", func(st *testing.T) {
 		key := uuid.NewString()
-		err := c.Set(context.Background(), key, "-", ttl)
+		err := cache.Set(context.Background(), key, "-", ttl)
 		require.NoError(st, err)
 
-		_, err = GetOrSet(c, context.Background(), key, 0, func() (*testdata.User, error) {
+		_, err = GetOrSet(cache, context.Background(), key, 0, func() (*testdata.User, error) {
 			return nil, nil
 		})
 
@@ -110,7 +115,7 @@ func TestGetOrSet(t *testing.T) {
 		key := uuid.NewString()
 		expected := errors.New("error")
 
-		_, err := GetOrSet(c, context.Background(), key, 0, func() (*string, error) {
+		_, err := GetOrSet(cache, context.Background(), key, 0, func() (*string, error) {
 			return nil, expected
 		})
 

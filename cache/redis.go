@@ -8,31 +8,27 @@ import (
 	"time"
 
 	"github.com/kanthorlabs/common/cache/config"
-	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 	goredis "github.com/redis/go-redis/v9"
 )
 
-// NewRedis creates a new redis cache instance that is using go-redis as the underlying engine.
-func NewRedis(conf *config.Config, logger logging.Logger) (Cache, error) {
+func NewRedis(conf *config.Config) (Cache, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
-	logger = logger.With("cache", "redis")
-	return &redis{conf: conf, logger: logger}, nil
+	return &redict{conf: conf}, nil
 }
 
-type redis struct {
-	conf   *config.Config
-	logger logging.Logger
+type redict struct {
+	conf *config.Config
 
 	client *goredis.Client
 	mu     sync.Mutex
 	status int
 }
 
-func (instance *redis) Connect(ctx context.Context) error {
+func (instance *redict) Connect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -49,7 +45,7 @@ func (instance *redis) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (instance *redis) Readiness() error {
+func (instance *redict) Readiness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -62,7 +58,7 @@ func (instance *redis) Readiness() error {
 	return instance.client.Ping(ctx).Err()
 }
 
-func (instance *redis) Liveness() error {
+func (instance *redict) Liveness() error {
 	if instance.status == patterns.StatusDisconnected {
 		return nil
 	}
@@ -75,7 +71,7 @@ func (instance *redis) Liveness() error {
 	return instance.client.Ping(ctx).Err()
 }
 
-func (instance *redis) Disconnect(ctx context.Context) error {
+func (instance *redict) Disconnect(ctx context.Context) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
@@ -93,7 +89,7 @@ func (instance *redis) Disconnect(ctx context.Context) error {
 	return returning
 }
 
-func (instance *redis) Get(ctx context.Context, key string, entry any) error {
+func (instance *redict) Get(ctx context.Context, key string, entry any) error {
 	k, err := Key(key)
 	if err != nil {
 		return err
@@ -107,7 +103,7 @@ func (instance *redis) Get(ctx context.Context, key string, entry any) error {
 	return Unmarshal(data, entry)
 }
 
-func (instance *redis) Set(ctx context.Context, key string, entry any, ttl time.Duration) error {
+func (instance *redict) Set(ctx context.Context, key string, entry any, ttl time.Duration) error {
 	k, err := Key(key)
 	if err != nil {
 		return err
@@ -121,7 +117,7 @@ func (instance *redis) Set(ctx context.Context, key string, entry any, ttl time.
 	return instance.client.Set(ctx, k, v, ttl).Err()
 }
 
-func (instance *redis) Exist(ctx context.Context, key string) bool {
+func (instance *redict) Exist(ctx context.Context, key string) bool {
 	k, err := Key(key)
 	if err != nil {
 		return false
@@ -131,7 +127,7 @@ func (instance *redis) Exist(ctx context.Context, key string) bool {
 	return err == nil && entry > 0
 }
 
-func (instance *redis) Del(ctx context.Context, key string) error {
+func (instance *redict) Del(ctx context.Context, key string) error {
 	k, err := Key(key)
 	if err != nil {
 		return err
@@ -140,7 +136,7 @@ func (instance *redis) Del(ctx context.Context, key string) error {
 	return instance.client.Del(ctx, k).Err()
 }
 
-func (instance *redis) Expire(ctx context.Context, key string, at time.Time) error {
+func (instance *redict) Expire(ctx context.Context, key string, at time.Time) error {
 	k, err := Key(key)
 	if err != nil {
 		return err

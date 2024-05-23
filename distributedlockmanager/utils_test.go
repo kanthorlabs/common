@@ -3,7 +3,6 @@ package distributedlockmanager
 import (
 	"testing"
 
-	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +13,7 @@ func TestKey(t *testing.T) {
 		require.Equal(st, "dlm/test", k)
 	})
 
-	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
+	t.Run("KO - key could not be blank", func(st *testing.T) {
 		_, err := Key("")
 		require.ErrorIs(st, err, ErrKeyEmpty)
 	})

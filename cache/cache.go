@@ -7,23 +7,12 @@ import (
 	"time"
 
 	"github.com/kanthorlabs/common/cache/config"
-	"github.com/kanthorlabs/common/logging"
 	"github.com/kanthorlabs/common/patterns"
 )
 
-// New creates a new cache instance based on the provided configuration.
-// The cache instance is initialized based on the URI scheme.
-// Supported schemes are:
-// - memory://
-// - redis://
-// If the URI scheme is not supported, an error is returned.
-func New(conf *config.Config, logger logging.Logger) (Cache, error) {
-	if strings.HasPrefix(conf.Uri, "memory") {
-		return NewMemory(conf, logger)
-	}
-
+func New(conf *config.Config) (Cache, error) {
 	if strings.HasPrefix(conf.Uri, "redis") {
-		return NewRedis(conf, logger)
+		return NewRedis(conf)
 	}
 
 	return nil, errors.New("CACHE.SCHEME_UNKNOWN.ERROR")

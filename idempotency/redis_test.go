@@ -2,7 +2,6 @@ package idempotency
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -10,156 +9,104 @@ import (
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go/modules/redis"
 )
 
 func TestRedis_New(t *testing.T) {
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+
 	t.Run("OK", func(st *testing.T) {
-		_, err := NewRedis(redistestconf(), testify.Logger())
+		_, err := NewRedis(testConf(t, container))
 		require.NoError(t, err)
 	})
 
 	t.Run("KO - configuration error", func(st *testing.T) {
 		conf := &config.Config{}
-		_, err := NewRedis(conf, testify.Logger())
+		_, err := NewRedis(conf)
 		require.ErrorContains(t, err, "IDEMPOTENCY.CONFIG.")
 	})
 }
 
 func TestRedis_Connect(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.NoError(t, c.Connect(context.Background()))
-	})
+	idemp, err := NewRedis(testConf(t, container))
+	require.NoError(t, err)
 
-	t.Run("KO - already connected error", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.NoError(t, c.Connect(context.Background()))
-		require.ErrorIs(t, c.Connect(context.Background()), ErrAlreadyConnected)
-	})
+	testify.AssertConnect(t, idemp, ErrAlreadyConnected)
 }
 
 func TestRedis_Readiness(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.ErrorIs(t, c.Readiness(), ErrNotConnected)
+	idemp, err := NewRedis(testConf(t, container))
+	require.NoError(t, err)
 
-		require.NoError(t, c.Connect(context.Background()))
-		require.NoError(t, c.Readiness())
-	})
-
-	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.NoError(t, c.Connect(context.Background()))
-		require.NoError(t, c.Disconnect(context.Background()))
-		require.NoError(t, c.Readiness())
-	})
-
-	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.ErrorIs(t, c.Readiness(), ErrNotConnected)
-	})
+	testify.AssertReadiness(t, idemp, ErrNotConnected)
 }
 
 func TestRedis_Liveness(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.ErrorIs(t, c.Liveness(), ErrNotConnected)
+	idemp, err := NewRedis(testConf(t, container))
+	require.NoError(t, err)
 
-		require.NoError(t, c.Connect(context.Background()))
-		require.NoError(t, c.Liveness())
-	})
-
-	t.Run(testify.CaseOKDisconnected, func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.NoError(t, c.Connect(context.Background()))
-		require.NoError(t, c.Disconnect(context.Background()))
-		require.NoError(t, c.Liveness())
-	})
-
-	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.ErrorIs(t, c.Liveness(), ErrNotConnected)
-	})
+	testify.AssertLiveness(t, idemp, ErrNotConnected)
 }
 
 func TestRedis_Disconnect(t *testing.T) {
-	t.Run("OK", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
 
-		require.NoError(t, c.Connect(context.Background()))
-		require.NoError(t, c.Disconnect(context.Background()))
-	})
+	idemp, err := NewRedis(testConf(t, container))
+	require.NoError(t, err)
 
-	t.Run(testify.CaseKONotConnectedError, func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.ErrorIs(t, c.Disconnect(context.Background()), ErrNotConnected)
-	})
+	testify.AssertLiveness(t, idemp, ErrNotConnected)
 }
 
 func TestRedis_Validate(t *testing.T) {
+	ctx := context.Background()
+	container, err := testify.RedisContainer(ctx)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+
+	idemp, err := NewRedis(testConf(t, container))
+	require.NoError(t, idemp.Connect(ctx))
+	defer idemp.Disconnect(ctx)
+
 	t.Run("OK", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.NoError(t, c.Connect(context.Background()))
-		defer c.Disconnect(context.Background())
-
 		key := uuid.NewString()
-		err = c.Validate(context.Background(), key)
-		require.NoError(t, err)
+		require.NoError(t, idemp.Validate(ctx, key))
 	})
 
-	t.Run(testify.CaseKOKeyEmptyError, func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.NoError(t, c.Connect(context.Background()))
-		defer c.Disconnect(context.Background())
-
-		err = c.Validate(context.Background(), "")
+	t.Run("KO - key of validate method could not be empty", func(st *testing.T) {
+		err = idemp.Validate(context.Background(), "")
 		require.ErrorIs(t, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - conflict error", func(st *testing.T) {
-		c, err := NewRedis(redistestconf(), testify.Logger())
-		require.NoError(t, err)
-
-		require.NoError(t, c.Connect(context.Background()))
-		defer c.Disconnect(context.Background())
-
 		key := uuid.NewString()
-		require.NoError(t, c.Validate(context.Background(), key))
-		require.ErrorIs(t, c.Validate(context.Background(), key), ErrConflict)
+		require.NoError(t, idemp.Validate(context.Background(), key))
+		require.ErrorIs(t, idemp.Validate(context.Background(), key), ErrConflict)
 	})
 }
 
-func redistestconf() *config.Config {
-	testconf := &config.Config{
-		Uri:        os.Getenv("REDIS_URI"),
-		TimeToLive: testdata.Fake.UInt64Between(1000, 100000),
-	}
-	if testconf.Uri == "" {
-		testconf.Uri = testdata.RedisUri
-	}
-
-	return testconf
+func testConf(t *testing.T, container *redis.RedisContainer) *config.Config {
+	uri, err := container.ConnectionString(context.Background())
+	require.NoError(t, err)
+	return &config.Config{Uri: uri, TimeToLive: testdata.Fake.UInt64Between(10000, 100000)}
 }
