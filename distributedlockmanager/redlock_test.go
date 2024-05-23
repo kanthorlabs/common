@@ -16,7 +16,6 @@ func TestRedlock_New(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	t.Run("OK", func(st *testing.T) {
 		_, err := NewRedlock(testConf(t, container))
@@ -33,7 +32,6 @@ func TestRedlock_Connect(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
@@ -45,7 +43,6 @@ func TestRedlock_Readiness(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
@@ -57,7 +54,6 @@ func TestRedlock_Liveness(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
@@ -69,7 +65,6 @@ func TestRedlock_Disconnect(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
@@ -81,7 +76,6 @@ func TestRedlock_Lock(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)
@@ -118,7 +112,6 @@ func TestRedlock_Unlock(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	dlm, err := NewRedlock(testConf(t, container))
 	require.NoError(t, err)

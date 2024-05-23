@@ -8,18 +8,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:7
-        # Set health checks to wait until redis has started
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 3s
-          --health-timeout 3s
-          --health-retries 30
-        ports:
-          - 6379:6379
-
     steps:
       - uses: actions/checkout@v3
 

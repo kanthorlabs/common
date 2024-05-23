@@ -26,7 +26,6 @@ func TestRedis_Connect(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -38,7 +37,6 @@ func TestRedis_Readiness(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -50,7 +48,6 @@ func TestRedis_Liveness(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -62,7 +59,6 @@ func TestRedis_Disconnect(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -74,7 +70,6 @@ func TestRedis_Get(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, cache.Connect(ctx))
@@ -121,7 +116,6 @@ func TestRedis_Set(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -158,7 +152,6 @@ func TestRedis_Exist(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -190,7 +183,6 @@ func TestRedis_Delete(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
@@ -221,7 +213,6 @@ func TestRedis_Expire(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)

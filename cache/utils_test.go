@@ -65,7 +65,6 @@ func TestGetOrSet(t *testing.T) {
 	ctx := context.Background()
 	container, err := testify.RedisContainer(ctx)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
 
 	cache, err := NewRedis(testConf(t, container))
 	require.NoError(t, err)
