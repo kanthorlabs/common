@@ -265,7 +265,7 @@ func TestRedis_Expire(t *testing.T) {
 }
 
 func conf(t *testing.T, container *redis.RedisContainer) *config.Config {
-	uri, err := containers.RedisConnectionString(container)
+	uri, err := containers.RedisConnectionString(context.Background(), container)
 	require.NoError(t, err)
 	return &config.Config{Uri: uri}
 }

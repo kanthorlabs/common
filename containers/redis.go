@@ -31,13 +31,6 @@ func Redis(ctx context.Context, name string) (*redis.RedisContainer, error) {
 	return &redis.RedisContainer{Container: container}, nil
 }
 
-func RedisConnectionString(container *redis.RedisContainer) (uri string, err error) {
-	for i := 0; i < 10; i++ {
-		uri, err = container.ConnectionString(context.Background())
-		if err == nil {
-			return
-		}
-	}
-
-	return
+func RedisConnectionString(ctx context.Context, container *redis.RedisContainer) (string, error) {
+	return container.ConnectionString(ctx)
 }

@@ -143,7 +143,7 @@ func TestRedlock_Unlock(t *testing.T) {
 }
 
 func conf(t *testing.T, container *redis.RedisContainer) *config.Config {
-	uri, err := container.ConnectionString(context.Background())
+	uri, err := containers.RedisConnectionString(context.Background(), container)
 	require.NoError(t, err)
 	return &config.Config{Uri: uri, TimeToLive: testdata.Fake.UInt64Between(10000, 100000)}
 }
