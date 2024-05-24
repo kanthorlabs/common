@@ -85,18 +85,18 @@ func TestRedis_Validate(t *testing.T) {
 
 	t.Run("OK", func(st *testing.T) {
 		key := uuid.NewString()
-		require.NoError(t, idemp.Validate(ctx, key))
+		require.NoError(st, idemp.Validate(ctx, key))
 	})
 
 	t.Run("KO - key of validate method could not be empty", func(st *testing.T) {
 		err = idemp.Validate(context.Background(), "")
-		require.ErrorIs(t, err, ErrKeyEmpty)
+		require.ErrorIs(st, err, ErrKeyEmpty)
 	})
 
 	t.Run("KO - conflict error", func(st *testing.T) {
 		key := uuid.NewString()
-		require.NoError(t, idemp.Validate(context.Background(), key))
-		require.ErrorIs(t, idemp.Validate(context.Background(), key), ErrConflict)
+		require.NoError(st, idemp.Validate(context.Background(), key))
+		require.ErrorIs(st, idemp.Validate(context.Background(), key), ErrConflict)
 	})
 }
 
