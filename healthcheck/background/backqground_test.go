@@ -2,7 +2,9 @@ package background
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/kanthorlabs/common/healthcheck/config"
 	"github.com/stretchr/testify/require"
@@ -46,29 +48,26 @@ func TestBackground_Liveness(t *testing.T) {
 		server, err := NewServer(sconf)
 		require.NoError(t, err)
 
-		done := make(chan bool, 1)
-		go func() {
-			ctx := context.Background()
-			require.NoError(st, server.Connect(ctx))
-			var ok bool
+		ctx := context.Background()
+		require.NoError(st, server.Connect(ctx))
 
-			require.NoError(t, server.Liveness(func() error {
-				if ok {
-					done <- ok
-				}
+		// liveness in server side locks goroutine
+		go server.Liveness(func() error { return nil })
 
-				ok = true
-				return nil
-			}))
-
-		}()
-
-		<-done
 		cconf := config.Default("default", 2000)
 		client, err := NewClient(cconf)
 		require.NoError(st, err)
 
-		require.NoError(st, client.Liveness())
+		tries := 10
+		for i := 0; i < tries; i++ {
+			if err := client.Liveness(); err == nil {
+				require.NoError(st, server.Disconnect(context.Background()))
+				return
+			}
+			time.Sleep(time.Second * time.Duration((i + 1)))
+		}
+
 		require.NoError(st, server.Disconnect(context.Background()))
+		panic(fmt.Errorf("failed check after %d tries", tries))
 	})
 }

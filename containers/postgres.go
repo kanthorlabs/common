@@ -58,6 +58,6 @@ func PostgresConnectionString(ctx context.Context, container *postgres.PostgresC
 	user := os.Getenv("TEST_CONTAINER_POSTGRES_USER")
 	pass := os.Getenv("TEST_CONTAINER_POSTGRES_PASSWORD")
 
-	uri := fmt.Sprintf("postgres://%s:%s@%s/%s", user, pass, net.JoinHostPort(host, port.Port()), user)
+	uri := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, pass, net.JoinHostPort(host, port.Port()), user)
 	return uri, nil
 }

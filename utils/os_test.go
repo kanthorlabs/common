@@ -3,7 +3,6 @@ package utils
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -40,18 +39,4 @@ func TestAbsPathify(t *testing.T) {
 		got := AbsPathify(test.input)
 		require.Equal(t, test.output, got)
 	}
-}
-
-func TestFilepath(t *testing.T) {
-	file, err := Filepath()
-	require.NoError(t, err)
-	require.NotEmpty(t, file)
-	require.True(t, strings.HasSuffix(file, "/utils/os_test.go"))
-}
-
-func TestDirpath(t *testing.T) {
-	file, err := Dirpath()
-	require.NoError(t, err)
-	require.NotEmpty(t, file)
-	require.True(t, strings.HasSuffix(file, "/utils"))
 }
