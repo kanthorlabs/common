@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/cache/config"
 	"github.com/kanthorlabs/common/clock"
+	"github.com/kanthorlabs/common/containers"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
@@ -24,10 +25,10 @@ func TestRedis_New(t *testing.T) {
 
 func TestRedis_Connect(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertConnect(t, cache, ErrAlreadyConnected)
@@ -35,10 +36,10 @@ func TestRedis_Connect(t *testing.T) {
 
 func TestRedis_Readiness(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertReadiness(t, cache, ErrNotConnected)
@@ -46,10 +47,10 @@ func TestRedis_Readiness(t *testing.T) {
 
 func TestRedis_Liveness(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertLiveness(t, cache, ErrNotConnected)
@@ -57,10 +58,10 @@ func TestRedis_Liveness(t *testing.T) {
 
 func TestRedis_Disconnect(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertLiveness(t, cache, ErrNotConnected)
@@ -68,10 +69,10 @@ func TestRedis_Disconnect(t *testing.T) {
 
 func TestRedis_Get(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, cache.Connect(ctx))
 	defer cache.Disconnect(ctx)
 
@@ -114,10 +115,10 @@ func TestRedis_Get(t *testing.T) {
 
 func TestRedis_Set(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 	require.NoError(t, cache.Connect(ctx))
 	defer cache.Disconnect(ctx)
@@ -150,10 +151,10 @@ func TestRedis_Set(t *testing.T) {
 
 func TestRedis_Exist(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 	require.NoError(t, cache.Connect(ctx))
 	defer cache.Disconnect(ctx)
@@ -181,10 +182,10 @@ func TestRedis_Exist(t *testing.T) {
 
 func TestRedis_Delete(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 	require.NoError(t, cache.Connect(ctx))
 	defer cache.Disconnect(ctx)
@@ -211,10 +212,10 @@ func TestRedis_Delete(t *testing.T) {
 
 func TestRedis_Expire(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 	require.NoError(t, cache.Connect(ctx))
 	defer cache.Disconnect(ctx)
@@ -263,8 +264,8 @@ func TestRedis_Expire(t *testing.T) {
 	})
 }
 
-func testConf(t *testing.T, container *redis.RedisContainer) *config.Config {
-	uri, err := container.ConnectionString(context.Background())
+func conf(t *testing.T, container *redis.RedisContainer) *config.Config {
+	uri, err := containers.RedisConnectionString(container)
 	require.NoError(t, err)
 	return &config.Config{Uri: uri}
 }

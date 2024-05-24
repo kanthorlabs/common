@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kanthorlabs/common/clock"
+	"github.com/kanthorlabs/common/containers"
 	"github.com/kanthorlabs/common/testdata"
-	"github.com/kanthorlabs/common/testify"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,10 +63,10 @@ func TestEncodeKey(t *testing.T) {
 
 func TestGetOrSet(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-cache")
 	require.NoError(t, err)
 
-	cache, err := NewRedis(testConf(t, container))
+	cache, err := NewRedis(conf(t, container))
 	require.NoError(t, err)
 	require.NoError(t, cache.Connect(ctx))
 	defer cache.Disconnect(ctx)

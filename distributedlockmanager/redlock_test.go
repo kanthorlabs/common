@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/kanthorlabs/common/containers"
 	"github.com/kanthorlabs/common/distributedlockmanager/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
@@ -14,11 +15,11 @@ import (
 
 func TestRedlock_New(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
 	t.Run("OK", func(st *testing.T) {
-		_, err := NewRedlock(testConf(t, container))
+		_, err := NewRedlock(conf(t, container))
 		require.NoError(st, err)
 	})
 
@@ -30,10 +31,10 @@ func TestRedlock_New(t *testing.T) {
 
 func TestRedlock_Connect(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
-	dlm, err := NewRedlock(testConf(t, container))
+	dlm, err := NewRedlock(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertConnect(t, dlm, ErrAlreadyConnected)
@@ -41,10 +42,10 @@ func TestRedlock_Connect(t *testing.T) {
 
 func TestRedlock_Readiness(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
-	dlm, err := NewRedlock(testConf(t, container))
+	dlm, err := NewRedlock(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertReadiness(t, dlm, ErrNotConnected)
@@ -52,10 +53,10 @@ func TestRedlock_Readiness(t *testing.T) {
 
 func TestRedlock_Liveness(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
-	dlm, err := NewRedlock(testConf(t, container))
+	dlm, err := NewRedlock(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertLiveness(t, dlm, ErrNotConnected)
@@ -63,10 +64,10 @@ func TestRedlock_Liveness(t *testing.T) {
 
 func TestRedlock_Disconnect(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
-	dlm, err := NewRedlock(testConf(t, container))
+	dlm, err := NewRedlock(conf(t, container))
 	require.NoError(t, err)
 
 	testify.AssertLiveness(t, dlm, ErrNotConnected)
@@ -74,10 +75,10 @@ func TestRedlock_Disconnect(t *testing.T) {
 
 func TestRedlock_Lock(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
-	dlm, err := NewRedlock(testConf(t, container))
+	dlm, err := NewRedlock(conf(t, container))
 	require.NoError(t, err)
 
 	require.NoError(t, dlm.Connect(ctx))
@@ -110,10 +111,10 @@ func TestRedlock_Lock(t *testing.T) {
 
 func TestRedlock_Unlock(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-dlm")
 	require.NoError(t, err)
 
-	dlm, err := NewRedlock(testConf(t, container))
+	dlm, err := NewRedlock(conf(t, container))
 	require.NoError(t, err)
 
 	require.NoError(t, dlm.Connect(ctx))
@@ -141,7 +142,7 @@ func TestRedlock_Unlock(t *testing.T) {
 	})
 }
 
-func testConf(t *testing.T, container *redis.RedisContainer) *config.Config {
+func conf(t *testing.T, container *redis.RedisContainer) *config.Config {
 	uri, err := container.ConnectionString(context.Background())
 	require.NoError(t, err)
 	return &config.Config{Uri: uri, TimeToLive: testdata.Fake.UInt64Between(10000, 100000)}

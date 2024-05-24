@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/kanthorlabs/common/containers"
 	"github.com/kanthorlabs/common/idempotency/config"
 	"github.com/kanthorlabs/common/testdata"
 	"github.com/kanthorlabs/common/testify"
@@ -14,7 +15,7 @@ import (
 
 func TestRedis_New(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-idempotency")
 	require.NoError(t, err)
 
 	t.Run("OK", func(st *testing.T) {
@@ -31,7 +32,7 @@ func TestRedis_New(t *testing.T) {
 
 func TestRedis_Connect(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-idempotency")
 	require.NoError(t, err)
 
 	idemp, err := NewRedis(testConf(t, container))
@@ -42,7 +43,7 @@ func TestRedis_Connect(t *testing.T) {
 
 func TestRedis_Readiness(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-idempotency")
 	require.NoError(t, err)
 
 	idemp, err := NewRedis(testConf(t, container))
@@ -53,7 +54,7 @@ func TestRedis_Readiness(t *testing.T) {
 
 func TestRedis_Liveness(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-idempotency")
 	require.NoError(t, err)
 
 	idemp, err := NewRedis(testConf(t, container))
@@ -64,7 +65,7 @@ func TestRedis_Liveness(t *testing.T) {
 
 func TestRedis_Disconnect(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-idempotency")
 	require.NoError(t, err)
 
 	idemp, err := NewRedis(testConf(t, container))
@@ -75,7 +76,7 @@ func TestRedis_Disconnect(t *testing.T) {
 
 func TestRedis_Validate(t *testing.T) {
 	ctx := context.Background()
-	container, err := testify.RedisContainer(ctx)
+	container, err := containers.Redis(ctx, "kanthorlabs-common-idempotency")
 	require.NoError(t, err)
 
 	idemp, err := NewRedis(testConf(t, container))

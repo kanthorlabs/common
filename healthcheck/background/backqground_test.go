@@ -31,10 +31,9 @@ func TestBackground_Readiness(t *testing.T) {
 		<-done
 		cconf := config.Default("default", 2000)
 		client, err := NewClient(cconf)
-		require.NoError(t, err)
+		require.NoError(st, err)
 
-		require.NoError(t, client.Readiness())
-
+		require.NoError(st, client.Readiness())
 		require.NoError(st, server.Disconnect(context.Background()))
 	})
 }
@@ -67,10 +66,9 @@ func TestBackground_Liveness(t *testing.T) {
 		<-done
 		cconf := config.Default("default", 2000)
 		client, err := NewClient(cconf)
-		require.NoError(t, err)
+		require.NoError(st, err)
 
-		require.NoError(t, client.Liveness())
-
+		require.NoError(st, client.Liveness())
 		require.NoError(st, server.Disconnect(context.Background()))
 	})
 }

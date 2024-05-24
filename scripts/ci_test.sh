@@ -9,7 +9,7 @@ CHECKSUM_OLD=$(cat $CHECKSUM_FILE || true)
 if [ "$CHECKSUM_NEW" != "$CHECKSUM_OLD" ];
 then
   echo "--> coverage"
-  go test -timeout 1m30s --count=1 -cover -coverprofile cover.out $(go list ./... | grep github.com/kanthorlabs/common | grep -v 'github.com/kanthorlabs/common/\(commands\|logging\|testdata\|testify\)')
+  go test -timeout 1m30s --count=1 -cover -coverprofile cover.out $(go list ./... | grep github.com/kanthorlabs/common | grep -v 'github.com/kanthorlabs/common/\(commands\|containers\|logging\|testdata\|testify\)')
 fi
 
 if [ "$CI" = "" ];
